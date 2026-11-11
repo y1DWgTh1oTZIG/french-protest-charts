@@ -1123,13 +1123,57 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
 
 /* ------------------------------------------------ export for section C */
 
-/** Weekly series for the 2026 episode, consumed by `episodes.ts`. */
-export const EPISODE_2026 = {
-  weeks: WEEKS.map((w) => ({ key: w.key, label: w.label })),
-  series: {
-    p: turnoutWeekly,
-    a: arrestsWeekly,
-    f: forcesWeekly,
-    i: protestersWeekly,
-  },
-};
+export type { Quality };
+
+export interface StudentWeek {
+  key: string;
+  label: string;
+  touchesEdge: boolean;
+  p: [number, number] | null;
+  a: [number, number] | null;
+  f: [number, number] | null;
+  i: [number, number] | null;
+  flags: Partial<Record<"p" | "a" | "f" | "i", Quality>>;
+  notes: Partial<Record<"p" | "a" | "f" | "i", string>>;
+}
+
+/** One week, flattened next to the data it comes from — no positional contract left to break. */
+function studentCell(
+  s: MetricSeries,
+  idx: number,
+): { band: [number, number] | null; q?: Quality; note?: string } {
+  const band = s.bands[idx];
+  if (!band) return { band: null };
+  const raw = s.quality[idx] ?? "n";
+  // a week whose only figures are regional/partial was detached by the aggregator
+  const q: Quality = s.detach[idx] ? (raw === "f" ? "f" : "r") : raw;
+  return { band: [band[0], band[1]], q, note: s.notes[idx] ?? undefined };
+}
+
+const STUDENT_SERIES = {
+  p: turnoutWeekly,
+  a: arrestsWeekly,
+  f: forcesWeekly,
+  i: protestersWeekly,
+} as const;
+
+export const STUDENT_WEEKS: StudentWeek[] = WEEKS.map((w, idx) => {
+  const out: StudentWeek = {
+    key: w.key,
+    label: w.label,
+    touchesEdge: w.touchesEdge,
+    p: null,
+    a: null,
+    f: null,
+    i: null,
+    flags: {},
+    notes: {},
+  };
+  for (const m of ["p", "a", "f", "i"] as const) {
+    const c = studentCell(STUDENT_SERIES[m], idx);
+    out[m] = c.band;
+    if (c.q) out.flags[m] = c.q;
+    if (c.note) out.notes[m] = c.note;
+  }
+  return out;
+});

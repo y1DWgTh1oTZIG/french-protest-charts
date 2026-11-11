@@ -1,5 +1,5 @@
 /* Section C — cross-episode comparison.
-   Primary figure: one panel per episode, four indexed series per panel.
+   Primary figure: one panel per episode, four series per panel, one shared log count axis.
    Companion: one panel per series, one line per episode on a sequential ramp. */
 
 import {
@@ -10,7 +10,7 @@ import {
   type Plugin,
   type TooltipItem,
 } from "chart.js";
-import { EPISODE_2026 } from "./chart.ts";
+import { STUDENT_WEEKS } from "./chart.ts";
 
 /* ------------------------------------------------------------------ types */
 
@@ -40,17 +40,18 @@ interface Episode {
 
 interface Pt {
   x: number;
-  y: number;
+  y: number; // midpoint of the published range — this is what gets plotted
   low: number;
   high: number;
   flag: Flag;
   note?: string;
-  base: number;
+  base: number; // first comparable figure for the series — tooltip text only
   t: string;
 }
 
 interface PanelDataset extends ChartDataset<"line", Pt[]> {
   __item: M;
+  __ep: number;
   __color: string;
   __hollow: boolean[];
   __label: string;
@@ -58,10 +59,8 @@ interface PanelDataset extends ChartDataset<"line", Pt[]> {
 
 /* ------------------------------------------------------------- constants */
 
-const INK = "#111827";
 const MUTED = "#6b7280";
 const GRID = "#E5E5E5";
-const REFERENCE = 100;
 
 const ITEMS: { key: M; label: string; short: string; color: string }[] = [
   {
@@ -106,7 +105,7 @@ const FLAG_TEXT: Partial<Record<Flag, string>> = {
   p: "partial",
   f: "lower bound",
   e: "derived",
-  c: "actions-total / stock — measured differently",
+  c: "stock or actions-total — measured differently",
   w: "weekly aggregate",
 };
 
@@ -118,8 +117,6 @@ const compact = new Intl.NumberFormat("en-GB", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
-const fmtIndex = (v: number): string =>
-  v < 1 ? String(Number(v.toFixed(2))) : compact.format(v);
 
 function alpha(hex: string, a: number): string {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -148,7 +145,7 @@ const MAY68: Episode = {
       p: 20_000,
       a: [469, 891],
       f: [247, 300],
-      i: [100, 100],
+      i: 100,
       flag: { i: "f" },
       note: {
         p: "20,000 to the Sorbonne on 6 May; >20,000 again on 10 May",
@@ -169,7 +166,7 @@ const MAY68: Episode = {
       w: 3,
       t: "20 – 26 May · 24–25 May",
       a: [1_000, 1_000],
-      i: [887, 887],
+      i: 887,
       flag: { a: "f", i: "e" },
       note: {
         a: "1,000+ arrests on 25 May",
@@ -380,32 +377,30 @@ const GILETS: Episode = {
   short: "Gilets jaunes",
   span: "12 Nov 2018 – 9 Sep 2019",
   banner:
-    "Ministry count only: one figure per act, so no range. Acts 34–43 were never published.",
-  weeks: [
-    ...GJ_CROWD.map(([w, n], idx) => {
-      const extra = GJ_EXTRA[w] ?? {};
-      return {
-        w,
-        t: `Act ${w + 1} · ${GJ_DATES[idx]}`,
-        p: n,
-        ...extra,
-        flag: {
-          ...(w === 0 ? { p: "c" as Flag } : {}),
-          ...extra.flag,
-        },
-        note: {
-          ...(w === 0
-            ? {
-                p: "287,700 counts all actions including road blockades — an actions-total, not a march",
-              }
-            : w === 1
-              ? { p: "police-union counter-count: 750,000" }
-              : {}),
-          ...extra.note,
-        },
-      } satisfies Row;
-    }),
-  ],
+    "Ministry count only: one figure per act. Acts 34–43 were never published; no enforcement series after Act IV.",
+  weeks: GJ_CROWD.map(([w, n], idx) => {
+    const extra = GJ_EXTRA[w] ?? {};
+    return {
+      w,
+      t: `Act ${w + 1} · ${GJ_DATES[idx]}`,
+      p: n,
+      ...extra,
+      flag: {
+        ...(w === 0 ? { p: "c" as Flag } : {}),
+        ...extra.flag,
+      },
+      note: {
+        ...(w === 0
+          ? {
+              p: "287,700 counts all actions including road blockades — an actions-total, not a march",
+            }
+          : w === 1
+            ? { p: "police-union counter-count: 750,000" }
+            : {}),
+        ...extra.note,
+      },
+    } satisfies Row;
+  }),
 };
 
 const NAHEL: Episode = {
@@ -527,17 +522,85 @@ const BLOQUONS: Episode = {
   ],
 };
 
+/* -- 2026, lifted from the weekly aggregator in chart.ts ------------------ */
+
+/** Flags the aggregator cannot infer from a single band (stock, floor, regional-only week). */
+const STUDENT_FLAG_PATCH: Partial<Record<number, Partial<Record<M, Flag>>>> = {
+  0: { i: "c" }, // cumulative Île-de-France stock since mid-September
+  5: { i: "f" }, // litigation-derived floor, not a ministry tally
+  6: { a: "r" }, // Bègles + Lyon + Strasbourg only
+};
+
+/** Safety net: the brief's weekly table, used only if a whole column arrives empty. */
+const STUDENT_FALLBACK: Record<M, (Band | null)[]> = {
+  p: [
+    null,
+    [256_000, 450_000],
+    [550_000, 800_000],
+    [410_000, 800_000],
+    [320_000, 500_000],
+    [575_000, 1_600_000],
+    null,
+  ],
+  a: [
+    [1_949, 1_949],
+    null,
+    [2_397, 2_628],
+    [1_314, 1_435],
+    [565, 779],
+    [798, 1_002],
+    [17, 17],
+  ],
+  f: [[84, 305], null, [1_037, 1_184], [267, 267], [116, 159], [53, 112], null],
+  i: [[119, 235], null, null, [150, 150], null, [18, 18], null],
+};
+
+const STUDENT_NOTES: Partial<Record<M, string>> = {
+  p: "peak day of the week",
+  a: "sum of national daily counts; regional days excluded",
+  f: "sum of national daily counts",
+  i: "flow where a flow exists — W1 is a stock, W6 a litigation floor",
+};
+
+/** Live column from chart.ts, with a loud fallback if it comes through empty. */
+function studentColumn(m: M): { bands: (Band | null)[]; pinned: boolean } {
+  const live = STUDENT_WEEKS.map((w) => w[m]);
+  if (live.some((b) => b !== null)) return { bands: live, pinned: false };
+  const fb = STUDENT_FALLBACK[m];
+  console.error(
+    `[episodes] 2026 weekly "${m}" arrived empty from chart.ts — falling back to the handoff table. Check STUDENT_WEEKS.`,
+  );
+  return { bands: fb, pinned: true };
+}
+
 function rows2026(): Row[] {
-  const s = EPISODE_2026.series;
-  return EPISODE_2026.weeks.map((wk, i) => {
-    const row: Row = { w: i, t: `W${i + 1} · ${wk.label}` };
+  const cols = {
+    p: studentColumn("p"),
+    a: studentColumn("a"),
+    f: studentColumn("f"),
+    i: studentColumn("i"),
+  } as const;
+
+  return STUDENT_WEEKS.map((wk, idx) => {
+    const row: Row = {
+      w: idx,
+      t: `W${idx + 1} · ${wk.label}${wk.touchesEdge ? " (partial week)" : ""}`,
+    };
+
     for (const m of ["p", "a", "f", "i"] as const) {
-      const band = s[m].bands[i];
+      const band = cols[m].bands[idx];
       if (!band) continue;
-      row[m] = [band[0], band[1]];
-      const q = s[m].quality[i];
-      if (q && q !== "n") row.flag = { ...row.flag, [m]: q };
-      const note = s[m].notes[i];
+
+      row[m] = typeof band === "number" ? band : [band[0], band[1]];
+
+      // pinned column → patch wins; live column → chart.ts wins, patch only refines it
+      const flag =
+        STUDENT_FLAG_PATCH[idx]?.[m] ??
+        (cols[m].pinned ? undefined : wk.flags[m]);
+      if (flag && flag !== "n") row.flag = { ...row.flag, [m]: flag };
+
+      const note =
+        (cols[m].pinned ? STUDENT_NOTES[m] : wk.notes[m]) ?? STUDENT_NOTES[m];
       if (note) row.note = { ...row.note, [m]: note };
     }
     return row;
@@ -564,6 +627,18 @@ const EPISODES: Episode[] = [
   STUDENTS,
 ];
 
+/** Last week on which any episode carries an arrest or injury figure (CPE, w7). */
+const ENFORCEMENT_LAST = ((): number => {
+  let last = 0;
+  for (const ep of EPISODES) {
+    for (const r of ep.weeks) {
+      if (r.a !== undefined || r.f !== undefined || r.i !== undefined)
+        last = Math.max(last, r.w);
+    }
+  }
+  return last;
+})();
+
 /* -------------------------------------------------------------- indexing */
 
 const bandOf = (b: Band): [number, number] =>
@@ -573,13 +648,8 @@ const midOf = (b: Band): number => {
   return (lo + hi) / 2;
 };
 
-interface SeriesData {
-  base: number;
-  points: Pt[];
-}
-
-/** y' = 100 · y / y₀, where y₀ is the first figure measured on a comparable basis. */
-function seriesData(ep: Episode, key: M): SeriesData | null {
+/** Points carry the raw count in `y`; `base` is kept only to print "×N vs first figure". */
+function seriesData(ep: Episode, key: M): Pt[] | null {
   const rows = ep.weeks
     .filter((r) => r[key] !== undefined)
     .sort((a, b) => a.w - b.w);
@@ -589,11 +659,11 @@ function seriesData(ep: Episode, key: M): SeriesData | null {
   const baseRow = rows.find((r) => flagOf(r) !== "c") ?? rows[0];
   const base = midOf(baseRow[key]!);
 
-  const points = rows.map<Pt>((r) => {
+  return rows.map((r) => {
     const [low, high] = bandOf(r[key]!);
     return {
       x: r.w,
-      y: (REFERENCE * ((low + high) / 2)) / base,
+      y: (low + high) / 2,
       low,
       high,
       flag: flagOf(r),
@@ -602,29 +672,32 @@ function seriesData(ep: Episode, key: M): SeriesData | null {
       t: r.t,
     };
   });
-
-  return { base, points };
 }
 
 function buildDataset(
   ep: Episode,
+  epIndex: number,
   key: M,
   color: string,
-  direct: string,
+  maxX: number,
 ): PanelDataset | null {
-  const s = seriesData(ep, key);
-  if (!s) return null;
+  const all = seriesData(ep, key);
+  if (!all) return null;
+
+  const points = all.filter((p) => p.x <= maxX);
+  if (!points.length) return null;
+
   const item = ITEMS.find((d) => d.key === key)!;
-  const holl = s.points.map((p) => hollow(p.flag));
+  const drawn = points.map((p) => hollow(p.flag));
 
   return {
     label: item.label,
-    data: s.points,
+    data: points,
     borderColor: color,
     backgroundColor: color,
     borderWidth: 1.75,
-    pointRadius: s.points.map((p) => (p.flag === "c" ? 3 : 2.75)),
-    pointBackgroundColor: s.points.map((_, i) => (holl[i] ? "#ffffff" : color)),
+    pointRadius: points.map((p) => (p.flag === "c" ? 3 : 2.75)),
+    pointBackgroundColor: points.map((_, i) => (drawn[i] ? "#ffffff" : color)),
     pointBorderColor: color,
     pointBorderWidth: 1.5,
     pointHoverRadius: 4.5,
@@ -632,6 +705,7 @@ function buildDataset(
     tension: 0,
     spanGaps: true,
     segment: {
+      // a bridged gap of ≥1 week is visibly flagged
       borderDash: (ctx) =>
         Math.abs((ctx.p1.parsed.x as number) - (ctx.p0.parsed.x as number)) >
         1.01
@@ -639,49 +713,38 @@ function buildDataset(
           : undefined,
     },
     __item: key,
+    __ep: epIndex,
     __color: color,
-    __hollow: holl,
-    __label: direct,
+    __hollow: drawn,
+    __label: points.length < all.length ? `${ep.short} +` : ep.short,
   };
 }
 
-function extentOf(eps: Episode[], keys: M[]): [number, number] {
+/** Raw min/max across the given series, restricted to x ≤ maxX. */
+function rawExtent(eps: Episode[], keys: M[], maxX: number): [number, number] {
   let lo = Number.POSITIVE_INFINITY;
   let hi = Number.NEGATIVE_INFINITY;
+
   for (const ep of eps) {
     for (const k of keys) {
-      const s = seriesData(ep, k);
-      if (!s) continue;
-      for (const p of s.points) {
-        lo = Math.min(lo, p.y);
-        hi = Math.max(hi, p.y);
+      const pts = seriesData(ep, k);
+      if (!pts) continue;
+      for (const p of pts) {
+        if (p.x > maxX) continue;
+        if (p.low > 0) lo = Math.min(lo, p.low);
+        hi = Math.max(hi, p.high);
       }
     }
   }
-  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return [1, 100];
-  return [10 ** Math.floor(Math.log10(lo)), 10 ** Math.ceil(Math.log10(hi))];
+
+  if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo <= 0 || hi <= lo)
+    return [1, 1e6];
+  return [lo, hi];
 }
 
 /* --------------------------------------------------------------- plugins */
 
-const hundredLine: Plugin<"line"> = {
-  id: "hundredLine",
-  beforeDatasetsDraw(chart) {
-    const { ctx, chartArea, scales } = chart;
-    const y = scales.y?.getPixelForValue(REFERENCE);
-    if (y === undefined || y < chartArea.top || y > chartArea.bottom) return;
-    ctx.save();
-    ctx.setLineDash([2, 3]);
-    ctx.strokeStyle = "#9CA3AF";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(chartArea.left, y);
-    ctx.lineTo(chartArea.right, y);
-    ctx.stroke();
-    ctx.restore();
-  },
-};
-
+/** Only the companion figure labels its lines: there, names differ within a panel. */
 const directLabels: Plugin<"line"> = {
   id: "directLabels",
   afterDatasetsDraw(chart) {
@@ -727,7 +790,7 @@ const directLabels: Plugin<"line"> = {
 /* ---------------------------------------------------------------- scales */
 
 function xScale(maxW: number) {
-  const step = maxW <= 4 ? 1 : maxW <= 12 ? 2 : maxW <= 24 ? 4 : 8;
+  const step = maxW <= 8 ? 1 : maxW <= 12 ? 2 : maxW <= 24 ? 4 : 8;
   return {
     type: "linear" as const,
     min: -0.5,
@@ -753,10 +816,33 @@ function xScale(maxW: number) {
   };
 }
 
+/** Padding in log space keeps every marker off the frame without inventing round bounds. */
+function logBounds(lo: number, hi: number): [number, number] {
+  const l = Math.log10(Math.max(lo, 1e-6));
+  const h = Math.log10(Math.max(hi, l + 0.1));
+  const pad = Math.max(0.06, (h - l) * 0.05);
+  return [10 ** (l - pad), 10 ** (h + pad)];
+}
+
+/** 1-per-decade for wide ranges, 1-and-3 for medium, 1-2-5 for narrow. */
+function logTicks(min: number, max: number): number[] {
+  const l = Math.log10(min);
+  const h = Math.log10(max);
+  const span = h - l;
+  const mantissas = span > 4.5 ? [1] : span > 1.5 ? [1, 3] : [1, 2, 5];
+  const out: number[] = [];
+
+  for (let e = Math.floor(l); e <= Math.ceil(h); e++) {
+    for (const m of mantissas) {
+      const v = Number((m * 10 ** e).toPrecision(12));
+      if (v > min * 1.01 && v < max / 1.01) out.push(v);
+    }
+  }
+  return out;
+}
+
 function yScale(min: number, max: number, showLabels: boolean) {
-  const ticks = [0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000, 3000].filter(
-    (v) => v >= min && v <= max,
-  );
+  const ticks = logTicks(min, max);
   return {
     type: "logarithmic" as const,
     min,
@@ -768,18 +854,23 @@ function yScale(min: number, max: number, showLabels: boolean) {
       font: { size: 9 },
       color: MUTED,
       padding: 6,
-      callback: (v: string | number) => fmtIndex(Number(v)),
+      callback: (v: string | number) => compact.format(Number(v)),
     },
     afterBuildTicks: (axis: any) => {
       axis.ticks = ticks.map((value) => ({ value }));
     },
     afterFit: (s: { width: number }) => {
-      s.width = 42;
+      s.width = 46;
     },
   };
 }
 
 /* --------------------------------------------------------------- tooltip */
+
+const pctOf = (v: number, base: number): string => {
+  const r = (100 * v) / base;
+  return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
+};
 
 function tooltipSpec() {
   return {
@@ -790,15 +881,17 @@ function tooltipSpec() {
         const p = item.raw as Pt;
         const band =
           p.low === p.high
-            ? nf.format(p.low)
-            : `${nf.format(p.low)} – ${nf.format(p.high)}`;
+            ? nf.format(Math.round(p.low))
+            : `${nf.format(Math.round(p.low))} – ${nf.format(Math.round(p.high))}`;
         const flag = FLAG_TEXT[p.flag];
-        return `${item.dataset.label}: ${band}  →  index ${Math.round(p.y)}${flag ? `  ·  ${flag}` : ""}`;
+        return `${item.dataset.label}: ${band}${flag ? `  ·  ${flag}` : ""}`;
       },
       afterLabel: (item: TooltipItem<"line">) => (item.raw as Pt).note ?? "",
       footer: (items: TooltipItem<"line">[]) => {
         const p = items[0].raw as Pt;
-        return `index = 100 × value ÷ ${nf.format(Math.round(p.base))}`;
+        return Math.abs(p.y - p.base) / p.base < 1e-9
+          ? `first comparable figure for this series (${nf.format(Math.round(p.base))})`
+          : `${pctOf(p.y, p.base)} of the series' first comparable figure (${nf.format(Math.round(p.base))})`;
       },
     },
   };
@@ -839,14 +932,14 @@ function emphasiseEvent(index: number | null): void {
   activeEvent = index;
 
   for (const { chart } of itemPanels) {
-    chart.data.datasets.forEach((ds, i) => {
+    for (const ds of chart.data.datasets) {
       const d = ds as PanelDataset;
-      const on = index === null || i === index;
+      const on = index === null || d.__ep === index; // episode id, not dataset slot
       const colour = on ? d.__color : alpha(d.__color, 0.18);
       d.borderColor = colour;
       d.pointBorderColor = colour;
       d.pointBackgroundColor = d.__hollow.map((h) => (h ? "#ffffff" : colour));
-    });
+    }
     chart.update("none");
   }
 }
@@ -878,24 +971,29 @@ function observations(ep: Episode): string {
   return `obs ${counts.join("·")} of ${ep.weeks.length} wks`;
 }
 
-function panelFigure(ep: Episode): {
-  figure: HTMLElement;
-  canvas: HTMLCanvasElement;
-} {
+function panelFigure(
+  strip: string,
+  meta: string,
+  note?: string,
+): { figure: HTMLElement; canvas: HTMLCanvasElement } {
   const figure = document.createElement("figure");
   figure.className = "trellis-panel";
 
   const caption = document.createElement("figcaption");
-  const strip = document.createElement("span");
-  strip.className = "strip";
-  strip.textContent = ep.strip;
-  const meta = document.createElement("span");
-  meta.className = "strip-meta";
-  meta.textContent = `${ep.span} · ${observations(ep)}`;
-  const note = document.createElement("p");
-  note.className = "strip-note";
-  note.textContent = ep.banner;
-  caption.append(strip, meta, note);
+  const head = document.createElement("span");
+  head.className = "strip";
+  head.textContent = strip;
+  const sub = document.createElement("span");
+  sub.className = "strip-meta";
+  sub.textContent = meta;
+  caption.append(head, sub);
+
+  if (note) {
+    const p = document.createElement("p");
+    p.className = "strip-note";
+    p.textContent = note;
+    caption.append(p);
+  }
 
   const box = document.createElement("div");
   box.className = "panel-canvas";
@@ -918,22 +1016,30 @@ export function mountCrossEpisode(opts: {
   eventLegend: HTMLElement;
 }): Chart<"line">[] {
   const charts: Chart<"line">[] = [];
+  const unbounded = Number.POSITIVE_INFINITY;
 
-  /* ---- primary trellis: one panel per episode ---- */
-  const [yMin, yMax] = extentOf(
-    EPISODES,
-    ITEMS.map((i) => i.key),
+  /* ---- primary trellis: one panel per episode, one y range for all ---- */
+  const [yMin, yMax] = logBounds(
+    ...rawExtent(
+      EPISODES,
+      ITEMS.map((i) => i.key),
+      unbounded,
+    ),
   );
   const cols = columns(opts.episodeHost);
   opts.episodeHost.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
 
   EPISODES.forEach((ep, idx) => {
-    const { figure, canvas } = panelFigure(ep);
+    const maxW = Math.max(...ep.weeks.map((r) => r.w), 1);
+    const { figure, canvas } = panelFigure(
+      ep.strip,
+      `${ep.span} · ${observations(ep)}`,
+      ep.banner,
+    );
     opts.episodeHost.append(figure);
 
-    const maxW = Math.max(...ep.weeks.map((r) => r.w), 1);
     const datasets = ITEMS.map((i) =>
-      buildDataset(ep, i.key, i.color, i.short),
+      buildDataset(ep, idx, i.key, i.color, unbounded),
     ).filter((d): d is PanelDataset => d !== null);
 
     const options: ChartOptions<"line"> = {
@@ -941,7 +1047,7 @@ export function mountCrossEpisode(opts: {
       maintainAspectRatio: false,
       animation: false,
       interaction: { mode: "nearest", axis: "x", intersect: false },
-      layout: { padding: { top: 6, right: 96, bottom: 0, left: 0 } },
+      layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
       scales: {
         x: xScale(maxW),
         y: yScale(yMin, yMax, idx % cols === 0),
@@ -962,7 +1068,7 @@ export function mountCrossEpisode(opts: {
       type: "line",
       data: { datasets } as unknown as ChartData<"line">,
       options,
-      plugins: [hundredLine, directLabels],
+      plugins: [], // no per-panel labels: the episode is the panel title
     });
 
     canvas.addEventListener("mouseleave", () => emphasiseItem(null));
@@ -970,40 +1076,23 @@ export function mountCrossEpisode(opts: {
     charts.push(chart);
   });
 
-  /* ---- companion trellis: one panel per series ---- */
+  /* ---- companion trellis: one panel per series, x capped at the last enforcement week ---- */
   const itemCols = columns(opts.itemHost);
   opts.itemHost.style.gridTemplateColumns = `repeat(${itemCols}, minmax(0, 1fr))`;
 
   ITEMS.forEach((item) => {
-    const [lo, hi] = extentOf(EPISODES, [item.key]);
+    const [rawLo, rawHi] = rawExtent(EPISODES, [item.key], ENFORCEMENT_LAST);
+    const [lo, hi] = logBounds(rawLo, rawHi);
 
-    const figure = document.createElement("figure");
-    figure.className = "trellis-panel";
-
-    const caption = document.createElement("figcaption");
-    const strip = document.createElement("span");
-    strip.className = "strip";
-    strip.textContent = item.short;
-    const meta = document.createElement("span");
-    meta.className = "strip-meta";
-    meta.textContent = `index, log ${fmtIndex(lo)}–${fmtIndex(hi)}`;
-    caption.append(strip, meta);
-
-    const box = document.createElement("div");
-    box.className = "panel-canvas";
-    const canvas = document.createElement("canvas");
-    box.append(canvas);
-
-    figure.append(caption, box);
+    const { figure, canvas } = panelFigure(
+      item.short,
+      `${compact.format(rawLo)}–${compact.format(rawHi)} · x 0–w${ENFORCEMENT_LAST}`,
+    );
     opts.itemHost.append(figure);
 
     const datasets = EPISODES.map((ep, i) =>
-      buildDataset(ep, item.key, RAMP[i], ep.short),
+      buildDataset(ep, i, item.key, RAMP[i], ENFORCEMENT_LAST),
     ).filter((d): d is PanelDataset => d !== null);
-    const maxW = Math.max(
-      ...EPISODES.flatMap((ep) => ep.weeks.map((r) => r.w)),
-      1,
-    );
 
     const options: ChartOptions<"line"> = {
       responsive: true,
@@ -1012,7 +1101,7 @@ export function mountCrossEpisode(opts: {
       interaction: { mode: "nearest", axis: "x", intersect: false },
       layout: { padding: { top: 6, right: 92, bottom: 0, left: 0 } },
       scales: {
-        x: xScale(maxW),
+        x: xScale(ENFORCEMENT_LAST),
         y: yScale(lo, hi, true),
       },
       plugins: {
@@ -1027,7 +1116,7 @@ export function mountCrossEpisode(opts: {
       type: "line",
       data: { datasets } as unknown as ChartData<"line">,
       options,
-      plugins: [hundredLine, directLabels],
+      plugins: [directLabels],
     });
 
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
@@ -1038,7 +1127,12 @@ export function mountCrossEpisode(opts: {
         { intersect: false },
         true,
       );
-      emphasiseEvent(pts.length ? pts[0].datasetIndex : null);
+      if (!pts.length) {
+        emphasiseEvent(null);
+        return;
+      }
+      const ds = chart.data.datasets[pts[0].datasetIndex] as PanelDataset;
+      emphasiseEvent(ds.__ep);
     });
 
     itemPanels.push({ chart, item: item.key });

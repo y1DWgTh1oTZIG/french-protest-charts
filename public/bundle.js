@@ -12567,20 +12567,43 @@ function mount(canvas2, cfg) {
     plugins: [errorBars]
   });
 }
-var EPISODE_2026 = {
-  weeks: WEEKS.map((w) => ({ key: w.key, label: w.label })),
-  series: {
-    p: turnoutWeekly,
-    a: arrestsWeekly,
-    f: forcesWeekly,
-    i: protestersWeekly
-  }
+function studentCell(s, idx) {
+  const band = s.bands[idx];
+  if (!band) return { band: null };
+  const raw = s.quality[idx] ?? "n";
+  const q = s.detach[idx] ? raw === "f" ? "f" : "r" : raw;
+  return { band: [band[0], band[1]], q, note: s.notes[idx] ?? void 0 };
+}
+var STUDENT_SERIES = {
+  p: turnoutWeekly,
+  a: arrestsWeekly,
+  f: forcesWeekly,
+  i: protestersWeekly
 };
+var STUDENT_WEEKS = WEEKS.map((w, idx) => {
+  const out = {
+    key: w.key,
+    label: w.label,
+    touchesEdge: w.touchesEdge,
+    p: null,
+    a: null,
+    f: null,
+    i: null,
+    flags: {},
+    notes: {}
+  };
+  for (const m of ["p", "a", "f", "i"]) {
+    const c = studentCell(STUDENT_SERIES[m], idx);
+    out[m] = c.band;
+    if (c.q) out.flags[m] = c.q;
+    if (c.note) out.notes[m] = c.note;
+  }
+  return out;
+});
 
 // src/client/episodes.ts
 var MUTED = "#6b7280";
 var GRID = "#E5E5E5";
-var REFERENCE = 100;
 var ITEMS = [
   {
     key: "p",
@@ -12621,7 +12644,7 @@ var FLAG_TEXT = {
   p: "partial",
   f: "lower bound",
   e: "derived",
-  c: "actions-total / stock \u2014 measured differently",
+  c: "stock or actions-total \u2014 measured differently",
   w: "weekly aggregate"
 };
 var hollow = (f) => f === "r" || f === "p" || f === "e" || f === "c";
@@ -12630,7 +12653,6 @@ var compact2 = new Intl.NumberFormat("en-GB", {
   notation: "compact",
   maximumFractionDigits: 1
 });
-var fmtIndex = (v) => v < 1 ? String(Number(v.toFixed(2))) : compact2.format(v);
 function alpha2(hex2, a) {
   const n = Number.parseInt(hex2.slice(1), 16);
   return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
@@ -12654,7 +12676,7 @@ var MAY68 = {
       p: 2e4,
       a: [469, 891],
       f: [247, 300],
-      i: [100, 100],
+      i: 100,
       flag: { i: "f" },
       note: {
         p: "20,000 to the Sorbonne on 6 May; >20,000 again on 10 May",
@@ -12675,7 +12697,7 @@ var MAY68 = {
       w: 3,
       t: "20 \u2013 26 May \xB7 24\u201325 May",
       a: [1e3, 1e3],
-      i: [887, 887],
+      i: 887,
       flag: { a: "f", i: "e" },
       note: {
         a: "1,000+ arrests on 25 May",
@@ -12878,28 +12900,26 @@ var GILETS = {
   strip: "Gilets jaunes",
   short: "Gilets jaunes",
   span: "12 Nov 2018 \u2013 9 Sep 2019",
-  banner: "Ministry count only: one figure per act, so no range. Acts 34\u201343 were never published.",
-  weeks: [
-    ...GJ_CROWD.map(([w, n], idx) => {
-      const extra = GJ_EXTRA[w] ?? {};
-      return {
-        w,
-        t: `Act ${w + 1} \xB7 ${GJ_DATES[idx]}`,
-        p: n,
-        ...extra,
-        flag: {
-          ...w === 0 ? { p: "c" } : {},
-          ...extra.flag
-        },
-        note: {
-          ...w === 0 ? {
-            p: "287,700 counts all actions including road blockades \u2014 an actions-total, not a march"
-          } : w === 1 ? { p: "police-union counter-count: 750,000" } : {},
-          ...extra.note
-        }
-      };
-    })
-  ]
+  banner: "Ministry count only: one figure per act. Acts 34\u201343 were never published; no enforcement series after Act IV.",
+  weeks: GJ_CROWD.map(([w, n], idx) => {
+    const extra = GJ_EXTRA[w] ?? {};
+    return {
+      w,
+      t: `Act ${w + 1} \xB7 ${GJ_DATES[idx]}`,
+      p: n,
+      ...extra,
+      flag: {
+        ...w === 0 ? { p: "c" } : {},
+        ...extra.flag
+      },
+      note: {
+        ...w === 0 ? {
+          p: "287,700 counts all actions including road blockades \u2014 an actions-total, not a march"
+        } : w === 1 ? { p: "police-union counter-count: 750,000" } : {},
+        ...extra.note
+      }
+    };
+  })
 };
 var NAHEL = {
   id: "nahel",
@@ -13014,17 +13034,70 @@ var BLOQUONS = {
     }
   ]
 };
+var STUDENT_FLAG_PATCH = {
+  0: { i: "c" },
+  // cumulative Île-de-France stock since mid-September
+  5: { i: "f" },
+  // litigation-derived floor, not a ministry tally
+  6: { a: "r" }
+  // Bègles + Lyon + Strasbourg only
+};
+var STUDENT_FALLBACK = {
+  p: [
+    null,
+    [256e3, 45e4],
+    [55e4, 8e5],
+    [41e4, 8e5],
+    [32e4, 5e5],
+    [575e3, 16e5],
+    null
+  ],
+  a: [
+    [1949, 1949],
+    null,
+    [2397, 2628],
+    [1314, 1435],
+    [565, 779],
+    [798, 1002],
+    [17, 17]
+  ],
+  f: [[84, 305], null, [1037, 1184], [267, 267], [116, 159], [53, 112], null],
+  i: [[119, 235], null, null, [150, 150], null, [18, 18], null]
+};
+var STUDENT_NOTES = {
+  p: "peak day of the week",
+  a: "sum of national daily counts; regional days excluded",
+  f: "sum of national daily counts",
+  i: "flow where a flow exists \u2014 W1 is a stock, W6 a litigation floor"
+};
+function studentColumn(m) {
+  const live = STUDENT_WEEKS.map((w) => w[m]);
+  if (live.some((b) => b !== null)) return { bands: live, pinned: false };
+  const fb = STUDENT_FALLBACK[m];
+  console.error(
+    `[episodes] 2026 weekly "${m}" arrived empty from chart.ts \u2014 falling back to the handoff table. Check STUDENT_WEEKS.`
+  );
+  return { bands: fb, pinned: true };
+}
 function rows2026() {
-  const s = EPISODE_2026.series;
-  return EPISODE_2026.weeks.map((wk, i) => {
-    const row = { w: i, t: `W${i + 1} \xB7 ${wk.label}` };
+  const cols = {
+    p: studentColumn("p"),
+    a: studentColumn("a"),
+    f: studentColumn("f"),
+    i: studentColumn("i")
+  };
+  return STUDENT_WEEKS.map((wk, idx) => {
+    const row = {
+      w: idx,
+      t: `W${idx + 1} \xB7 ${wk.label}${wk.touchesEdge ? " (partial week)" : ""}`
+    };
     for (const m of ["p", "a", "f", "i"]) {
-      const band = s[m].bands[i];
+      const band = cols[m].bands[idx];
       if (!band) continue;
-      row[m] = [band[0], band[1]];
-      const q = s[m].quality[i];
-      if (q && q !== "n") row.flag = { ...row.flag, [m]: q };
-      const note = s[m].notes[i];
+      row[m] = typeof band === "number" ? band : [band[0], band[1]];
+      const flag = STUDENT_FLAG_PATCH[idx]?.[m] ?? (cols[m].pinned ? void 0 : wk.flags[m]);
+      if (flag && flag !== "n") row.flag = { ...row.flag, [m]: flag };
+      const note = (cols[m].pinned ? STUDENT_NOTES[m] : wk.notes[m]) ?? STUDENT_NOTES[m];
       if (note) row.note = { ...row.note, [m]: note };
     }
     return row;
@@ -13047,6 +13120,16 @@ var EPISODES = [
   BLOQUONS,
   STUDENTS
 ];
+var ENFORCEMENT_LAST = (() => {
+  let last = 0;
+  for (const ep of EPISODES) {
+    for (const r of ep.weeks) {
+      if (r.a !== void 0 || r.f !== void 0 || r.i !== void 0)
+        last = Math.max(last, r.w);
+    }
+  }
+  return last;
+})();
 var bandOf = (b) => typeof b === "number" ? [b, b] : b;
 var midOf = (b) => {
   const [lo, hi] = bandOf(b);
@@ -13058,11 +13141,11 @@ function seriesData(ep, key) {
   const flagOf = (r) => r.flag?.[key] ?? "n";
   const baseRow = rows.find((r) => flagOf(r) !== "c") ?? rows[0];
   const base = midOf(baseRow[key]);
-  const points = rows.map((r) => {
+  return rows.map((r) => {
     const [low, high] = bandOf(r[key]);
     return {
       x: r.w,
-      y: REFERENCE * ((low + high) / 2) / base,
+      y: (low + high) / 2,
       low,
       high,
       flag: flagOf(r),
@@ -13071,21 +13154,22 @@ function seriesData(ep, key) {
       t: r.t
     };
   });
-  return { base, points };
 }
-function buildDataset(ep, key, color2, direct) {
-  const s = seriesData(ep, key);
-  if (!s) return null;
+function buildDataset(ep, epIndex, key, color2, maxX) {
+  const all = seriesData(ep, key);
+  if (!all) return null;
+  const points = all.filter((p) => p.x <= maxX);
+  if (!points.length) return null;
   const item = ITEMS.find((d) => d.key === key);
-  const holl = s.points.map((p) => hollow(p.flag));
+  const drawn = points.map((p) => hollow(p.flag));
   return {
     label: item.label,
-    data: s.points,
+    data: points,
     borderColor: color2,
     backgroundColor: color2,
     borderWidth: 1.75,
-    pointRadius: s.points.map((p) => p.flag === "c" ? 3 : 2.75),
-    pointBackgroundColor: s.points.map((_, i) => holl[i] ? "#ffffff" : color2),
+    pointRadius: points.map((p) => p.flag === "c" ? 3 : 2.75),
+    pointBackgroundColor: points.map((_, i) => drawn[i] ? "#ffffff" : color2),
     pointBorderColor: color2,
     pointBorderWidth: 1.5,
     pointHoverRadius: 4.5,
@@ -13093,47 +13177,34 @@ function buildDataset(ep, key, color2, direct) {
     tension: 0,
     spanGaps: true,
     segment: {
+      // a bridged gap of ≥1 week is visibly flagged
       borderDash: (ctx) => Math.abs(ctx.p1.parsed.x - ctx.p0.parsed.x) > 1.01 ? [5, 4] : void 0
     },
     __item: key,
+    __ep: epIndex,
     __color: color2,
-    __hollow: holl,
-    __label: direct
+    __hollow: drawn,
+    __label: points.length < all.length ? `${ep.short} +` : ep.short
   };
 }
-function extentOf(eps, keys) {
+function rawExtent(eps, keys, maxX) {
   let lo = Number.POSITIVE_INFINITY;
   let hi = Number.NEGATIVE_INFINITY;
   for (const ep of eps) {
     for (const k of keys) {
-      const s = seriesData(ep, k);
-      if (!s) continue;
-      for (const p of s.points) {
-        lo = Math.min(lo, p.y);
-        hi = Math.max(hi, p.y);
+      const pts = seriesData(ep, k);
+      if (!pts) continue;
+      for (const p of pts) {
+        if (p.x > maxX) continue;
+        if (p.low > 0) lo = Math.min(lo, p.low);
+        hi = Math.max(hi, p.high);
       }
     }
   }
-  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return [1, 100];
-  return [10 ** Math.floor(Math.log10(lo)), 10 ** Math.ceil(Math.log10(hi))];
+  if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo <= 0 || hi <= lo)
+    return [1, 1e6];
+  return [lo, hi];
 }
-var hundredLine = {
-  id: "hundredLine",
-  beforeDatasetsDraw(chart) {
-    const { ctx, chartArea, scales } = chart;
-    const y = scales.y?.getPixelForValue(REFERENCE);
-    if (y === void 0 || y < chartArea.top || y > chartArea.bottom) return;
-    ctx.save();
-    ctx.setLineDash([2, 3]);
-    ctx.strokeStyle = "#9CA3AF";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(chartArea.left, y);
-    ctx.lineTo(chartArea.right, y);
-    ctx.stroke();
-    ctx.restore();
-  }
-};
 var directLabels = {
   id: "directLabels",
   afterDatasetsDraw(chart) {
@@ -13172,7 +13243,7 @@ var directLabels = {
   }
 };
 function xScale(maxW) {
-  const step = maxW <= 4 ? 1 : maxW <= 12 ? 2 : maxW <= 24 ? 4 : 8;
+  const step = maxW <= 8 ? 1 : maxW <= 12 ? 2 : maxW <= 24 ? 4 : 8;
   return {
     type: "linear",
     min: -0.5,
@@ -13197,10 +13268,28 @@ function xScale(maxW) {
     }
   };
 }
+function logBounds(lo, hi) {
+  const l = Math.log10(Math.max(lo, 1e-6));
+  const h = Math.log10(Math.max(hi, l + 0.1));
+  const pad = Math.max(0.06, (h - l) * 0.05);
+  return [10 ** (l - pad), 10 ** (h + pad)];
+}
+function logTicks(min, max) {
+  const l = Math.log10(min);
+  const h = Math.log10(max);
+  const span = h - l;
+  const mantissas = span > 4.5 ? [1] : span > 1.5 ? [1, 3] : [1, 2, 5];
+  const out = [];
+  for (let e = Math.floor(l); e <= Math.ceil(h); e++) {
+    for (const m of mantissas) {
+      const v = Number((m * 10 ** e).toPrecision(12));
+      if (v > min * 1.01 && v < max / 1.01) out.push(v);
+    }
+  }
+  return out;
+}
 function yScale(min, max, showLabels) {
-  const ticks = [0.1, 0.3, 1, 3, 10, 30, 100, 300, 1e3, 3e3].filter(
-    (v) => v >= min && v <= max
-  );
+  const ticks = logTicks(min, max);
   return {
     type: "logarithmic",
     min,
@@ -13212,16 +13301,20 @@ function yScale(min, max, showLabels) {
       font: { size: 9 },
       color: MUTED,
       padding: 6,
-      callback: (v) => fmtIndex(Number(v))
+      callback: (v) => compact2.format(Number(v))
     },
     afterBuildTicks: (axis) => {
       axis.ticks = ticks.map((value) => ({ value }));
     },
     afterFit: (s) => {
-      s.width = 42;
+      s.width = 46;
     }
   };
 }
+var pctOf = (v, base) => {
+  const r = 100 * v / base;
+  return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
+};
 function tooltipSpec() {
   return {
     displayColors: false,
@@ -13229,14 +13322,14 @@ function tooltipSpec() {
       title: (items) => items[0].raw.t,
       label: (item) => {
         const p = item.raw;
-        const band = p.low === p.high ? nf2.format(p.low) : `${nf2.format(p.low)} \u2013 ${nf2.format(p.high)}`;
+        const band = p.low === p.high ? nf2.format(Math.round(p.low)) : `${nf2.format(Math.round(p.low))} \u2013 ${nf2.format(Math.round(p.high))}`;
         const flag = FLAG_TEXT[p.flag];
-        return `${item.dataset.label}: ${band}  \u2192  index ${Math.round(p.y)}${flag ? `  \xB7  ${flag}` : ""}`;
+        return `${item.dataset.label}: ${band}${flag ? `  \xB7  ${flag}` : ""}`;
       },
       afterLabel: (item) => item.raw.note ?? "",
       footer: (items) => {
         const p = items[0].raw;
-        return `index = 100 \xD7 value \xF7 ${nf2.format(Math.round(p.base))}`;
+        return Math.abs(p.y - p.base) / p.base < 1e-9 ? `first comparable figure for this series (${nf2.format(Math.round(p.base))})` : `${pctOf(p.y, p.base)} of the series' first comparable figure (${nf2.format(Math.round(p.base))})`;
       }
     }
   };
@@ -13269,14 +13362,14 @@ function emphasiseEvent(index) {
   if (index === activeEvent) return;
   activeEvent = index;
   for (const { chart } of itemPanels) {
-    chart.data.datasets.forEach((ds, i) => {
+    for (const ds of chart.data.datasets) {
       const d = ds;
-      const on = index === null || i === index;
+      const on = index === null || d.__ep === index;
       const colour = on ? d.__color : alpha2(d.__color, 0.18);
       d.borderColor = colour;
       d.pointBorderColor = colour;
       d.pointBackgroundColor = d.__hollow.map((h) => h ? "#ffffff" : colour);
-    });
+    }
     chart.update("none");
   }
 }
@@ -13296,20 +13389,23 @@ function observations(ep) {
   );
   return `obs ${counts.join("\xB7")} of ${ep.weeks.length} wks`;
 }
-function panelFigure(ep) {
+function panelFigure(strip, meta, note) {
   const figure = document.createElement("figure");
   figure.className = "trellis-panel";
   const caption = document.createElement("figcaption");
-  const strip = document.createElement("span");
-  strip.className = "strip";
-  strip.textContent = ep.strip;
-  const meta = document.createElement("span");
-  meta.className = "strip-meta";
-  meta.textContent = `${ep.span} \xB7 ${observations(ep)}`;
-  const note = document.createElement("p");
-  note.className = "strip-note";
-  note.textContent = ep.banner;
-  caption.append(strip, meta, note);
+  const head = document.createElement("span");
+  head.className = "strip";
+  head.textContent = strip;
+  const sub = document.createElement("span");
+  sub.className = "strip-meta";
+  sub.textContent = meta;
+  caption.append(head, sub);
+  if (note) {
+    const p = document.createElement("p");
+    p.className = "strip-note";
+    p.textContent = note;
+    caption.append(p);
+  }
   const box = document.createElement("div");
   box.className = "panel-canvas";
   const canvas2 = document.createElement("canvas");
@@ -13323,25 +13419,33 @@ function columns(host2) {
 }
 function mountCrossEpisode(opts) {
   const charts2 = [];
-  const [yMin, yMax] = extentOf(
-    EPISODES,
-    ITEMS.map((i) => i.key)
+  const unbounded = Number.POSITIVE_INFINITY;
+  const [yMin, yMax] = logBounds(
+    ...rawExtent(
+      EPISODES,
+      ITEMS.map((i) => i.key),
+      unbounded
+    )
   );
   const cols = columns(opts.episodeHost);
   opts.episodeHost.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
   EPISODES.forEach((ep, idx) => {
-    const { figure, canvas: canvas2 } = panelFigure(ep);
-    opts.episodeHost.append(figure);
     const maxW = Math.max(...ep.weeks.map((r) => r.w), 1);
+    const { figure, canvas: canvas2 } = panelFigure(
+      ep.strip,
+      `${ep.span} \xB7 ${observations(ep)}`,
+      ep.banner
+    );
+    opts.episodeHost.append(figure);
     const datasets = ITEMS.map(
-      (i) => buildDataset(ep, i.key, i.color, i.short)
+      (i) => buildDataset(ep, idx, i.key, i.color, unbounded)
     ).filter((d) => d !== null);
     const options = {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
       interaction: { mode: "nearest", axis: "x", intersect: false },
-      layout: { padding: { top: 6, right: 96, bottom: 0, left: 0 } },
+      layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
       scales: {
         x: xScale(maxW),
         y: yScale(yMin, yMax, idx % cols === 0)
@@ -13361,7 +13465,8 @@ function mountCrossEpisode(opts) {
       type: "line",
       data: { datasets },
       options,
-      plugins: [hundredLine, directLabels]
+      plugins: []
+      // no per-panel labels: the episode is the panel title
     });
     canvas2.addEventListener("mouseleave", () => emphasiseItem(null));
     episodePanels.push(chart);
@@ -13370,30 +13475,16 @@ function mountCrossEpisode(opts) {
   const itemCols = columns(opts.itemHost);
   opts.itemHost.style.gridTemplateColumns = `repeat(${itemCols}, minmax(0, 1fr))`;
   ITEMS.forEach((item) => {
-    const [lo, hi] = extentOf(EPISODES, [item.key]);
-    const figure = document.createElement("figure");
-    figure.className = "trellis-panel";
-    const caption = document.createElement("figcaption");
-    const strip = document.createElement("span");
-    strip.className = "strip";
-    strip.textContent = item.short;
-    const meta = document.createElement("span");
-    meta.className = "strip-meta";
-    meta.textContent = `index, log ${fmtIndex(lo)}\u2013${fmtIndex(hi)}`;
-    caption.append(strip, meta);
-    const box = document.createElement("div");
-    box.className = "panel-canvas";
-    const canvas2 = document.createElement("canvas");
-    box.append(canvas2);
-    figure.append(caption, box);
+    const [rawLo, rawHi] = rawExtent(EPISODES, [item.key], ENFORCEMENT_LAST);
+    const [lo, hi] = logBounds(rawLo, rawHi);
+    const { figure, canvas: canvas2 } = panelFigure(
+      item.short,
+      `${compact2.format(rawLo)}\u2013${compact2.format(rawHi)} \xB7 x 0\u2013w${ENFORCEMENT_LAST}`
+    );
     opts.itemHost.append(figure);
     const datasets = EPISODES.map(
-      (ep, i) => buildDataset(ep, item.key, RAMP[i], ep.short)
+      (ep, i) => buildDataset(ep, i, item.key, RAMP[i], ENFORCEMENT_LAST)
     ).filter((d) => d !== null);
-    const maxW = Math.max(
-      ...EPISODES.flatMap((ep) => ep.weeks.map((r) => r.w)),
-      1
-    );
     const options = {
       responsive: true,
       maintainAspectRatio: false,
@@ -13401,7 +13492,7 @@ function mountCrossEpisode(opts) {
       interaction: { mode: "nearest", axis: "x", intersect: false },
       layout: { padding: { top: 6, right: 92, bottom: 0, left: 0 } },
       scales: {
-        x: xScale(maxW),
+        x: xScale(ENFORCEMENT_LAST),
         y: yScale(lo, hi, true)
       },
       plugins: {
@@ -13415,7 +13506,7 @@ function mountCrossEpisode(opts) {
       type: "line",
       data: { datasets },
       options,
-      plugins: [hundredLine, directLabels]
+      plugins: [directLabels]
     });
     canvas2.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas2.addEventListener("mousemove", (ev) => {
@@ -13425,7 +13516,12 @@ function mountCrossEpisode(opts) {
         { intersect: false },
         true
       );
-      emphasiseEvent(pts.length ? pts[0].datasetIndex : null);
+      if (!pts.length) {
+        emphasiseEvent(null);
+        return;
+      }
+      const ds = chart.data.datasets[pts[0].datasetIndex];
+      emphasiseEvent(ds.__ep);
     });
     itemPanels.push({ chart, item: item.key });
     charts2.push(chart);
