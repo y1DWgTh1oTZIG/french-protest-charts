@@ -4,6 +4,7 @@ import {
   LineElement,
   PointElement,
   LinearScale,
+  LogarithmicScale,
   CategoryScale,
   Tooltip,
   Legend,
@@ -18,6 +19,7 @@ import {
 Chart.register(
   LineController,
   LineElement,
+  LogarithmicScale,
   PointElement,
   LinearScale,
   CategoryScale,
@@ -1118,3 +1120,16 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
     plugins: [errorBars],
   });
 }
+
+/* ------------------------------------------------ export for section C */
+
+/** Weekly series for the 2026 episode, consumed by `episodes.ts`. */
+export const EPISODE_2026 = {
+  weeks: WEEKS.map((w) => ({ key: w.key, label: w.label })),
+  series: {
+    p: turnoutWeekly,
+    a: arrestsWeekly,
+    f: forcesWeekly,
+    i: protestersWeekly,
+  },
+};

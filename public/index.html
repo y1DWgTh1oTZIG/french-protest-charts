@@ -20,9 +20,11 @@
         color: #111;
         padding: 16px;
         box-sizing: border-box;
+        max-width: 1420px;
+        margin: 0 auto;
       }
       section {
-        margin-bottom: 40px;
+        margin-bottom: 44px;
       }
       section > header {
         border-bottom: 1px solid #e5e7eb;
@@ -41,22 +43,80 @@
         margin: 0;
         font-size: 12px;
         color: #4b5563;
+        max-width: 92ch;
       }
       .wrap {
         position: relative;
         height: 460px;
         margin-bottom: 28px;
       }
+
+      /* ---- section C ---- */
+      .trellis {
+        display: grid;
+        gap: 20px 16px;
+        margin: 0 0 10px;
+      }
+      .trellis-panel {
+        margin: 0;
+        min-width: 0;
+      }
+      .strip {
+        display: block;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #111827;
+      }
+      .strip-meta {
+        display: block;
+        font-size: 10px;
+        color: #6b7280;
+      }
+      .strip-note {
+        margin: 3px 0 2px;
+        font-size: 10.5px;
+        line-height: 1.25;
+        color: #6b7280;
+        min-height: 26px;
+      }
+      .panel-canvas {
+        position: relative;
+        height: 190px;
+      }
+      .trellis-items .panel-canvas {
+        height: 230px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 18px;
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: #374151;
+      }
+      .legend button {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 0;
+        cursor: default;
+      }
+      .legend .swatch {
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+      }
+      .axis-note {
+        margin: 0 0 30px;
+        font-size: 11px;
+        color: #6b7280;
+      }
     </style>
   </head>
   <body>
-    <p>
-      These charts were created using LLM assistance, and should not be relied
-      on for serious analysis without in-depth review. You can view the [full
-      transcript of the LLM
-      conversation](https://assistant.kagi.com/share/ed1ebc31-bf63-43c6-9091-7fce6d24ec9e).
-    </p>
-
     <section id="section-daily">
       <header>
         <h1>Section A — daily</h1>
@@ -80,6 +140,50 @@
       </header>
       <div class="wrap"><canvas id="chart-protesters-weekly"></canvas></div>
       <div class="wrap"><canvas id="chart-enforcement-weekly"></canvas></div>
+    </section>
+
+    <section id="section-cross">
+      <header>
+        <h1>Section C — cross-episode, one panel per movement</h1>
+        <p>
+          Seven episodes, four series each. Every series is indexed to its own
+          first comparable published figure (index = 100, dashed grey reference
+          line), so protestors in the hundred-thousands and arrests in the
+          thousands share one axis. Panel position encodes the episode; hue
+          encodes the series, identically in all panels. Hollow markers =
+          regional, partial, derived or actions-total figures. Hover a series
+          (or the legend) to trace it across all seven panels.
+        </p>
+      </header>
+      <div class="legend" id="legend-items"></div>
+      <div class="trellis" id="trellis-episodes"></div>
+      <p class="axis-note">
+        x — whole weeks since each movement's first action, true scale, so
+        durations differ (Nahel 2 weeks, Gilets jaunes 44). y — index, log
+        scale, 0.1–1,500 shared by every panel. Dashed segment = at least one
+        week with no published figure lies between the two points. "obs" under
+        each strip = number of weeks with a figure for protestors · arrests ·
+        forces injured · protestors injured.
+      </p>
+
+      <header>
+        <h1>Section C′ — cross-episode, transposed</h1>
+        <p>
+          The same data with the comparison axis flipped: one panel per series,
+          one line per movement. Colour encodes the movement on a single
+          sequential ramp, light → dark in the same order in every panel, so the
+          reader learns the ramp once. Use this to ask "did arrests behave the
+          same way in every episode?".
+        </p>
+      </header>
+      <div class="legend" id="legend-events"></div>
+      <div class="trellis trellis-items" id="trellis-items"></div>
+      <p class="axis-note">
+        y limits are per panel — a log range printed under each strip — because
+        the series span different orders of magnitude. Only the protestor panel
+        and the forces-injured panel contain enough points to read as a shape;
+        the sparse panels are the finding, not a defect.
+      </p>
     </section>
 
     <script type="module" src="/bundle.js"></script>

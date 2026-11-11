@@ -1058,18 +1058,18 @@ function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
   };
 }
 function _scaleRangesChanged(meta) {
-  const { xScale, yScale, _scaleRanges } = meta;
+  const { xScale: xScale2, yScale: yScale2, _scaleRanges } = meta;
   const newRanges = {
-    xmin: xScale.min,
-    xmax: xScale.max,
-    ymin: yScale.min,
-    ymax: yScale.max
+    xmin: xScale2.min,
+    xmax: xScale2.max,
+    ymin: yScale2.min,
+    ymax: yScale2.max
   };
   if (!_scaleRanges) {
     meta._scaleRanges = newRanges;
     return true;
   }
-  const changed = _scaleRanges.xmin !== xScale.min || _scaleRanges.xmax !== xScale.max || _scaleRanges.ymin !== yScale.min || _scaleRanges.ymax !== yScale.max;
+  const changed = _scaleRanges.xmin !== xScale2.min || _scaleRanges.xmax !== xScale2.max || _scaleRanges.ymin !== yScale2.min || _scaleRanges.ymax !== yScale2.max;
   Object.assign(_scaleRanges, newRanges);
   return changed;
 }
@@ -2930,13 +2930,13 @@ function getSizeForArea(scale, chartArea, field) {
   return scale.options.clip ? scale[field] : chartArea[field];
 }
 function getDatasetArea(meta, chartArea) {
-  const { xScale, yScale } = meta;
-  if (xScale && yScale) {
+  const { xScale: xScale2, yScale: yScale2 } = meta;
+  if (xScale2 && yScale2) {
     return {
-      left: getSizeForArea(xScale, chartArea, "left"),
-      right: getSizeForArea(xScale, chartArea, "right"),
-      top: getSizeForArea(yScale, chartArea, "top"),
-      bottom: getSizeForArea(yScale, chartArea, "bottom")
+      left: getSizeForArea(xScale2, chartArea, "left"),
+      right: getSizeForArea(xScale2, chartArea, "right"),
+      top: getSizeForArea(yScale2, chartArea, "top"),
+      bottom: getSizeForArea(yScale2, chartArea, "bottom")
     };
   }
   return chartArea;
@@ -3336,12 +3336,12 @@ function scaleClip(scale, allowedOverflow) {
     end: reverse ? min : max
   };
 }
-function defaultClip(xScale, yScale, allowedOverflow) {
+function defaultClip(xScale2, yScale2, allowedOverflow) {
   if (allowedOverflow === false) {
     return false;
   }
-  const x = scaleClip(xScale, allowedOverflow);
-  const y = scaleClip(yScale, allowedOverflow);
+  const x = scaleClip(xScale2, allowedOverflow);
+  const y = scaleClip(yScale2, allowedOverflow);
   return {
     top: y.end,
     right: x.end,
@@ -3708,21 +3708,21 @@ var DatasetController = class {
     return parsed;
   }
   parseArrayData(meta, data, start, count) {
-    const { xScale, yScale } = meta;
+    const { xScale: xScale2, yScale: yScale2 } = meta;
     const parsed = new Array(count);
     let i, ilen, index, item;
     for (i = 0, ilen = count; i < ilen; ++i) {
       index = i + start;
       item = data[index];
       parsed[i] = {
-        x: xScale.parse(item[0], index),
-        y: yScale.parse(item[1], index)
+        x: xScale2.parse(item[0], index),
+        y: yScale2.parse(item[1], index)
       };
     }
     return parsed;
   }
   parseObjectData(meta, data, start, count) {
-    const { xScale, yScale } = meta;
+    const { xScale: xScale2, yScale: yScale2 } = meta;
     const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
     const parsed = new Array(count);
     let i, ilen, index, item;
@@ -3730,8 +3730,8 @@ var DatasetController = class {
       index = i + start;
       item = data[index];
       parsed[i] = {
-        x: xScale.parse(resolveObjectKey(item, xAxisKey), index),
-        y: yScale.parse(resolveObjectKey(item, yAxisKey), index)
+        x: xScale2.parse(resolveObjectKey(item, xAxisKey), index),
+        y: yScale2.parse(resolveObjectKey(item, yAxisKey), index)
       };
     }
     return parsed;
@@ -11709,6 +11709,7 @@ var TimeSeriesScale = class extends TimeScale {
 Chart.register(
   LineController,
   LineElement,
+  LogarithmicScale,
   PointElement,
   LinearScale,
   CategoryScale,
@@ -12566,6 +12567,897 @@ function mount(canvas2, cfg) {
     plugins: [errorBars]
   });
 }
+var EPISODE_2026 = {
+  weeks: WEEKS.map((w) => ({ key: w.key, label: w.label })),
+  series: {
+    p: turnoutWeekly,
+    a: arrestsWeekly,
+    f: forcesWeekly,
+    i: protestersWeekly
+  }
+};
+
+// src/client/episodes.ts
+var MUTED = "#6b7280";
+var GRID = "#E5E5E5";
+var REFERENCE = 100;
+var ITEMS = [
+  {
+    key: "p",
+    label: "Protestors (peak day)",
+    short: "Protestors",
+    color: "#0072B2"
+  },
+  {
+    key: "a",
+    label: "Arrests (weekly total)",
+    short: "Arrests",
+    color: "#E69F00"
+  },
+  {
+    key: "f",
+    label: "Injuries \u2014 security forces",
+    short: "Forces hurt",
+    color: "#009E73"
+  },
+  {
+    key: "i",
+    label: "Injuries \u2014 protestors",
+    short: "Protestors hurt",
+    color: "#CC79A7"
+  }
+];
+var RAMP = [
+  "#D6E6F2",
+  "#B0CFE6",
+  "#86B4D7",
+  "#5C97C5",
+  "#357AB0",
+  "#1B5C92",
+  "#0A3A63"
+];
+var FLAG_TEXT = {
+  r: "regional only",
+  p: "partial",
+  f: "lower bound",
+  e: "derived",
+  c: "actions-total / stock \u2014 measured differently",
+  w: "weekly aggregate"
+};
+var hollow = (f) => f === "r" || f === "p" || f === "e" || f === "c";
+var nf2 = new Intl.NumberFormat("en-GB");
+var compact2 = new Intl.NumberFormat("en-GB", {
+  notation: "compact",
+  maximumFractionDigits: 1
+});
+var fmtIndex = (v) => v < 1 ? String(Number(v.toFixed(2))) : compact2.format(v);
+function alpha2(hex2, a) {
+  const n = Number.parseInt(hex2.slice(1), 16);
+  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
+}
+var MAY68 = {
+  id: "may68",
+  strip: "May 1968",
+  short: "May 68",
+  span: "29 Apr \u2013 30 Jun 1968",
+  banner: "Crowd figures exist only for 1, 6, 10 and 13 May. The general strike is not counted here.",
+  weeks: [
+    {
+      w: 0,
+      t: "29 Apr \u2013 5 May \xB7 1 May march",
+      p: [25e3, 1e5],
+      note: { p: "prefecture 25,000 / CGT 100,000, R\xE9publique \u2192 Bastille" }
+    },
+    {
+      w: 1,
+      t: "6 \u2013 12 May \xB7 Sorbonne, barricades",
+      p: 2e4,
+      a: [469, 891],
+      f: [247, 300],
+      i: [100, 100],
+      flag: { i: "f" },
+      note: {
+        p: "20,000 to the Sorbonne on 6 May; >20,000 again on 10 May",
+        a: "469 on the night of 10\u201311 May; high adds the 422 early-May arrests",
+        f: "300+ on 6 May; 247 on 10\u201311 May",
+        i: "\u2265100 \u2014 no national count was published"
+      }
+    },
+    {
+      w: 2,
+      t: "13 \u2013 19 May \xB7 13 May march",
+      p: [23e4, 1e6],
+      note: {
+        p: "prefecture 230,000 \xB7 ORTF 171,000 \xB7 unions 1,000,000. Peak of the episode."
+      }
+    },
+    {
+      w: 3,
+      t: "20 \u2013 26 May \xB7 24\u201325 May",
+      a: [1e3, 1e3],
+      i: [887, 887],
+      flag: { a: "f", i: "e" },
+      note: {
+        a: "1,000+ arrests on 25 May",
+        i: "887 injured, from the English-Wikipedia infobox \u2014 weak provenance"
+      }
+    },
+    {
+      w: 4,
+      t: "27 May \u2013 2 Jun \xB7 30 May",
+      note: {
+        p: "30 May: 300,000 (prefecture) \u2013 1,000,000 counter-demonstration \u2014 excluded from protest totals"
+      }
+    },
+    {
+      w: 5,
+      t: "3 \u2013 9 Jun",
+      note: { p: "4 Jun partial return to work; 7 Jun Renault-Flins clashes" }
+    },
+    {
+      w: 6,
+      t: "10 \u2013 16 Jun",
+      note: { p: "10\u201311 Jun: 3 dead; 12 Jun demonstrations banned nationwide" }
+    },
+    { w: 7, t: "17 \u2013 23 Jun" },
+    { w: 8, t: "24 \u2013 30 Jun" }
+  ]
+};
+var CPE = {
+  id: "cpe",
+  strip: "CPE 2006",
+  short: "CPE 2006",
+  span: "6 Feb \u2013 16 Apr 2006",
+  banner: "One movement-wide arrest total (4,500); no weekly enforcement series exists.",
+  weeks: [
+    {
+      w: 0,
+      t: "6 \u2013 12 Feb \xB7 7 Feb",
+      p: [2e5, 4e5],
+      note: { p: "187 demonstrations, first national day" }
+    },
+    {
+      w: 4,
+      t: "6 \u2013 12 Mar \xB7 7 Mar",
+      p: [4e5, 1e6],
+      note: { p: ">1 million claimed; 38 universities on strike by 9 Mar" }
+    },
+    {
+      w: 5,
+      t: "13 \u2013 19 Mar \xB7 16\u201318 Mar",
+      p: [5e5, 15e5],
+      a: [156, 167],
+      f: 34,
+      i: 70,
+      flag: { i: "e" },
+      note: {
+        p: "18 Mar: 500,000 (ministry) \u2013 1,500,000 (unions); Paris 80,000 \u2013 700,000",
+        a: "Paris, 18 Mar (156 ministry / 167 organisers)",
+        f: "Paris, 18 Mar",
+        i: "18 (16 Mar) + 52 (18 Mar), Paris only"
+      }
+    },
+    {
+      w: 6,
+      t: "20 \u2013 26 Mar \xB7 23 Mar",
+      p: [22e4, 45e4],
+      a: 630,
+      f: 90,
+      note: { p: "21 universities fully blocked; 67 striking or blocked" }
+    },
+    {
+      w: 7,
+      t: "27 Mar \u2013 2 Apr \xB7 28 Mar",
+      p: [1055e3, 271e4],
+      a: 600,
+      note: { p: "4th national action day" }
+    },
+    {
+      w: 8,
+      t: "3 \u2013 9 Apr \xB7 4 Apr",
+      p: [1e6, 31e5],
+      note: { p: "peak day of the episode" }
+    },
+    {
+      w: 9,
+      t: "10 \u2013 16 Apr",
+      note: { p: "CPE withdrawn 10 Apr; the movement splits" }
+    }
+  ]
+};
+var GJ_DATES = [
+  "17 Nov 2018",
+  "24 Nov",
+  "1 Dec",
+  "8 Dec",
+  "15 Dec",
+  "22 Dec",
+  "29 Dec",
+  "5 Jan 2019",
+  "12 Jan",
+  "19 Jan",
+  "26 Jan",
+  "2 Feb",
+  "9 Feb",
+  "16 Feb",
+  "23 Feb",
+  "2 Mar",
+  "9 Mar",
+  "16 Mar",
+  "23 Mar",
+  "30 Mar",
+  "6 Apr",
+  "13 Apr",
+  "20 Apr",
+  "27 Apr",
+  "4 May",
+  "11 May",
+  "18 May",
+  "25 May",
+  "1 Jun",
+  "8 Jun",
+  "15 Jun",
+  "22 Jun",
+  "29 Jun",
+  "7 Sep 2019"
+];
+var GJ_CROWD = [
+  [0, 287700],
+  [1, 166e3],
+  [2, 136e3],
+  [3, 136e3],
+  [4, 66e3],
+  [5, 38600],
+  [6, 32e3],
+  [7, 5e4],
+  [8, 84e3],
+  [9, 84e3],
+  [10, 69e3],
+  [11, 58600],
+  [12, 51400],
+  [13, 41500],
+  [14, 46600],
+  [15, 39300],
+  [16, 28600],
+  [17, 32300],
+  [18, 40500],
+  [19, 33700],
+  [20, 22300],
+  [21, 31e3],
+  [22, 27900],
+  [23, 23600],
+  [24, 18900],
+  [25, 18600],
+  [26, 15500],
+  [27, 12500],
+  [28, 9500],
+  [29, 10300],
+  [30, 7e3],
+  [31, 11800],
+  [32, 5800],
+  [43, 7e3]
+];
+var GJ_EXTRA = {
+  0: {
+    a: [974, 1150],
+    f: 17,
+    i: 109,
+    flag: { f: "e", i: "e" },
+    note: {
+      a: "974 in custody, ~1,150 interpellations",
+      f: "17 police among 126 injured \u2014 split derived",
+      i: "109 of 126 injured \u2014 split derived"
+    }
+  },
+  1: {
+    a: [307, 339],
+    f: 30,
+    i: 54,
+    flag: { i: "e" },
+    note: {
+      a: "307 in custody, 339 interpellations",
+      i: "54 of 84 injured \u2014 split derived"
+    }
+  },
+  2: {
+    a: 630,
+    flag: { a: "f" },
+    note: {
+      a: "placed in custody, not arrests; 263 injured, not split by side"
+    }
+  },
+  3: {
+    a: [1709, 2e3],
+    note: {
+      a: "1,709 in custody, ~2,000 interpellations; injuries reported as 118 / 264 / 585 depending on source, not split by side"
+    }
+  }
+};
+var GILETS = {
+  id: "gj",
+  strip: "Gilets jaunes",
+  short: "Gilets jaunes",
+  span: "12 Nov 2018 \u2013 9 Sep 2019",
+  banner: "Ministry count only: one figure per act, so no range. Acts 34\u201343 were never published.",
+  weeks: [
+    ...GJ_CROWD.map(([w, n], idx) => {
+      const extra = GJ_EXTRA[w] ?? {};
+      return {
+        w,
+        t: `Act ${w + 1} \xB7 ${GJ_DATES[idx]}`,
+        p: n,
+        ...extra,
+        flag: {
+          ...w === 0 ? { p: "c" } : {},
+          ...extra.flag
+        },
+        note: {
+          ...w === 0 ? {
+            p: "287,700 counts all actions including road blockades \u2014 an actions-total, not a march"
+          } : w === 1 ? { p: "police-union counter-count: 750,000" } : {},
+          ...extra.note
+        }
+      };
+    })
+  ]
+};
+var NAHEL = {
+  id: "nahel",
+  strip: "Nahel 2023",
+  short: "Nahel 2023",
+  span: "27 Jun \u2013 9 Jul 2023",
+  banner: "Gatherings were banned: arrests, not crowd counts, carry the scale of the riots.",
+  weeks: [
+    {
+      w: 0,
+      t: "26 Jun \u2013 2 Jul \xB7 Nanterre march, 29 Jun",
+      p: [6200, 2e4],
+      a: 3354,
+      f: 722,
+      note: {
+        p: "police 6,200 / organisers 20,000 for the march blanche",
+        a: "national total, 27 Jun \u2013 2 Jul",
+        f: "722 officers injured; 2 deaths; 5,662 vehicles burnt"
+      }
+    },
+    {
+      w: 1,
+      t: "3 \u2013 9 Jul",
+      a: 108,
+      f: 1,
+      note: { a: "72 + 16 + 20 over 3\u20135 Jul" }
+    }
+  ]
+};
+var PENSIONS = {
+  id: "pensions",
+  strip: "Pension reform 2023",
+  short: "Pensions 2023",
+  span: "19 Jan \u2013 8 Jun 2023",
+  banner: "Crowds only: no national weekly arrest or injury series was published.",
+  weeks: [
+    {
+      w: 0,
+      t: "16 \u2013 22 Jan \xB7 19 Jan",
+      p: [112e4, 2e6],
+      note: { p: "first national day; Paris 80,000 \u2013 400,000" }
+    },
+    { w: 2, t: "30 Jan \u2013 5 Feb \xB7 31 Jan", p: [127e4, 28e5] },
+    {
+      w: 3,
+      t: "6 \u2013 12 Feb \xB7 7 & 11 Feb",
+      p: [963e3, 25e5],
+      note: { p: "two action days in one week; the peak is 11 Feb" }
+    },
+    { w: 4, t: "13 \u2013 19 Feb \xB7 16 Feb", p: [44e4, 13e5] },
+    {
+      w: 7,
+      t: "6 \u2013 12 Mar \xB7 7 Mar",
+      p: [128e4, 35e5],
+      note: { p: "national record: ministry 1.28M, unions 3.5M" }
+    },
+    { w: 8, t: "13 \u2013 19 Mar \xB7 15 Mar", p: [48e4, 17e5] },
+    { w: 9, t: "20 \u2013 26 Mar \xB7 23 Mar", p: [1089e3, 35e5] },
+    { w: 10, t: "27 Mar \u2013 2 Apr \xB7 28 Mar", p: [74e4, 2e6] },
+    { w: 11, t: "3 \u2013 9 Apr \xB7 6 Apr", p: [57e4, 2e6] },
+    {
+      w: 12,
+      t: "10 \u2013 16 Apr \xB7 13 Apr",
+      p: [38e4, 15e5],
+      note: { p: "CGT gives 1.0M in one compilation, 1.5M in another" }
+    },
+    { w: 16, t: "1 \u2013 7 May \xB7 1 May", p: [782e3, 23e5] },
+    {
+      w: 20,
+      t: "5 \u2013 11 Jun \xB7 6 Jun",
+      p: [281e3, 9e5],
+      note: { p: "movement minimum" }
+    }
+  ]
+};
+var BLOQUONS = {
+  id: "bt",
+  strip: "Bloquons tout 2025",
+  short: "Bloquons tout",
+  span: "10 Sep \u2013 5 Oct 2025",
+  banner: "10 Sep is an actions-total (blockades included); 18 Sep is an intersyndicale march.",
+  weeks: [
+    {
+      w: 0,
+      t: "8 \u2013 14 Sep \xB7 10 Sep",
+      p: [175e3, 25e4],
+      a: 540,
+      flag: { p: "c" },
+      note: {
+        p: "ministry 175,000\u2013197,000, revised up from an early-evening count of ~29,000; CGT ~250,000. 596 rallies, 253 blockades.",
+        a: "540 arrests, 211 in Paris"
+      }
+    },
+    {
+      w: 1,
+      t: "15 \u2013 21 Sep \xB7 18 Sep",
+      p: [5e5, 1e6],
+      a: 309,
+      f: 26,
+      i: 11,
+      note: {
+        p: "intersyndicale day \u2014 a different mobilisation from the movement\u2019s own actions; Paris 55,000 (prefecture)",
+        a: "309 nationwide, 103 in Paris",
+        i: "11 injured, including 1 journalist"
+      }
+    },
+    {
+      w: 3,
+      t: "29 Sep \u2013 5 Oct \xB7 2 Oct",
+      p: [195e3, 6e5],
+      note: { p: "weakest mobilisation since 1 May 2025" }
+    }
+  ]
+};
+function rows2026() {
+  const s = EPISODE_2026.series;
+  return EPISODE_2026.weeks.map((wk, i) => {
+    const row = { w: i, t: `W${i + 1} \xB7 ${wk.label}` };
+    for (const m of ["p", "a", "f", "i"]) {
+      const band = s[m].bands[i];
+      if (!band) continue;
+      row[m] = [band[0], band[1]];
+      const q = s[m].quality[i];
+      if (q && q !== "n") row.flag = { ...row.flag, [m]: q };
+      const note = s[m].notes[i];
+      if (note) row.note = { ...row.note, [m]: note };
+    }
+    return row;
+  });
+}
+var STUDENTS = {
+  id: "students26",
+  strip: "Student protests 2026",
+  short: "Students 2026",
+  span: "1 Oct \u2013 11 Nov 2026",
+  banner: "Protester injuries are a September stock, then a litigation floor \u2014 never a weekly flow.",
+  weeks: rows2026()
+};
+var EPISODES = [
+  MAY68,
+  CPE,
+  GILETS,
+  NAHEL,
+  PENSIONS,
+  BLOQUONS,
+  STUDENTS
+];
+var bandOf = (b) => typeof b === "number" ? [b, b] : b;
+var midOf = (b) => {
+  const [lo, hi] = bandOf(b);
+  return (lo + hi) / 2;
+};
+function seriesData(ep, key) {
+  const rows = ep.weeks.filter((r) => r[key] !== void 0).sort((a, b) => a.w - b.w);
+  if (!rows.length) return null;
+  const flagOf = (r) => r.flag?.[key] ?? "n";
+  const baseRow = rows.find((r) => flagOf(r) !== "c") ?? rows[0];
+  const base = midOf(baseRow[key]);
+  const points = rows.map((r) => {
+    const [low, high] = bandOf(r[key]);
+    return {
+      x: r.w,
+      y: REFERENCE * ((low + high) / 2) / base,
+      low,
+      high,
+      flag: flagOf(r),
+      note: r.note?.[key],
+      base,
+      t: r.t
+    };
+  });
+  return { base, points };
+}
+function buildDataset(ep, key, color2, direct) {
+  const s = seriesData(ep, key);
+  if (!s) return null;
+  const item = ITEMS.find((d) => d.key === key);
+  const holl = s.points.map((p) => hollow(p.flag));
+  return {
+    label: item.label,
+    data: s.points,
+    borderColor: color2,
+    backgroundColor: color2,
+    borderWidth: 1.75,
+    pointRadius: s.points.map((p) => p.flag === "c" ? 3 : 2.75),
+    pointBackgroundColor: s.points.map((_, i) => holl[i] ? "#ffffff" : color2),
+    pointBorderColor: color2,
+    pointBorderWidth: 1.5,
+    pointHoverRadius: 4.5,
+    pointHitRadius: 12,
+    tension: 0,
+    spanGaps: true,
+    segment: {
+      borderDash: (ctx) => Math.abs(ctx.p1.parsed.x - ctx.p0.parsed.x) > 1.01 ? [5, 4] : void 0
+    },
+    __item: key,
+    __color: color2,
+    __hollow: holl,
+    __label: direct
+  };
+}
+function extentOf(eps, keys) {
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = Number.NEGATIVE_INFINITY;
+  for (const ep of eps) {
+    for (const k of keys) {
+      const s = seriesData(ep, k);
+      if (!s) continue;
+      for (const p of s.points) {
+        lo = Math.min(lo, p.y);
+        hi = Math.max(hi, p.y);
+      }
+    }
+  }
+  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return [1, 100];
+  return [10 ** Math.floor(Math.log10(lo)), 10 ** Math.ceil(Math.log10(hi))];
+}
+var hundredLine = {
+  id: "hundredLine",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    const y = scales.y?.getPixelForValue(REFERENCE);
+    if (y === void 0 || y < chartArea.top || y > chartArea.bottom) return;
+    ctx.save();
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = "#9CA3AF";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(chartArea.left, y);
+    ctx.lineTo(chartArea.right, y);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+var directLabels = {
+  id: "directLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    const entries = [];
+    chart.data.datasets.forEach((ds, i) => {
+      const d = ds;
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) return;
+      for (let j = meta.data.length - 1; j >= 0; j--) {
+        const raw = d.data[j];
+        if (!raw || !Number.isFinite(raw.y)) continue;
+        const el = meta.data[j];
+        entries.push({ y: el.y, text: d.__label });
+        break;
+      }
+    });
+    entries.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < entries.length; i++) {
+      if (entries[i].y - entries[i - 1].y < 11)
+        entries[i].y = entries[i - 1].y + 11;
+    }
+    ctx.save();
+    ctx.font = '500 9.5px system-ui, -apple-system, "Segoe UI", sans-serif';
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#374151";
+    for (const e of entries) {
+      const y = Math.max(
+        chartArea.top + 5,
+        Math.min(chartArea.bottom - 5, e.y)
+      );
+      ctx.fillText(e.text, chartArea.right + 7, y);
+    }
+    ctx.restore();
+  }
+};
+function xScale(maxW) {
+  const step = maxW <= 4 ? 1 : maxW <= 12 ? 2 : maxW <= 24 ? 4 : 8;
+  return {
+    type: "linear",
+    min: -0.5,
+    max: maxW + 0.5,
+    grid: { display: false },
+    border: { display: false },
+    ticks: {
+      autoSkip: false,
+      maxRotation: 0,
+      font: { size: 9 },
+      color: MUTED,
+      padding: 4,
+      callback: (v) => String(Number(v))
+    },
+    afterBuildTicks: (axis) => {
+      const out = [];
+      for (let v = 0; v <= maxW + 1e-3; v += step) out.push({ value: v });
+      axis.ticks = out;
+    },
+    afterFit: (s) => {
+      s.height = 20;
+    }
+  };
+}
+function yScale(min, max, showLabels) {
+  const ticks = [0.1, 0.3, 1, 3, 10, 30, 100, 300, 1e3, 3e3].filter(
+    (v) => v >= min && v <= max
+  );
+  return {
+    type: "logarithmic",
+    min,
+    max,
+    grid: { color: GRID, drawTicks: false, lineWidth: 1 },
+    border: { display: false },
+    ticks: {
+      display: showLabels,
+      font: { size: 9 },
+      color: MUTED,
+      padding: 6,
+      callback: (v) => fmtIndex(Number(v))
+    },
+    afterBuildTicks: (axis) => {
+      axis.ticks = ticks.map((value) => ({ value }));
+    },
+    afterFit: (s) => {
+      s.width = 42;
+    }
+  };
+}
+function tooltipSpec() {
+  return {
+    displayColors: false,
+    callbacks: {
+      title: (items) => items[0].raw.t,
+      label: (item) => {
+        const p = item.raw;
+        const band = p.low === p.high ? nf2.format(p.low) : `${nf2.format(p.low)} \u2013 ${nf2.format(p.high)}`;
+        const flag = FLAG_TEXT[p.flag];
+        return `${item.dataset.label}: ${band}  \u2192  index ${Math.round(p.y)}${flag ? `  \xB7  ${flag}` : ""}`;
+      },
+      afterLabel: (item) => item.raw.note ?? "",
+      footer: (items) => {
+        const p = items[0].raw;
+        return `index = 100 \xD7 value \xF7 ${nf2.format(Math.round(p.base))}`;
+      }
+    }
+  };
+}
+var episodePanels = [];
+var itemPanels = [];
+var activeItem = null;
+var activeEvent = null;
+function emphasiseItem(key) {
+  if (key === activeItem) return;
+  activeItem = key;
+  for (const chart of episodePanels) {
+    for (const ds of chart.data.datasets) {
+      const d = ds;
+      const on = key === null || d.__item === key;
+      const colour = on ? d.__color : alpha2(d.__color, 0.18);
+      d.borderColor = colour;
+      d.pointBorderColor = colour;
+      d.pointBackgroundColor = d.__hollow.map((h) => h ? "#ffffff" : colour);
+      d.borderWidth = key !== null && d.__item === key ? 2.75 : 1.75;
+    }
+    chart.update("none");
+  }
+  for (const { chart, item } of itemPanels) {
+    const host2 = chart.canvas.parentElement;
+    if (host2) host2.style.opacity = key === null || key === item ? "1" : "0.18";
+  }
+}
+function emphasiseEvent(index) {
+  if (index === activeEvent) return;
+  activeEvent = index;
+  for (const { chart } of itemPanels) {
+    chart.data.datasets.forEach((ds, i) => {
+      const d = ds;
+      const on = index === null || i === index;
+      const colour = on ? d.__color : alpha2(d.__color, 0.18);
+      d.borderColor = colour;
+      d.pointBorderColor = colour;
+      d.pointBackgroundColor = d.__hollow.map((h) => h ? "#ffffff" : colour);
+    });
+    chart.update("none");
+  }
+}
+function legendButton(text, swatch, onEnter, onLeave) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.append(swatch, document.createTextNode(text));
+  b.addEventListener("mouseenter", onEnter);
+  b.addEventListener("mouseleave", onLeave);
+  b.addEventListener("focus", onEnter);
+  b.addEventListener("blur", onLeave);
+  return b;
+}
+function observations(ep) {
+  const counts = ITEMS.map(
+    (i) => ep.weeks.filter((r) => r[i.key] !== void 0).length
+  );
+  return `obs ${counts.join("\xB7")} of ${ep.weeks.length} wks`;
+}
+function panelFigure(ep) {
+  const figure = document.createElement("figure");
+  figure.className = "trellis-panel";
+  const caption = document.createElement("figcaption");
+  const strip = document.createElement("span");
+  strip.className = "strip";
+  strip.textContent = ep.strip;
+  const meta = document.createElement("span");
+  meta.className = "strip-meta";
+  meta.textContent = `${ep.span} \xB7 ${observations(ep)}`;
+  const note = document.createElement("p");
+  note.className = "strip-note";
+  note.textContent = ep.banner;
+  caption.append(strip, meta, note);
+  const box = document.createElement("div");
+  box.className = "panel-canvas";
+  const canvas2 = document.createElement("canvas");
+  box.append(canvas2);
+  figure.append(caption, box);
+  return { figure, canvas: canvas2 };
+}
+function columns(host2) {
+  const w = host2.clientWidth || 1200;
+  return w >= 1180 ? 4 : w >= 620 ? 2 : 1;
+}
+function mountCrossEpisode(opts) {
+  const charts2 = [];
+  const [yMin, yMax] = extentOf(
+    EPISODES,
+    ITEMS.map((i) => i.key)
+  );
+  const cols = columns(opts.episodeHost);
+  opts.episodeHost.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  EPISODES.forEach((ep, idx) => {
+    const { figure, canvas: canvas2 } = panelFigure(ep);
+    opts.episodeHost.append(figure);
+    const maxW = Math.max(...ep.weeks.map((r) => r.w), 1);
+    const datasets = ITEMS.map(
+      (i) => buildDataset(ep, i.key, i.color, i.short)
+    ).filter((d) => d !== null);
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: "nearest", axis: "x", intersect: false },
+      layout: { padding: { top: 6, right: 96, bottom: 0, left: 0 } },
+      scales: {
+        x: xScale(maxW),
+        y: yScale(yMin, yMax, idx % cols === 0)
+      },
+      plugins: {
+        legend: { display: false },
+        title: { display: false },
+        subtitle: { display: false },
+        tooltip: tooltipSpec()
+      },
+      onHover: (_e, elements) => {
+        const d = elements[0]?.dataset;
+        emphasiseItem(d ? d.__item : null);
+      }
+    };
+    const chart = new Chart(canvas2, {
+      type: "line",
+      data: { datasets },
+      options,
+      plugins: [hundredLine, directLabels]
+    });
+    canvas2.addEventListener("mouseleave", () => emphasiseItem(null));
+    episodePanels.push(chart);
+    charts2.push(chart);
+  });
+  const itemCols = columns(opts.itemHost);
+  opts.itemHost.style.gridTemplateColumns = `repeat(${itemCols}, minmax(0, 1fr))`;
+  ITEMS.forEach((item) => {
+    const [lo, hi] = extentOf(EPISODES, [item.key]);
+    const figure = document.createElement("figure");
+    figure.className = "trellis-panel";
+    const caption = document.createElement("figcaption");
+    const strip = document.createElement("span");
+    strip.className = "strip";
+    strip.textContent = item.short;
+    const meta = document.createElement("span");
+    meta.className = "strip-meta";
+    meta.textContent = `index, log ${fmtIndex(lo)}\u2013${fmtIndex(hi)}`;
+    caption.append(strip, meta);
+    const box = document.createElement("div");
+    box.className = "panel-canvas";
+    const canvas2 = document.createElement("canvas");
+    box.append(canvas2);
+    figure.append(caption, box);
+    opts.itemHost.append(figure);
+    const datasets = EPISODES.map(
+      (ep, i) => buildDataset(ep, item.key, RAMP[i], ep.short)
+    ).filter((d) => d !== null);
+    const maxW = Math.max(
+      ...EPISODES.flatMap((ep) => ep.weeks.map((r) => r.w)),
+      1
+    );
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: "nearest", axis: "x", intersect: false },
+      layout: { padding: { top: 6, right: 92, bottom: 0, left: 0 } },
+      scales: {
+        x: xScale(maxW),
+        y: yScale(lo, hi, true)
+      },
+      plugins: {
+        legend: { display: false },
+        title: { display: false },
+        subtitle: { display: false },
+        tooltip: tooltipSpec()
+      }
+    };
+    const chart = new Chart(canvas2, {
+      type: "line",
+      data: { datasets },
+      options,
+      plugins: [hundredLine, directLabels]
+    });
+    canvas2.addEventListener("mouseleave", () => emphasiseEvent(null));
+    canvas2.addEventListener("mousemove", (ev) => {
+      const pts = chart.getElementsAtEventForMode(
+        ev,
+        "nearest",
+        { intersect: false },
+        true
+      );
+      emphasiseEvent(pts.length ? pts[0].datasetIndex : null);
+    });
+    itemPanels.push({ chart, item: item.key });
+    charts2.push(chart);
+  });
+  opts.itemLegend.replaceChildren(
+    ...ITEMS.map((item) => {
+      const swatch = document.createElement("span");
+      swatch.className = "swatch";
+      swatch.style.background = item.color;
+      return legendButton(
+        item.label,
+        swatch,
+        () => emphasiseItem(item.key),
+        () => emphasiseItem(null)
+      );
+    })
+  );
+  opts.eventLegend.replaceChildren(
+    ...EPISODES.map((ep, i) => {
+      const swatch = document.createElement("span");
+      swatch.className = "swatch";
+      swatch.style.background = RAMP[i];
+      return legendButton(
+        ep.short,
+        swatch,
+        () => emphasiseEvent(i),
+        () => emphasiseEvent(null)
+      );
+    })
+  );
+  return charts2;
+}
 
 // src/client/main.ts
 function canvas(id) {
@@ -12574,12 +13466,23 @@ function canvas(id) {
     throw new Error(`canvas#${id} not found`);
   return el;
 }
+function host(id) {
+  const el = document.getElementById(id);
+  if (!(el instanceof HTMLElement)) throw new Error(`#${id} not found`);
+  return el;
+}
 var charts = [
   mount(canvas("chart-protesters"), buildProtestersConfig()),
   mount(canvas("chart-enforcement"), buildEnforcementConfig()),
   mount(canvas("chart-costs"), buildCostConfig()),
   mount(canvas("chart-protesters-weekly"), buildProtestersWeeklyConfig()),
-  mount(canvas("chart-enforcement-weekly"), buildEnforcementWeeklyConfig())
+  mount(canvas("chart-enforcement-weekly"), buildEnforcementWeeklyConfig()),
+  ...mountCrossEpisode({
+    episodeHost: host("trellis-episodes"),
+    itemHost: host("trellis-items"),
+    itemLegend: host("legend-items"),
+    eventLegend: host("legend-events")
+  })
 ];
 window.__charts = charts;
 window.addEventListener(
