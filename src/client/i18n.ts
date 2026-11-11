@@ -186,18 +186,6 @@ function fromStorage(): Lang | null {
   }
 }
 
-function fromBrowser(): Lang | null {
-  if (typeof navigator === "undefined") return null;
-  const tags = navigator.languages?.length
-    ? navigator.languages
-    : [navigator.language];
-  for (const tag of tags) {
-    const hit = normalizeLocale(tag);
-    if (hit) return hit;
-  }
-  return null;
-}
-
 let current: Lang = localeFromUrl() ?? fromStorage() ?? DEFAULT_LANG;
 
 let version = 0;
@@ -1165,7 +1153,7 @@ export interface DisclaimerCopy {
   readonly strong: string;
   readonly lead: string;
   readonly link: string;
-  readonly href: string;
+  readonly hrefs: string[];
   readonly tail: string;
 }
 
@@ -1263,9 +1251,9 @@ const CATALOGUE: Record<Lang, Catalogue> = {
     },
     disclaimer: {
       strong: "AI-assisted draft.",
-      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources.",
-      link: "The full conversation, including every rejected figure, is in the transcript.",
-      href: "transcript.html",
+      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources. The full conversation, including every rejected figure, is in the transcript.",
+      link: "transcript",
+      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
       tail: "",
     },
     sources: {
@@ -1394,9 +1382,9 @@ const CATALOGUE: Record<Lang, Catalogue> = {
     },
     disclaimer: {
       strong: "Brouillon assisté par IA.",
-      lead: " Ces graphiques ont été produits avec un modèle de langage et n’ont pas été vérifiés de façon indépendante. Ne les utilisez pas pour une analyse sérieuse, une publication ou une décision sans vérifier chaque chiffre auprès des sources.",
-      link: "La conversation complète, y compris chaque chiffre écarté, figure dans la transcription.",
-      href: "transcript.html",
+      lead: " Ces graphiques ont été produits avec un modèle de langage et n’ont pas été vérifiés de façon indépendante. Ne les utilisez pas pour une analyse sérieuse, une publication ou une décision sans vérifier chaque chiffre auprès des sources. La conversation complète, y compris chaque chiffre écarté, figure dans la transcription: ",
+      link: "transcript",
+      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
       tail: "",
     },
     sources: {

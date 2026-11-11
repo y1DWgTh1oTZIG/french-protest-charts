@@ -40,14 +40,28 @@ function disclaimer(): void {
   if (!host) return;
   const d = t().disclaimer;
 
-  const link = tag("a", undefined, d.link);
-  link.href = d.href;
-  link.rel = "noopener";
+  const list = document.createElement("ol");
+  list.className = "disclaimer-links";
+
+  for (const [index, href] of d.hrefs.entries()) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.rel = "noopener noreferrer";
+    a.textContent = `${d.link}-${index}`; // or `href` if you want the URL shown
+    a.dataset.index = String(index);
+
+    const li = document.createElement("li");
+    li.append(a); // append node, not a string arg
+    list.append(li);
+  }
+
+  const strong = document.createElement("strong");
+  strong.textContent = d.strong;
 
   host.replaceChildren(
-    tag("strong", undefined, d.strong),
+    strong,
     document.createTextNode(d.lead),
-    link,
+    list,
     document.createTextNode(d.tail),
   );
 }

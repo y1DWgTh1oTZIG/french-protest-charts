@@ -849,9 +849,9 @@ var CATALOGUE = {
     },
     disclaimer: {
       strong: "AI-assisted draft.",
-      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources.",
-      link: "The full conversation, including every rejected figure, is in the transcript.",
-      href: "transcript.html",
+      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources. The full conversation, including every rejected figure, is in the transcript.",
+      link: "transcript",
+      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
       tail: ""
     },
     sources: {
@@ -979,9 +979,9 @@ var CATALOGUE = {
     },
     disclaimer: {
       strong: "Brouillon assist\xE9 par IA.",
-      lead: " Ces graphiques ont \xE9t\xE9 produits avec un mod\xE8le de langage et n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s de fa\xE7on ind\xE9pendante. Ne les utilisez pas pour une analyse s\xE9rieuse, une publication ou une d\xE9cision sans v\xE9rifier chaque chiffre aupr\xE8s des sources.",
-      link: "La conversation compl\xE8te, y compris chaque chiffre \xE9cart\xE9, figure dans la transcription.",
-      href: "transcript.html",
+      lead: " Ces graphiques ont \xE9t\xE9 produits avec un mod\xE8le de langage et n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s de fa\xE7on ind\xE9pendante. Ne les utilisez pas pour une analyse s\xE9rieuse, une publication ou une d\xE9cision sans v\xE9rifier chaque chiffre aupr\xE8s des sources. La conversation compl\xE8te, y compris chaque chiffre \xE9cart\xE9, figure dans la transcription: ",
+      link: "transcript",
+      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
       tail: ""
     },
     sources: {
@@ -14620,13 +14620,24 @@ function disclaimer() {
   const host = $("disclaimer");
   if (!host) return;
   const d = t().disclaimer;
-  const link = tag("a", void 0, d.link);
-  link.href = d.href;
-  link.rel = "noopener";
+  const list = document.createElement("ol");
+  list.className = "disclaimer-links";
+  for (const [index, href] of d.hrefs.entries()) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.rel = "noopener noreferrer";
+    a.textContent = `${d.link}-${index}`;
+    a.dataset.index = String(index);
+    const li = document.createElement("li");
+    li.append(a);
+    list.append(li);
+  }
+  const strong = document.createElement("strong");
+  strong.textContent = d.strong;
   host.replaceChildren(
-    tag("strong", void 0, d.strong),
+    strong,
     document.createTextNode(d.lead),
-    link,
+    list,
     document.createTextNode(d.tail)
   );
 }
