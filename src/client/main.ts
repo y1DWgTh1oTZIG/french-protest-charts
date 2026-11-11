@@ -1,44 +1,49 @@
+import type { Chart } from "chart.js";
 import {
-  mount,
-  buildProtestersConfig,
-  buildEnforcementConfig,
   buildCostConfig,
-  buildProtestersWeeklyConfig,
+  buildEnforcementConfig,
   buildEnforcementWeeklyConfig,
+  buildProtestersConfig,
+  buildProtestersWeeklyConfig,
+  mount,
 } from "./chart.ts";
 import { mountCrossEpisode } from "./episodes.ts";
+import { getLocale, LOCALES, onLocaleChange, setLocale } from "./i18n.ts";
+import { renderChrome } from "./page.ts";
 
-function canvas(id: string): HTMLCanvasElement {
-  const el = document.getElementById(id);
-  if (!(el instanceof HTMLCanvasElement))
-    throw new Error(`canvas#${id} not found`);
-  return el;
+const SECTION_AB = [
+  ["chart-protesters", buildProtestersConfig],
+  ["chart-enforcement", buildEnforcementConfig],
+  ["chart-costs", buildCostConfig],
+  ["chart-protesters-weekly", buildProtestersWeeklyConfig],
+  ["chart-enforcement-weekly", buildEnforcementWeeklyConfig],
+] as const;
+
+let charts: Chart[] = [];
+
+function render(): void {
+  for (const c of charts) c.destroy();
+  charts = [];
+
+  renderChrome(); // disclaimer, section headers, notes, sources — all from i18n
+
+  for (const [id, build] of SECTION_AB) {
+    const el = document.getElementById(id) as HTMLCanvasElement | null;
+    if (el) charts.push(mount(el, build()));
+  }
+
+  charts.push(
+    ...mountCrossEpisode({
+      episodeHost: document.getElementById("trellis-episodes")!,
+      itemHost: document.getElementById("trellis-items")!,
+      itemLegend: document.getElementById("legend-items")!,
+      eventLegend: document.getElementById("legend-events")!,
+    }),
+  );
 }
 
-function host(id: string): HTMLElement {
-  const el = document.getElementById(id);
-  if (!(el instanceof HTMLElement)) throw new Error(`#${id} not found`);
-  return el;
-}
+render();
+onLocaleChange(render);
 
-const charts = [
-  mount(canvas("chart-protesters"), buildProtestersConfig()),
-  mount(canvas("chart-enforcement"), buildEnforcementConfig()),
-  mount(canvas("chart-costs"), buildCostConfig()),
-  mount(canvas("chart-protesters-weekly"), buildProtestersWeeklyConfig()),
-  mount(canvas("chart-enforcement-weekly"), buildEnforcementWeeklyConfig()),
-  ...mountCrossEpisode({
-    episodeHost: host("trellis-episodes"),
-    itemHost: host("trellis-items"),
-    itemLegend: host("legend-items"),
-    eventLegend: host("legend-events"),
-  }),
-];
-
-(window as unknown as { __charts: unknown }).__charts = charts;
-
-window.addEventListener(
-  "beforeunload",
-  () => charts.forEach((c) => c.destroy()),
-  { once: true },
-);
+// e.g. setLocale('fr') once a `fr` catalogue exists
+export { getLocale, LOCALES, setLocale };

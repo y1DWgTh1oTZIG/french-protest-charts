@@ -1,6 +1,7 @@
 /* Section C — cross-episode comparison.
    Primary figure: one panel per episode, four series per panel, one shared log count axis.
-   Companion: one panel per series, one line per episode on a sequential ramp. */
+   Companion: one panel per series, one line per episode on a sequential ramp.
+   All copy is resolved from i18n.ts at render time. */
 
 import {
   Chart,
@@ -10,33 +11,10 @@ import {
   type Plugin,
   type TooltipItem,
 } from "chart.js";
-import { STUDENT_WEEKS } from "./chart.ts";
-
-/* ------------------------------------------------------------------ types */
-
-type M = "p" | "a" | "f" | "i";
-type Flag = "n" | "r" | "p" | "f" | "e" | "c" | "w";
-type Band = number | [number, number];
-
-interface Row {
-  w: number; // whole weeks since the event's first action
-  t: string; // week / act label, tooltip title
-  p?: Band; // protestors, peak day of the week
-  a?: Band; // arrests, weekly total
-  f?: Band; // injuries, security forces
-  i?: Band; // injuries, protestors
-  flag?: Partial<Record<M, Flag>>;
-  note?: Partial<Record<M, string>>;
-}
-
-interface Episode {
-  id: string;
-  strip: string;
-  short: string;
-  span: string;
-  banner: string;
-  weeks: Row[];
-}
+import { compact, fill, fmtSpan, fmtWeek, nf, plural, t } from "./i18n.ts";
+import type { Band, Episode, EpisodeId, Flag, Metric, Row } from "./model.ts";
+import { STUDENT_WEEKS, noteText } from "./chart.ts";
+import type { NoteRef } from "./model.ts";
 
 interface Pt {
   x: number;
@@ -45,12 +23,12 @@ interface Pt {
   high: number;
   flag: Flag;
   note?: string;
-  base: number; // first comparable figure for the series — tooltip text only
+  base: number;
   t: string;
 }
 
 interface PanelDataset extends ChartDataset<"line", Pt[]> {
-  __item: M;
+  __item: Metric;
   __ep: number;
   __color: string;
   __hollow: boolean[];
@@ -62,32 +40,14 @@ interface PanelDataset extends ChartDataset<"line", Pt[]> {
 const MUTED = "#6b7280";
 const GRID = "#E5E5E5";
 
-const ITEMS: { key: M; label: string; short: string; color: string }[] = [
-  {
-    key: "p",
-    label: "Protestors (peak day)",
-    short: "Protestors",
-    color: "#0072B2",
-  },
-  {
-    key: "a",
-    label: "Arrests (weekly total)",
-    short: "Arrests",
-    color: "#E69F00",
-  },
-  {
-    key: "f",
-    label: "Injuries — security forces",
-    short: "Forces hurt",
-    color: "#009E73",
-  },
-  {
-    key: "i",
-    label: "Injuries — protestors",
-    short: "Protestors hurt",
-    color: "#CC79A7",
-  },
+/** Colour only — labels come from t().items. */
+const SERIES: { key: Metric; color: string }[] = [
+  { key: "p", color: "#0072B2" },
+  { key: "a", color: "#E69F00" },
+  { key: "f", color: "#009E73" },
+  { key: "i", color: "#CC79A7" },
 ];
+const METRICS: Metric[] = SERIES.map((s) => s.key);
 
 /** Sequential ramp, light → dark, identical in every companion panel. */
 const RAMP = [
@@ -100,23 +60,8 @@ const RAMP = [
   "#0A3A63",
 ];
 
-const FLAG_TEXT: Partial<Record<Flag, string>> = {
-  r: "regional only",
-  p: "partial",
-  f: "lower bound",
-  e: "derived",
-  c: "stock or actions-total — measured differently",
-  w: "weekly aggregate",
-};
-
 const hollow = (f: Flag): boolean =>
   f === "r" || f === "p" || f === "e" || f === "c";
-
-const nf = new Intl.NumberFormat("en-GB");
-const compact = new Intl.NumberFormat("en-GB", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 function alpha(hex: string, a: number): string {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -127,412 +72,215 @@ function alpha(hex: string, a: number): string {
 
 const MAY68: Episode = {
   id: "may68",
-  strip: "May 1968",
-  short: "May 68",
-  span: "29 Apr – 30 Jun 1968",
-  banner:
-    "Crowd figures exist only for 1, 6, 10 and 13 May. The general strike is not counted here.",
+  start: "1968-04-29",
+  end: "1968-06-30",
   weeks: [
-    {
-      w: 0,
-      t: "29 Apr – 5 May · 1 May march",
-      p: [25_000, 100_000],
-      note: { p: "prefecture 25,000 / CGT 100,000, République → Bastille" },
-    },
+    { w: 0, from: "1968-04-29", to: "1968-05-05", p: [25_000, 100_000] },
     {
       w: 1,
-      t: "6 – 12 May · Sorbonne, barricades",
+      from: "1968-05-06",
+      to: "1968-05-12",
       p: 20_000,
       a: [469, 891],
       f: [247, 300],
       i: 100,
       flag: { i: "f" },
-      note: {
-        p: "20,000 to the Sorbonne on 6 May; >20,000 again on 10 May",
-        a: "469 on the night of 10–11 May; high adds the 422 early-May arrests",
-        f: "300+ on 6 May; 247 on 10–11 May",
-        i: "≥100 — no national count was published",
-      },
     },
-    {
-      w: 2,
-      t: "13 – 19 May · 13 May march",
-      p: [230_000, 1_000_000],
-      note: {
-        p: "prefecture 230,000 · ORTF 171,000 · unions 1,000,000. Peak of the episode.",
-      },
-    },
+    { w: 2, from: "1968-05-13", to: "1968-05-19", p: [230_000, 1_000_000] },
     {
       w: 3,
-      t: "20 – 26 May · 24–25 May",
-      a: [1_000, 1_000],
+      from: "1968-05-20",
+      to: "1968-05-26",
+      a: 1_000,
       i: 887,
       flag: { a: "f", i: "e" },
-      note: {
-        a: "1,000+ arrests on 25 May",
-        i: "887 injured, from the English-Wikipedia infobox — weak provenance",
-      },
     },
-    {
-      w: 4,
-      t: "27 May – 2 Jun · 30 May",
-      note: {
-        p: "30 May: 300,000 (prefecture) – 1,000,000 counter-demonstration — excluded from protest totals",
-      },
-    },
-    {
-      w: 5,
-      t: "3 – 9 Jun",
-      note: { p: "4 Jun partial return to work; 7 Jun Renault-Flins clashes" },
-    },
-    {
-      w: 6,
-      t: "10 – 16 Jun",
-      note: { p: "10–11 Jun: 3 dead; 12 Jun demonstrations banned nationwide" },
-    },
-    { w: 7, t: "17 – 23 Jun" },
-    { w: 8, t: "24 – 30 Jun" },
+    { w: 4, from: "1968-05-27", to: "1968-06-02" },
+    { w: 5, from: "1968-06-03", to: "1968-06-09" },
+    { w: 6, from: "1968-06-10", to: "1968-06-16" },
+    { w: 7, from: "1968-06-17", to: "1968-06-23" },
+    { w: 8, from: "1968-06-24", to: "1968-06-30" },
   ],
 };
 
 const CPE: Episode = {
   id: "cpe",
-  strip: "CPE 2006",
-  short: "CPE 2006",
-  span: "6 Feb – 16 Apr 2006",
-  banner:
-    "One movement-wide arrest total (4,500); no weekly enforcement series exists.",
+  start: "2006-02-06",
+  end: "2006-04-16",
   weeks: [
-    {
-      w: 0,
-      t: "6 – 12 Feb · 7 Feb",
-      p: [200_000, 400_000],
-      note: { p: "187 demonstrations, first national day" },
-    },
-    {
-      w: 4,
-      t: "6 – 12 Mar · 7 Mar",
-      p: [400_000, 1_000_000],
-      note: { p: ">1 million claimed; 38 universities on strike by 9 Mar" },
-    },
+    { w: 0, from: "2006-02-06", to: "2006-02-12", p: [200_000, 400_000] },
+    { w: 4, from: "2006-03-06", to: "2006-03-12", p: [400_000, 1_000_000] },
     {
       w: 5,
-      t: "13 – 19 Mar · 16–18 Mar",
+      from: "2006-03-13",
+      to: "2006-03-19",
       p: [500_000, 1_500_000],
       a: [156, 167],
       f: 34,
       i: 70,
       flag: { i: "e" },
-      note: {
-        p: "18 Mar: 500,000 (ministry) – 1,500,000 (unions); Paris 80,000 – 700,000",
-        a: "Paris, 18 Mar (156 ministry / 167 organisers)",
-        f: "Paris, 18 Mar",
-        i: "18 (16 Mar) + 52 (18 Mar), Paris only",
-      },
     },
     {
       w: 6,
-      t: "20 – 26 Mar · 23 Mar",
+      from: "2006-03-20",
+      to: "2006-03-26",
       p: [220_000, 450_000],
       a: 630,
       f: 90,
-      note: { p: "21 universities fully blocked; 67 striking or blocked" },
     },
     {
       w: 7,
-      t: "27 Mar – 2 Apr · 28 Mar",
+      from: "2006-03-27",
+      to: "2006-04-02",
       p: [1_055_000, 2_710_000],
       a: 600,
-      note: { p: "4th national action day" },
     },
-    {
-      w: 8,
-      t: "3 – 9 Apr · 4 Apr",
-      p: [1_000_000, 3_100_000],
-      note: { p: "peak day of the episode" },
-    },
-    {
-      w: 9,
-      t: "10 – 16 Apr",
-      note: { p: "CPE withdrawn 10 Apr; the movement splits" },
-    },
+    { w: 8, from: "2006-04-03", to: "2006-04-09", p: [1_000_000, 3_100_000] },
+    { w: 9, from: "2006-04-10", to: "2006-04-16" },
   ],
 };
 
-const GJ_DATES = [
-  "17 Nov 2018",
-  "24 Nov",
-  "1 Dec",
-  "8 Dec",
-  "15 Dec",
-  "22 Dec",
-  "29 Dec",
-  "5 Jan 2019",
-  "12 Jan",
-  "19 Jan",
-  "26 Jan",
-  "2 Feb",
-  "9 Feb",
-  "16 Feb",
-  "23 Feb",
-  "2 Mar",
-  "9 Mar",
-  "16 Mar",
-  "23 Mar",
-  "30 Mar",
-  "6 Apr",
-  "13 Apr",
-  "20 Apr",
-  "27 Apr",
-  "4 May",
-  "11 May",
-  "18 May",
-  "25 May",
-  "1 Jun",
-  "8 Jun",
-  "15 Jun",
-  "22 Jun",
-  "29 Jun",
-  "7 Sep 2019",
-];
-
-const GJ_CROWD: [number, number][] = [
-  [0, 287_700],
-  [1, 166_000],
-  [2, 136_000],
-  [3, 136_000],
-  [4, 66_000],
-  [5, 38_600],
-  [6, 32_000],
-  [7, 50_000],
-  [8, 84_000],
-  [9, 84_000],
-  [10, 69_000],
-  [11, 58_600],
-  [12, 51_400],
-  [13, 41_500],
-  [14, 46_600],
-  [15, 39_300],
-  [16, 28_600],
-  [17, 32_300],
-  [18, 40_500],
-  [19, 33_700],
-  [20, 22_300],
-  [21, 31_000],
-  [22, 27_900],
-  [23, 23_600],
-  [24, 18_900],
-  [25, 18_600],
-  [26, 15_500],
-  [27, 12_500],
-  [28, 9_500],
-  [29, 10_300],
-  [30, 7_000],
-  [31, 11_800],
-  [32, 5_800],
-  [43, 7_000],
+const GJ_ACTS: [number, string, number][] = [
+  [0, "2018-11-17", 287_700],
+  [1, "2018-11-24", 166_000],
+  [2, "2018-12-01", 136_000],
+  [3, "2018-12-08", 136_000],
+  [4, "2018-12-15", 66_000],
+  [5, "2018-12-22", 38_600],
+  [6, "2018-12-29", 32_000],
+  [7, "2019-01-05", 50_000],
+  [8, "2019-01-12", 84_000],
+  [9, "2019-01-19", 84_000],
+  [10, "2019-01-26", 69_000],
+  [11, "2019-02-02", 58_600],
+  [12, "2019-02-09", 51_400],
+  [13, "2019-02-16", 41_500],
+  [14, "2019-02-23", 46_600],
+  [15, "2019-03-02", 39_300],
+  [16, "2019-03-09", 28_600],
+  [17, "2019-03-16", 32_300],
+  [18, "2019-03-23", 40_500],
+  [19, "2019-03-30", 33_700],
+  [20, "2019-04-06", 22_300],
+  [21, "2019-04-13", 31_000],
+  [22, "2019-04-20", 27_900],
+  [23, "2019-04-27", 23_600],
+  [24, "2019-05-04", 18_900],
+  [25, "2019-05-11", 18_600],
+  [26, "2019-05-18", 15_500],
+  [27, "2019-05-25", 12_500],
+  [28, "2019-06-01", 9_500],
+  [29, "2019-06-08", 10_300],
+  [30, "2019-06-15", 7_000],
+  [31, "2019-06-22", 11_800],
+  [32, "2019-06-29", 5_800],
+  [43, "2019-09-07", 7_000],
 ];
 
 /** Enforcement figures exist only for Acts I–IV; later acts were not published as a series. */
-const GJ_EXTRA: Record<number, Pick<Row, "a" | "f" | "i" | "flag" | "note">> = {
-  0: {
-    a: [974, 1_150],
-    f: 17,
-    i: 109,
-    flag: { f: "e", i: "e" },
-    note: {
-      a: "974 in custody, ~1,150 interpellations",
-      f: "17 police among 126 injured — split derived",
-      i: "109 of 126 injured — split derived",
-    },
-  },
-  1: {
-    a: [307, 339],
-    f: 30,
-    i: 54,
-    flag: { i: "e" },
-    note: {
-      a: "307 in custody, 339 interpellations",
-      i: "54 of 84 injured — split derived",
-    },
-  },
-  2: {
-    a: 630,
-    flag: { a: "f" },
-    note: {
-      a: "placed in custody, not arrests; 263 injured, not split by side",
-    },
-  },
-  3: {
-    a: [1_709, 2_000],
-    note: {
-      a: "1,709 in custody, ~2,000 interpellations; injuries reported as 118 / 264 / 585 depending on source, not split by side",
-    },
-  },
+const GJ_EXTRA: Record<number, Pick<Row, "a" | "f" | "i" | "flag">> = {
+  0: { a: [974, 1_150], f: 17, i: 109, flag: { f: "e", i: "e" } },
+  1: { a: [307, 339], f: 30, i: 54, flag: { i: "e" } },
+  2: { a: 630, flag: { a: "f" } },
+  3: { a: [1_709, 2_000] },
 };
 
 const GILETS: Episode = {
   id: "gj",
-  strip: "Gilets jaunes",
-  short: "Gilets jaunes",
-  span: "12 Nov 2018 – 9 Sep 2019",
-  banner:
-    "Ministry count only: one figure per act. Acts 34–43 were never published; no enforcement series after Act IV.",
-  weeks: GJ_CROWD.map(([w, n], idx) => {
-    const extra = GJ_EXTRA[w] ?? {};
-    return {
-      w,
-      t: `Act ${w + 1} · ${GJ_DATES[idx]}`,
-      p: n,
-      ...extra,
-      flag: {
-        ...(w === 0 ? { p: "c" as Flag } : {}),
-        ...extra.flag,
-      },
-      note: {
-        ...(w === 0
-          ? {
-              p: "287,700 counts all actions including road blockades — an actions-total, not a march",
-            }
-          : w === 1
-            ? { p: "police-union counter-count: 750,000" }
-            : {}),
-        ...extra.note,
-      },
-    } satisfies Row;
-  }),
+  start: "2018-11-12",
+  end: "2019-09-09",
+  weeks: GJ_ACTS.map(([w, date, n]) => ({
+    w,
+    from: date,
+    to: date,
+    act: w + 1,
+    p: n,
+    ...(GJ_EXTRA[w] ?? {}),
+    flag: {
+      ...(w === 0 ? { p: "c" as Flag } : {}),
+      ...(GJ_EXTRA[w]?.flag ?? {}),
+    },
+  })),
 };
 
 const NAHEL: Episode = {
   id: "nahel",
-  strip: "Nahel 2023",
-  short: "Nahel 2023",
-  span: "27 Jun – 9 Jul 2023",
-  banner:
-    "Gatherings were banned: arrests, not crowd counts, carry the scale of the riots.",
+  start: "2023-06-27",
+  end: "2023-07-09",
   weeks: [
     {
       w: 0,
-      t: "26 Jun – 2 Jul · Nanterre march, 29 Jun",
+      from: "2023-06-26",
+      to: "2023-07-02",
       p: [6_200, 20_000],
       a: 3_354,
       f: 722,
-      note: {
-        p: "police 6,200 / organisers 20,000 for the march blanche",
-        a: "national total, 27 Jun – 2 Jul",
-        f: "722 officers injured; 2 deaths; 5,662 vehicles burnt",
-      },
     },
-    {
-      w: 1,
-      t: "3 – 9 Jul",
-      a: 108,
-      f: 1,
-      note: { a: "72 + 16 + 20 over 3–5 Jul" },
-    },
+    { w: 1, from: "2023-07-03", to: "2023-07-09", a: 108, f: 1 },
   ],
 };
 
 const PENSIONS: Episode = {
   id: "pensions",
-  strip: "Pension reform 2023",
-  short: "Pensions 2023",
-  span: "19 Jan – 8 Jun 2023",
-  banner:
-    "Crowds only: no national weekly arrest or injury series was published.",
+  start: "2023-01-19",
+  end: "2023-06-08",
   weeks: [
-    {
-      w: 0,
-      t: "16 – 22 Jan · 19 Jan",
-      p: [1_120_000, 2_000_000],
-      note: { p: "first national day; Paris 80,000 – 400,000" },
-    },
-    { w: 2, t: "30 Jan – 5 Feb · 31 Jan", p: [1_270_000, 2_800_000] },
-    {
-      w: 3,
-      t: "6 – 12 Feb · 7 & 11 Feb",
-      p: [963_000, 2_500_000],
-      note: { p: "two action days in one week; the peak is 11 Feb" },
-    },
-    { w: 4, t: "13 – 19 Feb · 16 Feb", p: [440_000, 1_300_000] },
-    {
-      w: 7,
-      t: "6 – 12 Mar · 7 Mar",
-      p: [1_280_000, 3_500_000],
-      note: { p: "national record: ministry 1.28M, unions 3.5M" },
-    },
-    { w: 8, t: "13 – 19 Mar · 15 Mar", p: [480_000, 1_700_000] },
-    { w: 9, t: "20 – 26 Mar · 23 Mar", p: [1_089_000, 3_500_000] },
-    { w: 10, t: "27 Mar – 2 Apr · 28 Mar", p: [740_000, 2_000_000] },
-    { w: 11, t: "3 – 9 Apr · 6 Apr", p: [570_000, 2_000_000] },
-    {
-      w: 12,
-      t: "10 – 16 Apr · 13 Apr",
-      p: [380_000, 1_500_000],
-      note: { p: "CGT gives 1.0M in one compilation, 1.5M in another" },
-    },
-    { w: 16, t: "1 – 7 May · 1 May", p: [782_000, 2_300_000] },
-    {
-      w: 20,
-      t: "5 – 11 Jun · 6 Jun",
-      p: [281_000, 900_000],
-      note: { p: "movement minimum" },
-    },
+    { w: 0, from: "2023-01-16", to: "2023-01-22", p: [1_120_000, 2_000_000] },
+    { w: 2, from: "2023-01-30", to: "2023-02-05", p: [1_270_000, 2_800_000] },
+    { w: 3, from: "2023-02-06", to: "2023-02-12", p: [963_000, 2_500_000] },
+    { w: 4, from: "2023-02-13", to: "2023-02-19", p: [440_000, 1_300_000] },
+    { w: 7, from: "2023-03-06", to: "2023-03-12", p: [1_280_000, 3_500_000] },
+    { w: 8, from: "2023-03-13", to: "2023-03-19", p: [480_000, 1_700_000] },
+    { w: 9, from: "2023-03-20", to: "2023-03-26", p: [1_089_000, 3_500_000] },
+    { w: 10, from: "2023-03-27", to: "2023-04-02", p: [740_000, 2_000_000] },
+    { w: 11, from: "2023-04-03", to: "2023-04-09", p: [570_000, 2_000_000] },
+    { w: 12, from: "2023-04-10", to: "2023-04-16", p: [380_000, 1_500_000] },
+    { w: 16, from: "2023-05-01", to: "2023-05-07", p: [782_000, 2_300_000] },
+    { w: 20, from: "2023-06-05", to: "2023-06-11", p: [281_000, 900_000] },
   ],
 };
 
 const BLOQUONS: Episode = {
   id: "bt",
-  strip: "Bloquons tout 2025",
-  short: "Bloquons tout",
-  span: "10 Sep – 5 Oct 2025",
-  banner:
-    "10 Sep is an actions-total (blockades included); 18 Sep is an intersyndicale march.",
+  start: "2025-09-10",
+  end: "2025-10-05",
   weeks: [
     {
       w: 0,
-      t: "8 – 14 Sep · 10 Sep",
+      from: "2025-09-08",
+      to: "2025-09-14",
       p: [175_000, 250_000],
       a: 540,
       flag: { p: "c" },
-      note: {
-        p: "ministry 175,000–197,000, revised up from an early-evening count of ~29,000; CGT ~250,000. 596 rallies, 253 blockades.",
-        a: "540 arrests, 211 in Paris",
-      },
     },
     {
       w: 1,
-      t: "15 – 21 Sep · 18 Sep",
+      from: "2025-09-15",
+      to: "2025-09-21",
       p: [500_000, 1_000_000],
       a: 309,
       f: 26,
       i: 11,
-      note: {
-        p: "intersyndicale day — a different mobilisation from the movement’s own actions; Paris 55,000 (prefecture)",
-        a: "309 nationwide, 103 in Paris",
-        i: "11 injured, including 1 journalist",
-      },
     },
-    {
-      w: 3,
-      t: "29 Sep – 5 Oct · 2 Oct",
-      p: [195_000, 600_000],
-      note: { p: "weakest mobilisation since 1 May 2025" },
-    },
+    { w: 3, from: "2025-09-29", to: "2025-10-05", p: [195_000, 600_000] },
   ],
 };
 
-/* -- 2026, lifted from the weekly aggregator in chart.ts ------------------ */
+/* ------------------------------------------------------------ 2026 rows */
 
-/** Flags the aggregator cannot infer from a single band (stock, floor, regional-only week). */
-const STUDENT_FLAG_PATCH: Partial<Record<number, Partial<Record<M, Flag>>>> = {
-  0: { i: "c" }, // cumulative Île-de-France stock since mid-September
-  5: { i: "f" }, // litigation-derived floor, not a ministry tally
-  6: { a: "r" }, // Bègles + Lyon + Strasbourg only
+/** The aggregator cannot infer stock / floor / regional-only from a band alone. */
+const STUDENT_FLAG_PATCH: Partial<
+  Record<number, Partial<Record<Metric, Flag>>>
+> = {
+  0: { i: "c" },
+  5: { i: "f" },
+  6: { a: "r" },
 };
 
+const STUDENT_SPAN = { start: "2026-10-01", end: "2026-11-11" };
+
 /** Safety net: the brief's weekly table, used only if a whole column arrives empty. */
-const STUDENT_FALLBACK: Record<M, (Band | null)[]> = {
+const STUDENT_FALLBACK: Record<Metric, (Band | null)[]> = {
   p: [
     null,
     [256_000, 450_000],
@@ -555,22 +303,14 @@ const STUDENT_FALLBACK: Record<M, (Band | null)[]> = {
   i: [[119, 235], null, null, [150, 150], null, [18, 18], null],
 };
 
-const STUDENT_NOTES: Partial<Record<M, string>> = {
-  p: "peak day of the week",
-  a: "sum of national daily counts; regional days excluded",
-  f: "sum of national daily counts",
-  i: "flow where a flow exists — W1 is a stock, W6 a litigation floor",
-};
-
-/** Live column from chart.ts, with a loud fallback if it comes through empty. */
-function studentColumn(m: M): { bands: (Band | null)[]; pinned: boolean } {
+function studentColumn(m: Metric): { bands: (Band | null)[]; pinned: boolean } {
   const live = STUDENT_WEEKS.map((w) => w[m]);
-  if (live.some((b) => b !== null)) return { bands: live, pinned: false };
-  const fb = STUDENT_FALLBACK[m];
+  if (live.some((b) => b !== null))
+    return { bands: live as (Band | null)[], pinned: false };
   console.error(
     `[episodes] 2026 weekly "${m}" arrived empty from chart.ts — falling back to the handoff table. Check STUDENT_WEEKS.`,
   );
-  return { bands: fb, pinned: true };
+  return { bands: STUDENT_FALLBACK[m], pinned: true };
 }
 
 function rows2026(): Row[] {
@@ -584,24 +324,24 @@ function rows2026(): Row[] {
   return STUDENT_WEEKS.map((wk, idx) => {
     const row: Row = {
       w: idx,
-      t: `W${idx + 1} · ${wk.label}${wk.touchesEdge ? " (partial week)" : ""}`,
+      from: wk.start,
+      to: wk.end,
+      partial: wk.touchesEdge,
     };
 
-    for (const m of ["p", "a", "f", "i"] as const) {
+    for (const m of METRICS) {
       const band = cols[m].bands[idx];
       if (!band) continue;
 
       row[m] = typeof band === "number" ? band : [band[0], band[1]];
 
-      // pinned column → patch wins; live column → chart.ts wins, patch only refines it
       const flag =
         STUDENT_FLAG_PATCH[idx]?.[m] ??
         (cols[m].pinned ? undefined : wk.flags[m]);
       if (flag && flag !== "n") row.flag = { ...row.flag, [m]: flag };
 
-      const note =
-        (cols[m].pinned ? STUDENT_NOTES[m] : wk.notes[m]) ?? STUDENT_NOTES[m];
-      if (note) row.note = { ...row.note, [m]: note };
+      const ref: NoteRef | undefined = wk.notes[m];
+      if (ref) row.noteRef = { ...row.noteRef, [m]: ref };
     }
     return row;
   });
@@ -609,11 +349,7 @@ function rows2026(): Row[] {
 
 const STUDENTS: Episode = {
   id: "students26",
-  strip: "Student protests 2026",
-  short: "Students 2026",
-  span: "1 Oct – 11 Nov 2026",
-  banner:
-    "Protester injuries are a September stock, then a litigation floor — never a weekly flow.",
+  ...STUDENT_SPAN,
   weeks: rows2026(),
 };
 
@@ -639,6 +375,34 @@ const ENFORCEMENT_LAST = ((): number => {
   return last;
 })();
 
+/* ------------------------------------------------------------------ text */
+
+/** Tooltip title: "16 – 22 Jan · 19 Jan", "Act 1 · 17 Nov 2018", "W3 · 12–18 Oct". */
+function rowTitle(ep: Episode, r: Row): string {
+  const m = t();
+
+  if (ep.id === "students26") {
+    const base = fmtWeek(r.from, r.to);
+    return r.partial ? fill(m.panels.partialWeek, { label: base }) : base;
+  }
+
+  const when =
+    r.act !== undefined
+      ? fill(m.panels.act, { n: r.act })
+      : fmtWeek(r.from, r.to);
+  const action = m.episodes[ep.id].weeks[r.w]?.action;
+  return action ? fill(m.panels.withAction, { when, action }) : when;
+}
+
+function noteFor(id: EpisodeId, r: Row, m: Metric): string | undefined {
+  if (id === "students26") {
+    return (
+      noteText(r.noteRef?.[m]) || t().episodes.students26.fallbackNote?.[m]
+    );
+  }
+  return t().episodes[id].weeks[r.w]?.note?.[m];
+}
+
 /* -------------------------------------------------------------- indexing */
 
 const bandOf = (b: Band): [number, number] =>
@@ -648,8 +412,7 @@ const midOf = (b: Band): number => {
   return (lo + hi) / 2;
 };
 
-/** Points carry the raw count in `y`; `base` is kept only to print "×N vs first figure". */
-function seriesData(ep: Episode, key: M): Pt[] | null {
+function seriesData(ep: Episode, key: Metric): Pt[] | null {
   const rows = ep.weeks
     .filter((r) => r[key] !== undefined)
     .sort((a, b) => a.w - b.w);
@@ -667,9 +430,9 @@ function seriesData(ep: Episode, key: M): Pt[] | null {
       low,
       high,
       flag: flagOf(r),
-      note: r.note?.[key],
+      note: noteFor(ep.id, r, key),
       base,
-      t: r.t,
+      t: rowTitle(ep, r),
     };
   });
 }
@@ -677,7 +440,7 @@ function seriesData(ep: Episode, key: M): Pt[] | null {
 function buildDataset(
   ep: Episode,
   epIndex: number,
-  key: M,
+  key: Metric,
   color: string,
   maxX: number,
 ): PanelDataset | null {
@@ -687,11 +450,11 @@ function buildDataset(
   const points = all.filter((p) => p.x <= maxX);
   if (!points.length) return null;
 
-  const item = ITEMS.find((d) => d.key === key)!;
+  const m = t();
   const drawn = points.map((p) => hollow(p.flag));
 
   return {
-    label: item.label,
+    label: m.items[key].label,
     data: points,
     borderColor: color,
     backgroundColor: color,
@@ -705,7 +468,6 @@ function buildDataset(
     tension: 0,
     spanGaps: true,
     segment: {
-      // a bridged gap of ≥1 week is visibly flagged
       borderDash: (ctx) =>
         Math.abs((ctx.p1.parsed.x as number) - (ctx.p0.parsed.x as number)) >
         1.01
@@ -716,12 +478,18 @@ function buildDataset(
     __ep: epIndex,
     __color: color,
     __hollow: drawn,
-    __label: points.length < all.length ? `${ep.short} +` : ep.short,
+    __label:
+      points.length < all.length
+        ? fill(m.panels.seriesContinues, { name: m.episodes[ep.id].short })
+        : m.episodes[ep.id].short,
   };
 }
 
-/** Raw min/max across the given series, restricted to x ≤ maxX. */
-function rawExtent(eps: Episode[], keys: M[], maxX: number): [number, number] {
+function rawExtent(
+  eps: Episode[],
+  keys: Metric[],
+  maxX: number,
+): [number, number] {
   let lo = Number.POSITIVE_INFINITY;
   let hi = Number.NEGATIVE_INFINITY;
 
@@ -833,8 +601,8 @@ function logTicks(min: number, max: number): number[] {
   const out: number[] = [];
 
   for (let e = Math.floor(l); e <= Math.ceil(h); e++) {
-    for (const m of mantissas) {
-      const v = Number((m * 10 ** e).toPrecision(12));
+    for (const mm of mantissas) {
+      const v = Number((mm * 10 ** e).toPrecision(12));
       if (v > min * 1.01 && v < max / 1.01) out.push(v);
     }
   }
@@ -854,7 +622,7 @@ function yScale(min: number, max: number, showLabels: boolean) {
       font: { size: 9 },
       color: MUTED,
       padding: 6,
-      callback: (v: string | number) => compact.format(Number(v)),
+      callback: (v: string | number) => compact().format(Number(v)),
     },
     afterBuildTicks: (axis: any) => {
       axis.ticks = ticks.map((value) => ({ value }));
@@ -873,25 +641,29 @@ const pctOf = (v: number, base: number): string => {
 };
 
 function tooltipSpec() {
+  const m = t();
   return {
     displayColors: false,
     callbacks: {
       title: (items: TooltipItem<"line">[]) => (items[0].raw as Pt).t,
       label: (item: TooltipItem<"line">) => {
         const p = item.raw as Pt;
-        const band =
+        const value =
           p.low === p.high
-            ? nf.format(Math.round(p.low))
-            : `${nf.format(Math.round(p.low))} – ${nf.format(Math.round(p.high))}`;
-        const flag = FLAG_TEXT[p.flag];
-        return `${item.dataset.label}: ${band}${flag ? `  ·  ${flag}` : ""}`;
+            ? nf().format(Math.round(p.low))
+            : `${nf().format(Math.round(p.low))} – ${nf().format(Math.round(p.high))}`;
+        const flag = m.flags[p.flag];
+        return !flag
+          ? fill(m.tooltip.linePlain, { value })
+          : fill(m.tooltip.lineWithFlag, { value, flag });
       },
       afterLabel: (item: TooltipItem<"line">) => (item.raw as Pt).note ?? "",
       footer: (items: TooltipItem<"line">[]) => {
         const p = items[0].raw as Pt;
+        const n = nf().format(Math.round(p.base));
         return Math.abs(p.y - p.base) / p.base < 1e-9
-          ? `first comparable figure for this series (${nf.format(Math.round(p.base))})`
-          : `${pctOf(p.y, p.base)} of the series' first comparable figure (${nf.format(Math.round(p.base))})`;
+          ? fill(m.tooltip.firstFigure, { n })
+          : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n });
       },
     },
   };
@@ -900,11 +672,11 @@ function tooltipSpec() {
 /* -------------------------------------------------------------- emphasis */
 
 const episodePanels: Chart<"line">[] = [];
-const itemPanels: { chart: Chart<"line">; item: M }[] = [];
-let activeItem: M | null = null;
+const itemPanels: { chart: Chart<"line">; item: Metric }[] = [];
+let activeItem: Metric | null = null;
 let activeEvent: number | null = null;
 
-function emphasiseItem(key: M | null): void {
+function emphasiseItem(key: Metric | null): void {
   if (key === activeItem) return;
   activeItem = key;
 
@@ -923,7 +695,7 @@ function emphasiseItem(key: M | null): void {
 
   for (const { chart, item } of itemPanels) {
     const host = chart.canvas.parentElement;
-    if (host) host.style.opacity = key === null || key === item ? "1" : "0.18";
+    if (host) host.style.opacity = key === null || item === key ? "1" : "0.18";
   }
 }
 
@@ -934,7 +706,7 @@ function emphasiseEvent(index: number | null): void {
   for (const { chart } of itemPanels) {
     for (const ds of chart.data.datasets) {
       const d = ds as PanelDataset;
-      const on = index === null || d.__ep === index; // episode id, not dataset slot
+      const on = index === null || d.__ep === index;
       const colour = on ? d.__color : alpha(d.__color, 0.18);
       d.borderColor = colour;
       d.pointBorderColor = colour;
@@ -965,10 +737,14 @@ function legendButton(
 /* ---------------------------------------------------------------- mounts */
 
 function observations(ep: Episode): string {
-  const counts = ITEMS.map(
-    (i) => ep.weeks.filter((r) => r[i.key] !== undefined).length,
-  );
-  return `obs ${counts.join("·")} of ${ep.weeks.length} wks`;
+  const m = t();
+  const counts = METRICS.map(
+    (k) => ep.weeks.filter((r) => r[k] !== undefined).length,
+  ).join("·");
+  return fill(m.panels.obs, {
+    counts,
+    weeks: plural(m.units.weeks, ep.weeks.length),
+  });
 }
 
 function panelFigure(
@@ -1016,30 +792,26 @@ export function mountCrossEpisode(opts: {
   eventLegend: HTMLElement;
 }): Chart<"line">[] {
   const charts: Chart<"line">[] = [];
+  const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
 
   /* ---- primary trellis: one panel per episode, one y range for all ---- */
-  const [yMin, yMax] = logBounds(
-    ...rawExtent(
-      EPISODES,
-      ITEMS.map((i) => i.key),
-      unbounded,
-    ),
-  );
+  const [yMin, yMax] = logBounds(...rawExtent(EPISODES, METRICS, unbounded));
   const cols = columns(opts.episodeHost);
   opts.episodeHost.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
 
   EPISODES.forEach((ep, idx) => {
+    const text = m.episodes[ep.id];
     const maxW = Math.max(...ep.weeks.map((r) => r.w), 1);
     const { figure, canvas } = panelFigure(
-      ep.strip,
-      `${ep.span} · ${observations(ep)}`,
-      ep.banner,
+      text.strip,
+      `${fmtSpan(ep.start, ep.end)} · ${observations(ep)}`,
+      text.banner,
     );
     opts.episodeHost.append(figure);
 
-    const datasets = ITEMS.map((i) =>
-      buildDataset(ep, idx, i.key, i.color, unbounded),
+    const datasets = SERIES.map((s) =>
+      buildDataset(ep, idx, s.key, s.color, unbounded),
     ).filter((d): d is PanelDataset => d !== null);
 
     const options: ChartOptions<"line"> = {
@@ -1080,18 +852,22 @@ export function mountCrossEpisode(opts: {
   const itemCols = columns(opts.itemHost);
   opts.itemHost.style.gridTemplateColumns = `repeat(${itemCols}, minmax(0, 1fr))`;
 
-  ITEMS.forEach((item) => {
-    const [rawLo, rawHi] = rawExtent(EPISODES, [item.key], ENFORCEMENT_LAST);
+  SERIES.forEach((series) => {
+    const [rawLo, rawHi] = rawExtent(EPISODES, [series.key], ENFORCEMENT_LAST);
     const [lo, hi] = logBounds(rawLo, rawHi);
+    const range = fill(m.panels.valueRange, {
+      lo: compact().format(rawLo),
+      hi: compact().format(rawHi),
+    });
 
     const { figure, canvas } = panelFigure(
-      item.short,
-      `${compact.format(rawLo)}–${compact.format(rawHi)} · x 0–w${ENFORCEMENT_LAST}`,
+      m.items[series.key].short,
+      fill(m.panels.itemMeta, { range, n: ENFORCEMENT_LAST }),
     );
     opts.itemHost.append(figure);
 
     const datasets = EPISODES.map((ep, i) =>
-      buildDataset(ep, i, item.key, RAMP[i], ENFORCEMENT_LAST),
+      buildDataset(ep, i, series.key, RAMP[i], ENFORCEMENT_LAST),
     ).filter((d): d is PanelDataset => d !== null);
 
     const options: ChartOptions<"line"> = {
@@ -1135,20 +911,20 @@ export function mountCrossEpisode(opts: {
       emphasiseEvent(ds.__ep);
     });
 
-    itemPanels.push({ chart, item: item.key });
+    itemPanels.push({ chart, item: series.key });
     charts.push(chart);
   });
 
   /* ---- legends ---- */
   opts.itemLegend.replaceChildren(
-    ...ITEMS.map((item) => {
+    ...SERIES.map((s) => {
       const swatch = document.createElement("span");
       swatch.className = "swatch";
-      swatch.style.background = item.color;
+      swatch.style.background = s.color;
       return legendButton(
-        item.label,
+        m.items[s.key].label,
         swatch,
-        () => emphasiseItem(item.key),
+        () => emphasiseItem(s.key),
         () => emphasiseItem(null),
       );
     }),
@@ -1160,7 +936,7 @@ export function mountCrossEpisode(opts: {
       swatch.className = "swatch";
       swatch.style.background = RAMP[i];
       return legendButton(
-        ep.short,
+        m.episodes[ep.id].short,
         swatch,
         () => emphasiseEvent(i),
         () => emphasiseEvent(null),

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>France — protest activity, Oct–Nov 2026</title>
+    <title>France — protest activity</title>
     <style>
       html,
       body {
@@ -203,326 +203,34 @@
     </style>
   </head>
   <body>
-    <!-- Disclaimer. The transcript link points at public/transcript.html; if the
-         transcript is hosted elsewhere, change that one href. -->
-    <div class="disclaimer">
-      <strong
-        >These charts were created using LLM assistance, and should not be
-        relied on for serious analysis without in-depth review.</strong
-      >
-      You can view the
-      <a href="transcript.html">full transcript of the LLM conversation</a>.
-    </div>
+    <div class="disclaimer" id="disclaimer"></div>
 
     <section id="section-daily">
-      <header>
-        <h1>Section A — daily</h1>
-        <p>
-          One x-axis slot per calendar day, 1 Oct – 11 Nov 2026. Days with no
-          published figure stay empty.
-        </p>
-      </header>
+      <header id="hdr-a"></header>
       <div class="wrap"><canvas id="chart-protesters"></canvas></div>
       <div class="wrap"><canvas id="chart-enforcement"></canvas></div>
       <div class="wrap"><canvas id="chart-costs"></canvas></div>
     </section>
 
     <section id="section-weekly">
-      <header>
-        <h1>Section B — weekly</h1>
-        <p>
-          Weeks run Monday–Sunday. Crowd size shows the peak day; arrests and
-          injuries are summed. * marks weeks clipped by the window.
-        </p>
-      </header>
+      <header id="hdr-b"></header>
       <div class="wrap"><canvas id="chart-protesters-weekly"></canvas></div>
       <div class="wrap"><canvas id="chart-enforcement-weekly"></canvas></div>
     </section>
 
     <section id="section-cross">
-      <header>
-        <h1>Section C — cross-episode, one panel per movement</h1>
-        <p>
-          Seven episodes, four series each, on a single logarithmic count axis
-          shared by every panel — so a point sits at exactly the number its
-          tooltip reports, and panels can be compared by eye. Panel position
-          names the movement; hue names the series, once, in the legend below.
-          Hollow markers = regional, partial, derived or stock figure. Hover a
-          series (or its legend entry) to trace it across all seven panels.
-        </p>
-      </header>
+      <header id="hdr-c"></header>
       <div class="legend" id="legend-items"></div>
       <div class="trellis" id="trellis-episodes"></div>
-      <p class="axis-note">
-        x — whole weeks since each movement's first action, true scale, so
-        durations differ (Nahel 1 week, Gilets jaunes 43) and each panel keeps
-        its own x extent. y — count, log scale, one range for all seven panels
-        (about 0.5 → 7M); tick labels appear only in the left column, gridlines
-        everywhere, and on a log axis equal vertical distance means equal
-        proportional change wherever a series sits. Dashed segment = at least
-        one week with no published figure lies between the two points. "obs"
-        under each strip = weeks with a figure for protestors · arrests · forces
-        injured · protestors injured.
-      </p>
+      <p class="axis-note" id="note-c"></p>
 
-      <header>
-        <h1>Section C′ — cross-episode, transposed</h1>
-        <p>
-          The same data with the comparison axis flipped: one panel per series,
-          one line per movement, direct labels instead of a legend. Colour
-          encodes the movement on a single sequential ramp, light → dark in the
-          same order in every panel, so the ramp is learned once. Use this to
-          ask "did arrests behave the same way in every episode?".
-        </p>
-      </header>
+      <header id="hdr-cp"></header>
       <div class="legend" id="legend-events"></div>
       <div class="trellis trellis-items" id="trellis-items"></div>
-      <p class="axis-note">
-        <strong>x is capped at week 7</strong> — the last week on which any
-        movement has an arrest or injury figure (CPE, 28 Mar – 2 Apr 2006: 600
-        arrests). Gilets jaunes' enforcement series stops at Act IV (week 3)
-        while its crowd series runs to Act 44 (week 43); letting that set the
-        axis left every enforcement panel empty after week 4. A trailing
-        <code>+</code> marks a series that continues past the cap — the
-        untruncated curves are in Section C, where each panel keeps its own
-        extent. y limits are <em>per panel</em> because the four series sit up
-        to three orders of magnitude apart; the range is printed under each
-        strip, so compare shape and percentage change here, not level.
-      </p>
+      <p class="axis-note" id="note-cp"></p>
     </section>
 
-    <section id="sources">
-      <h1>Sources</h1>
-      <p class="intro">
-        Compiled by an LLM from the reports below; no figure here is a primary
-        measurement made for this page. Where a movement has an official count,
-        the interior ministry is the source of the arrest and officer-injury
-        numbers and the unions publish the competing turnout figure. Counts that
-        only ever existed as scattered daily press reports were summed by hand,
-        which is where most of the error will be.
-      </p>
-
-      <div class="source-group">
-        <h2>The 2026 movement — 1 Oct to 11 Nov</h2>
-        <ul>
-          <li>
-            <a
-              href="https://www.ifrap.org/etat-et-collectivites/violences-des-17-et-18-octobre-2026-une-facture-qui-approche-le-milliard-deuros"
-              >Fondation IFRAP — « Violences des 17 et 18 octobre 2026 : une
-              facture qui approche le milliard d’euros »</a
-            >
-            <span class="date">21 Oct 2026</span> —
-            <span class="what"
-              >the €247M–872M damage range for 17–18 Oct: ~€910M material damage
-              and ~€190M lost turnover in the high estimate, €666M of it
-              retail.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.lemonde.fr/economie/article/2026/10/27/plus-de-2-500-commerces-degrades-en-marge-des-recentes-mobilisations-selon-cci-france-qui-demande-une-interdiction-des-manifestations-jusqu-aux-fetes-de-fin-d-annee_6801314_3234.html"
-              >Le Monde — « Plus de 2 500 commerces dégradés », d’après CCI
-              France</a
-            >
-            <span class="date">27 Oct 2026</span> —
-            <span class="what"
-              >CCI France's shop counts: 2,488 hit on 17 Oct, of which 1,161
-              pillaged, sacked or burnt.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/plus-de-2-500-magasins-touches-par-les-violences-en-marge-des-manifestations-des-17-et-24-octobre-selon-les-chambres-de-commerce_8256049.html"
-              >franceinfo — « Plus de 2 500 magasins touchés »</a
-            >
-            <span class="date">27 Oct 2026</span> —
-            <span class="what"
-              >the 24 Oct increment (50 shops, total 2,538) and the 80%
-              centre-town turnover drop.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.bfmtv.com/economie/entreprises/20-commerces-vandalises-samedi-contre-2-488-le-17-octobre-cci-france-constate-une-nette-baisse-des-degradations-en-marge-des-manifestations-mais-s-inquiete-d-une-forte-chute-du-chiffre-d-affaires-des-magasins-pouvant-atteindre-80_AD-202611010225.html"
-              >BFMTV — CCI France, 20 shops vandalised on 31 Oct</a
-            >
-            <span class="date">1 Nov 2026</span> —
-            <span class="what"
-              >why week 6 carries no damage figure: the count collapses after 24
-              Oct.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.capital.fr/economie-politique/combien-ont-coute-les-70-000-policiers-de-samedi-letat-ne-le-dit-pas-mais-certains-chiffres-existent-1531269"
-              >Capital.fr — « Combien ont coûté les 70 000 policiers de samedi
-              »</a
-            >
-            <span class="date">28 Oct 2026</span> —
-            <span class="what"
-              >the €15,000–30,000 per CRS company per day and €3.4M per 3,000
-              gendarmes benchmarks behind the policing-cost band; also the 1,435
-              arrests and 53 officers injured on 24 Oct.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.lefigaro.fr/societes/violences-urbaines-le-cout-exorbitant-d-un-week-end-d-emeutes-pour-les-commerces-et-les-collectivites-20261020"
-              >Le Figaro — « Le coût exorbitant d’un week-end d’émeutes »</a
-            >
-            <span class="date">20 Oct 2026</span> —
-            <span class="what"
-              >cross-check on the damage order of magnitude.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.lecanardenchaine.fr/police-justice/55381-les-manifestants-ont-le-mauvais-oeil"
-              >Le Canard enchaîné — « Les manifestants ont le mauvais œil »</a
-            >
-            <span class="date">10 Nov 2026</span> —
-            <span class="what"
-              >Prof. Laurent Thines' (CHU de Besançon) press-and-blog register:
-              79 serious injuries in three weeks — 10 blinded, 9 cranio-facial,
-              7 amputations, 1 death. The source of the protester-injury floor,
-              and the reason no weekly protester-injury series exists.</span
-            >
-          </li>
-          <li>
-            <a href="https://www.interieur.gouv.fr/"
-              >Ministère de l’Intérieur</a
-            >
-            —
-            <span class="what"
-              >origin of every arrest, custody and officer-injury count and of
-              the ministry turnout figure. Published as press briefings and
-              evening situation reports, not as a downloadable series, so the
-              daily values were collected from the reporting above rather than
-              from a dataset.</span
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div class="source-group">
-        <h2>Historical episodes</h2>
-        <ul>
-          <li>
-            <a href="https://fr.wikipedia.org/wiki/Mai_68">Mai 68</a> —
-            <span class="what"
-              >1 May (25,000 prefecture / 100,000 CGT) and 13 May (230,000
-              prefecture / 171,000 ORTF / 1,000,000 unions) turnouts; the 469
-              arrests of 10–11 May and the 1,000+ of 25 May.</span
-            >
-          </li>
-          <li>
-            <a href="https://en.wikipedia.org/wiki/May_68"
-              >May 68 (English Wikipedia)</a
-            >
-            —
-            <span class="what"
-              >the 887 injured figure, which appears only in this article's
-              infobox and is flagged accordingly — no French count was
-              published.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche"
-              >Contrat première embauche</a
-            >
-            —
-            <span class="what"
-              >the CPE turnout series (7 Feb, 7 Mar, 18 Mar, 23 Mar, 28 Mar, 4
-              Apr) and the Paris-only enforcement counts of 16–18 Mar.</span
-            >
-          </li>
-          <li>
-            <a href="https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes"
-              >Mouvement des Gilets jaunes</a
-            >
-            —
-            <span class="what"
-              >the Act I–44 ministry turnout series and the Act I–IV
-              custody/interpellation counts. Later acts were never published as
-              a series, which is why the enforcement lines stop at week 3.</span
-            >
-          </li>
-          <li>
-            <a href="https://fr.wikipedia.org/wiki/Mort_de_Nahel_Merzouk"
-              >Mort de Nahel Merzouk</a
-            >
-            —
-            <span class="what"
-              >the 3,354 arrests and 722 officers injured of 27 Jun – 2 Jul
-              2023, and the 108 of the following week.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_en_2023"
-              >Mouvement social contre la réforme des retraites de 2023</a
-            >
-            —
-            <span class="what"
-              >the ministry and union turnout pairs for each national action
-              day, 19 Jan – 6 Jun 2023.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.france24.com/fr/france/20250910-en-direct-france-bloquons-tout-colere-sociale-emmanuel-macron"
-              >France 24 — « Bloquons tout », direct du 10 septembre 2025</a
-            >
-            <span class="date">10 Sep 2025</span> —
-            <span class="what"
-              >197,000 participants, 596 rallies, 253 blockades, 540 arrests
-              (211 in Paris) — the final ministry point of the evening,
-              superseding the 175,000 of 17:45.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.bfmtv.com/societe/manifestations/direct-10-septembre-blocages-transports-manifestations-suivez-le-mouvement-bloquons-tout-a-paris-lyon-marseille_LN-202509100070.html"
-              >BFMTV — direct du 10 septembre</a
-            >
-            <span class="date">10 Sep 2025</span> —
-            <span class="what"
-              >the intra-day revision of the count (175,000 → 197,000), which is
-              why the chart shows a band rather than a point.</span
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.lefigaro.fr/social/direct-bloquons-tout-10-septembre-mouvement-greves-manifestations-perturbations-transports-ecole-20250910"
-              >Le Figaro — direct du 10 septembre</a
-            >
-            <span class="date">10–11 Sep 2025</span> —
-            <span class="what"
-              >the 18 Sep intersyndicale day and the 2 Oct third wave.</span
-            >
-          </li>
-          <li>
-            <a href="https://en.wikipedia.org/wiki/Bloquons_tout"
-              >Bloquons tout (English Wikipedia)</a
-            >
-            —
-            <span class="what"
-              >the movement's chronology and its 10 Sep / 18 Sep / 2 Oct
-              structure.</span
-            >
-          </li>
-        </ul>
-      </div>
-
-      <p class="foot">
-        Not a source, but load-bearing: the index in the earlier drafts of
-        Section C divided each series by its own first figure, and the C′ x-axis
-        was set by the longest episode. Both were replaced — C plots raw counts
-        on a shared log axis, and C′ is capped at week 7. Nothing here has been
-        through external review.
-      </p>
-    </section>
+    <section id="sources"></section>
 
     <script type="module" src="/bundle.js"></script>
   </body>

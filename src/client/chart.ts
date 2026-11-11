@@ -1,3 +1,7 @@
+/* 2026 daily / weekly charts. No user-visible English lives here: labels, titles,
+   notes and suffixes all resolve through i18n.ts. Series store NoteRef, not copy,
+   so the module-level projections stay valid across locale switches. */
+
 import {
   Chart,
   LineController,
@@ -9,12 +13,32 @@ import {
   Tooltip,
   Legend,
   Title,
-  SubTitle, // capital T
+  SubTitle,
   type ChartDataset,
   type ChartOptions,
+  type LegendItem,
   type Plugin,
   type PointStyle,
 } from "chart.js";
+
+import {
+  compact,
+  eurM,
+  fill,
+  fmtDate,
+  fmtDayMonth,
+  fmtWeek,
+  nf,
+  t,
+} from "./i18n.ts";
+import type {
+  Flag,
+  Metric,
+  MetricKey,
+  NoteRef,
+  Quality,
+  WeekNoteParts,
+} from "./model.ts";
 
 Chart.register(
   LineController,
@@ -35,6 +59,9 @@ const DETACH_REGIONAL = true;
 
 const START = "2026-10-01";
 const END = "2026-11-11";
+
+type Unit = "count" | "eurM";
+type Agg = "sum" | "max";
 
 /* ------------------------------------------------------------------ dates */
 
@@ -63,14 +90,11 @@ function mondayOf(iso: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-const dmy = (iso: string): string => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
-
 const DATES = eachDay(START, END);
-const DAY_LABELS = DATES.map(dmy);
 
 interface WeekSpec {
-  key: string;
-  label: string;
+  key: string; // ISO Monday — the aggregator key
+  end: string; // ISO Sunday — labels are formatted per locale at render time
   dates: string[];
   touchesEdge: boolean;
 }
@@ -86,40 +110,19 @@ function buildWeeks(dates: string[]): WeekSpec[] {
   return [...byKey.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, ds]) => {
-      const sun = addDays(key, 6);
-      const touchesEdge = key < START || sun > END;
-      return {
-        key,
-        label: `${dmy(key)}–${dmy(sun)}${touchesEdge ? "*" : ""}`,
-        dates: ds,
-        touchesEdge,
-      };
+      const end = addDays(key, 6);
+      return { key, end, dates: ds, touchesEdge: key < START || end > END };
     });
 }
 
 const WEEKS = buildWeeks(DATES);
 
-const nf = new Intl.NumberFormat("en-GB");
-const eurM = new Intl.NumberFormat("en-GB", {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-const compact = new Intl.NumberFormat("en-GB", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
-
 /* ------------------------------------------------------------------ types */
-
-/** n national · r regional only · p partial · f floor · e derived · c cumulative stock · w weekly aggregate */
-type Quality = "n" | "r" | "p" | "f" | "e" | "c" | "w";
-type Unit = "count" | "eurM";
 
 interface Obs {
   low: number;
   high: number;
   q?: Quality;
-  note?: string;
 }
 
 interface Cell {
@@ -130,146 +133,64 @@ interface Cell {
   damagesCost?: Obs; // € millions
 }
 
-/* ---------------------------------------------------------------- caveats */
-
-const DAY_NOTES: Record<string, string> = {
-  "2026-10-01":
-    "The €1M Île-de-France figure is a stock accumulated since 17 September, not spending on 1 October.",
-  "2026-10-17":
-    'IFRAP conditional estimate for the 17–18 Oct weekend: €244M–€866M material damage; €294M–€1.1bn including lost turnover. Shop counts diverge: government "at least 3,000", CCI 2,488, FCD 1,500+. 1–2 deaths. No national count of injured protesters was published.',
-  "2026-10-18":
-    "Paris only, derived from ~30 newly pillaged shops. Subset of the 17 Oct weekend total — adding the two double-counts.",
-  "2026-10-24":
-    "3 protesters seriously hurt: Toulouse, Reims, Clermont-Ferrand.",
-  "2026-11-05":
-    'Prefecture reported "no structuring material damage"; Rhône counted 5 shops degraded.',
-  "2026-11-07":
-    "Authorities published no damage tally; communes inventoried their own. Angers: 1 shop + 4 banks vandalised.",
-};
-
 /* ------------------------------------------------------------------- data */
 
 const FACTS: Record<string, Cell> = {
   "2026-10-01": {
-    arrests: {
-      low: 1_949,
-      high: 1_949,
-      note: "arrest ≠ custody — 1,793 placed in custody",
-    },
-    forcesInjured: {
-      low: 84,
-      high: 305,
-      note: "ministry gave 84 then 305 for the same day",
-    },
-    protesterInjured: {
-      low: 119,
-      high: 235,
-      note: "65 staff + 170 pupils, cumulative",
-    },
-    damagesCost: {
-      low: 1,
-      high: 1,
-      q: "c",
-      note: "Île-de-France stock since 17 Sep",
-    },
+    arrests: { low: 1_949, high: 1_949 },
+    forcesInjured: { low: 84, high: 305 },
+    protesterInjured: { low: 119, high: 235 },
+    damagesCost: { low: 1, high: 1, q: "c" },
   },
   "2026-10-06": {
     turnout: { low: 256_000, high: 450_000 },
-    damagesCost: {
-      low: 6,
-      high: 6,
-      q: "e",
-      note: "IDF increment 1→9 Oct; shared with 8 Oct",
-    },
+    damagesCost: { low: 6, high: 6, q: "e" },
   },
   "2026-10-08": {
     turnout: { low: 71_500, high: 130_000 },
-    damagesCost: {
-      low: 6,
-      high: 6,
-      q: "e",
-      note: "same €6M increment as 6 Oct — do not add",
-    },
+    damagesCost: { low: 6, high: 6, q: "e" },
   },
-  "2026-10-12": { arrests: { low: 13, high: 13, q: "r", note: "Rhône only" } },
+  "2026-10-12": { arrests: { low: 13, high: 13, q: "r" } },
   "2026-10-13": {
     turnout: { low: 161_500, high: 480_000 },
     forcesInjured: { low: 40, high: 40 },
-    damagesCost: {
-      low: 1.5,
-      high: 1.5,
-      q: "e",
-      note: "IDF increment 9→11 Oct",
-    },
+    damagesCost: { low: 1.5, high: 1.5, q: "e" },
   },
   "2026-10-17": {
     turnout: { low: 550_000, high: 800_000 },
     arrests: { low: 2_397, high: 2_628 },
-    forcesInjured: { low: 997, high: 1_144, note: "7–9 seriously injured" },
-    damagesCost: {
-      low: 244,
-      high: 866,
-      note: "IFRAP low–high, material damage, 17–18 Oct combined; central case €463M",
-    },
+    forcesInjured: { low: 997, high: 1_144 },
+    damagesCost: { low: 244, high: 866 },
   },
   "2026-10-18": {
-    arrests: { low: 108, high: 108, q: "p", note: "Paris only" },
-    damagesCost: {
-      low: 1.8,
-      high: 5,
-      q: "e",
-      note: "Paris only: ~30 shops × €60k–167k; subset of 17 Oct, not additive",
-    },
+    arrests: { low: 108, high: 108, q: "p" },
+    damagesCost: { low: 1.8, high: 5, q: "e" },
   },
-  "2026-10-20": {
-    arrests: { low: 13, high: 13, q: "r", note: "Guadeloupe only" },
-  },
+  "2026-10-20": { arrests: { low: 13, high: 13, q: "r" } },
   "2026-10-24": {
     turnout: { low: 410_000, high: 800_000 },
     arrests: { low: 1_314, high: 1_435 },
     forcesInjured: { low: 267, high: 267 },
-    protesterInjured: { low: 150, high: 150, note: "3 seriously hurt" },
-    damagesCost: {
-      low: 1,
-      high: 8.4,
-      q: "e",
-      note: "50 shops (CCI France) × €20k light damage → €167k IFRAP high average",
-    },
+    protesterInjured: { low: 150, high: 150 },
+    damagesCost: { low: 1, high: 8.4, q: "e" },
   },
   "2026-10-31": {
     turnout: { low: 320_000, high: 500_000 },
     arrests: { low: 565, high: 779 },
     forcesInjured: { low: 116, high: 159 },
-    damagesCost: {
-      low: 0.4,
-      high: 3.3,
-      q: "e",
-      note: "20 shops degraded (CCI France) × €20k–167k",
-    },
+    damagesCost: { low: 0.4, high: 3.3, q: "e" },
   },
   "2026-11-05": {
     turnout: { low: 575_000, high: 1_600_000 },
     arrests: { low: 448, high: 642 },
     forcesInjured: { low: 53, high: 112 },
-    protesterInjured: {
-      low: 18,
-      high: 18,
-      q: "f",
-      note: "legal complaints, not a ministry count",
-    },
+    protesterInjured: { low: 18, high: 18, q: "f" },
   },
   "2026-11-07": {
     turnout: { low: 146_000, high: 250_000 },
     arrests: { low: 350, high: 360 },
   },
-  "2026-11-09": {
-    arrests: {
-      low: 17,
-      high: 17,
-      q: "r",
-      note: "Bègles 4 + Lyon 8 + Strasbourg 5",
-    },
-  },
+  "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } },
 };
 
 /* ------------------------------------------------------ policing cost model */
@@ -278,53 +199,16 @@ const FACTS: Record<string, Cell> = {
 const RATE = { low: 136, high: 1_133 } as const;
 
 const DEPLOYMENT: Record<string, Obs> = {
-  "2026-10-01": {
-    low: 5_000,
-    high: 20_000,
-    q: "e",
-    note: "modelled: Beauvau gave 305 injured and 1,949 arrests but refused to state mobile-unit numbers",
-  },
-  "2026-10-06": {
-    low: 5_000,
-    high: 20_000,
-    q: "e",
-    note: "modelled; no deployment total published",
-  },
-  "2026-10-08": {
-    low: 5_000,
-    high: 20_000,
-    q: "e",
-    note: "modelled for Acte IV",
-  },
-  "2026-10-12": {
-    low: 2_000,
-    high: 8_000,
-    q: "e",
-    note: "modelled: Île-de-France only, ~80 lycées",
-  },
-  "2026-10-13": {
-    low: 5_000,
-    high: 20_000,
-    q: "e",
-    note: "modelled: Ardèche fielded >100 officers for ~1,000 demonstrators in 4 towns; scaled to 101 departments",
-  },
-  "2026-10-17": {
-    low: 60_000,
-    high: 60_000,
-    note: 'government figure; the ">10,000" morning tally was partial, not a rival total',
-  },
-  "2026-10-24": {
-    low: 70_000,
-    high: 70_000,
-    note: "110 mobile units, 26 Centaure, ~15 water cannon",
-  },
-  "2026-10-31": { low: 70_000, high: 70_000, note: "dispositif reconducted" },
-  "2026-11-05": {
-    low: 70_000,
-    high: 70_000,
-    note: "reconducted for the interprofessional day",
-  },
-  "2026-11-07": { low: 70_000, high: 70_000, note: "reconducted" },
+  "2026-10-01": { low: 5_000, high: 20_000, q: "e" },
+  "2026-10-06": { low: 5_000, high: 20_000, q: "e" },
+  "2026-10-08": { low: 5_000, high: 20_000, q: "e" },
+  "2026-10-12": { low: 2_000, high: 8_000, q: "e" },
+  "2026-10-13": { low: 5_000, high: 20_000, q: "e" },
+  "2026-10-17": { low: 60_000, high: 60_000 },
+  "2026-10-24": { low: 70_000, high: 70_000 },
+  "2026-10-31": { low: 70_000, high: 70_000 },
+  "2026-11-05": { low: 70_000, high: 70_000 },
+  "2026-11-07": { low: 70_000, high: 70_000 },
 };
 
 function costBand(dep: Obs): [number, number] {
@@ -334,14 +218,12 @@ function costBand(dep: Obs): [number, number] {
 /* ----------------------------------------------------------- projections */
 
 type Band = [low: number, high: number] | null;
-type MetricKey = keyof Cell;
-type Agg = "sum" | "max";
 
 interface MetricSeries {
   values: (number | null)[];
   bands: Band[];
   quality: (Quality | null)[];
-  notes: (string | null)[];
+  notes: (NoteRef | null)[];
   detach: boolean[];
 }
 
@@ -349,6 +231,7 @@ interface View {
   labels: string[];
   titles: string[];
   footers: (string | null)[];
+  xTitle: string;
   maxRotation: number;
   maxTicksLimit: number;
 }
@@ -386,7 +269,7 @@ function projectDaily(key: MetricKey): MetricSeries {
     s.values.push(round2((obs.low + obs.high) / 2));
     s.bands.push([obs.low, obs.high]);
     s.quality.push(obs.q ?? "n");
-    s.notes.push(obs.note ?? null);
+    s.notes.push({ k: "obs", date, metric: key });
     s.detach.push(isDetached(obs.q ?? "n"));
   }
   return s;
@@ -401,16 +284,10 @@ function projectPolicingDaily(): MetricSeries {
       continue;
     }
     const [lo, hi] = costBand(dep);
-    const head =
-      dep.low === dep.high
-        ? nf.format(dep.low)
-        : `${nf.format(dep.low)}–${nf.format(dep.high)}`;
     s.values.push(round2((lo + hi) / 2));
     s.bands.push([round2(lo), round2(hi)]);
     s.quality.push(dep.q ?? "n");
-    s.notes.push(
-      `~${head} officers × €${RATE.low}–${RATE.high}/officer-day — ${dep.note ?? ""}`.trim(),
-    );
+    s.notes.push({ k: "policing", low: dep.low, high: dep.high, date });
     s.detach.push(isDetached(dep.q ?? "n"));
   }
   return s;
@@ -440,11 +317,7 @@ function projectPolicingCumulative(): MetricSeries {
     s.values.push(round2((lo + hi) / 2));
     s.bands.push([round2(lo), round2(hi)]);
     s.quality.push("e");
-    s.notes.push(
-      dep
-        ? `cumulative over ${days} deployment day(s); this date adds its increment`
-        : `cumulative over ${days} deployment day(s); carried forward — no published deployment this date`,
-    );
+    s.notes.push({ k: "cumulative", days, added: Boolean(dep) });
     // a cumulative series is always drawn as a line; its band is shaded instead of barred
     s.detach.push(false);
   }
@@ -477,7 +350,7 @@ function aggregateWeekly(key: MetricKey, agg: Agg): MetricSeries {
     let low: number;
     let high: number;
     let value: number;
-    let peak = "";
+    let peak: string | undefined;
 
     if (agg === "sum") {
       low = bucket.reduce((a, x) => a + x.obs.low, 0);
@@ -492,26 +365,23 @@ function aggregateWeekly(key: MetricKey, agg: Agg): MetricSeries {
           : best,
       );
       value = (top.obs.low + top.obs.high) / 2;
-      peak = dmy(top.date);
+      peak = top.date;
     }
 
-    const floored = bucket.some((x) => x.obs.q === "f");
-    const parts = [
-      `${bucket.length} day(s) with ${regionalOnly ? "regional/partial" : "national"} figures`,
-    ];
-    if (agg === "max" && peak) parts.push(`peak ${peak}`);
-    if (regionalOnly) parts.push("no national figure this week");
-    if (nat.length && sub.length)
-      parts.push(`${sub.length} regional/partial day(s) excluded`);
-    if (floored)
-      parts.push("contains a lower-bound figure, so the total is a floor");
-    if (week.touchesEdge)
-      parts.push("partial week — clipped by the 1 Oct – 11 Nov window");
+    const parts: WeekNoteParts = {
+      days: bucket.length,
+      kind: regionalOnly ? "regional" : "national",
+      peak,
+      noNational: regionalOnly || undefined,
+      excluded: nat.length && sub.length ? sub.length : undefined,
+      floored: bucket.some((x) => x.obs.q === "f") || undefined,
+      clipped: week.touchesEdge || undefined,
+    };
 
     s.values.push(round2(value));
     s.bands.push([round2(low), round2(high)]);
-    s.quality.push(floored ? "f" : "w");
-    s.notes.push(parts.join("; "));
+    s.quality.push(parts.floored ? "f" : "w");
+    s.notes.push({ k: "week", p: parts });
     s.detach.push(regionalOnly);
   }
 
@@ -535,23 +405,35 @@ const protestersWeekly = aggregateWeekly("protesterInjured", "sum");
 
 /* ----------------------------------------------------------------- views */
 
-const DAILY_VIEW: View = {
-  labels: DAY_LABELS,
-  titles: DATES,
-  footers: DATES.map((d) => DAY_NOTES[d] ?? null),
-  maxRotation: 90,
-  maxTicksLimit: 25,
-};
+function dailyView(): View {
+  const m = t();
+  return {
+    labels: DATES.map(fmtDayMonth),
+    titles: DATES.map(fmtDate),
+    footers: DATES.map((d) => m.chart.dayNotes[d] ?? null),
+    xTitle: m.chart.axisDate,
+    maxRotation: 90,
+    maxTicksLimit: 25,
+  };
+}
 
-const WEEKLY_VIEW: View = {
-  labels: WEEKS.map((w) => w.label),
-  titles: WEEKS.map(
-    (w) => `Week of ${dmy(w.key)}${w.touchesEdge ? " (partial)" : ""}`,
-  ),
-  footers: WEEKS.map(() => null),
-  maxRotation: 0,
-  maxTicksLimit: 12,
-};
+function weeklyView(): View {
+  const m = t();
+  return {
+    labels: WEEKS.map(
+      (w) => fmtWeek(w.key, w.end) + (w.touchesEdge ? m.chart.edgeMark : ""),
+    ),
+    titles: WEEKS.map((w) =>
+      fill(w.touchesEdge ? m.chart.weekOfPartial : m.chart.weekOf, {
+        date: fmtDayMonth(w.key),
+      }),
+    ),
+    footers: WEEKS.map(() => null),
+    xTitle: m.chart.axisWeek,
+    maxRotation: 0,
+    maxTicksLimit: 12,
+  };
+}
 
 /* --------------------------------------------------- gap-aware connectors */
 
@@ -575,8 +457,10 @@ interface ProtestDataset extends ChartDataset<"line", (number | null)[]> {
   bandFill?: boolean;
   bandFillColor?: string;
   quality?: (Quality | null)[];
-  notes?: (string | null)[];
+  notes?: (NoteRef | null)[];
   unit?: Unit;
+  /** excluded from the legend — the "points only" twin of a line series */
+  detachedOnly?: boolean;
 }
 
 const errorBars: Plugin<"line"> = {
@@ -664,16 +548,71 @@ const errorBars: Plugin<"line"> = {
 /* -------------------------------------------------------------- formatting */
 
 function fmt(v: number, unit: Unit): string {
-  return unit === "eurM" ? `€${eurM.format(v)}M` : nf.format(Math.round(v));
+  return unit === "eurM"
+    ? fill(t().chart.eurM, { v: eurM().format(v) })
+    : nf().format(Math.round(v));
 }
 
 function suffixFor(q: Quality | null | undefined, detached: boolean): string {
-  if (q === "c") return " [stock since mid-Sep, not a daily figure]";
-  if (q === "w") return " [weekly aggregate]";
-  if (q === "e") return " [derived, not published]";
-  if (q === "f") return " [lower bound]";
-  if (detached) return " [regional/partial — not a national total]";
-  return "";
+  const s = t().chart.suffix;
+  const text =
+    q === "c"
+      ? s.c
+      : q === "w"
+        ? s.w
+        : q === "e"
+          ? s.e
+          : q === "f"
+            ? s.f
+            : detached
+              ? s.regional
+              : "";
+  return text ? fill(t().chart.suffixWrap, { text }) : "";
+}
+
+/** Resolve a stored note reference into copy, in the active locale. */
+export function noteText(ref: NoteRef | null | undefined): string {
+  if (!ref) return "";
+  const m = t().chart;
+
+  switch (ref.k) {
+    case "obs":
+      return m.obsNotes[ref.date]?.[ref.metric] ?? "";
+
+    case "policing": {
+      const head =
+        ref.low === ref.high
+          ? nf().format(ref.low)
+          : `${nf().format(ref.low)}–${nf().format(ref.high)}`;
+      const note = m.deployNotes[ref.date];
+      return fill(note ? m.policingDay : m.policingDayPlain, {
+        head,
+        low: nf().format(RATE.low),
+        high: nf().format(RATE.high),
+        note: note ?? "",
+      });
+    }
+
+    case "cumulative":
+      return fill(ref.added ? m.cumulativeAdded : m.cumulativeCarried, {
+        days: ref.days,
+      });
+
+    case "week": {
+      const p = ref.p;
+      const parts = [
+        fill(p.kind === "national" ? m.weekNational : m.weekRegionalOnly, {
+          n: p.days,
+        }),
+      ];
+      if (p.peak) parts.push(fill(m.weekPeak, { date: fmtDayMonth(p.peak) }));
+      if (p.noNational) parts.push(m.weekNoNational);
+      if (p.excluded) parts.push(fill(m.weekExcluded, { n: p.excluded }));
+      if (p.floored) parts.push(m.weekFloored);
+      if (p.clipped) parts.push(m.weekClipped);
+      return parts.join(m.weekJoin);
+    }
+  }
 }
 
 /* ------------------------------------------------------------- chart specs */
@@ -736,6 +675,7 @@ function metricDatasets(m: SeriesSpec): ProtestDataset[] {
       yAxisID: m.yAxisID,
       unit: m.unit,
       showLine: false,
+      detachedOnly: true,
       errorBars: s.bands.map((b, i) => (off(i) ? b : null)),
       errorBarColor: m.color,
       quality: s.quality,
@@ -757,6 +697,7 @@ function metricDatasets(m: SeriesSpec): ProtestDataset[] {
 }
 
 function tooltipCallbacks(view: View) {
+  const m = t().chart;
   return {
     title: (items: { dataIndex: number }[]) =>
       view.titles[items[0].dataIndex] ?? "",
@@ -768,22 +709,38 @@ function tooltipCallbacks(view: View) {
       const ds = item.dataset as ProtestDataset;
       const unit = ds.unit ?? "count";
       const q = ds.quality?.[item.dataIndex];
-      const note = ds.notes?.[item.dataIndex];
+      const note = noteText(ds.notes?.[item.dataIndex]);
       const detached = ds.showLine === false;
 
       const band = ds.errorBars?.[item.dataIndex];
       const base = band
-        ? `${ds.label}: ${fmt((band[0] + band[1]) / 2, unit)} (${fmt(band[0], unit)} – ${fmt(band[1], unit)})`
-        : `${ds.label}: ${fmt(item.parsed.y ?? 0, unit)}`;
+        ? fill(m.tooltipRange, {
+            label: ds.label,
+            mid: fmt((band[0] + band[1]) / 2, unit),
+            low: fmt(band[0], unit),
+            high: fmt(band[1], unit),
+          })
+        : fill(m.tooltipPoint, {
+            label: ds.label,
+            value: fmt(item.parsed.y ?? 0, unit),
+          });
 
-      const sfx = suffixFor(q, detached);
-      return note ? `${base}${sfx} — ${note}` : `${base}${sfx}`;
+      const body = base + suffixFor(q, detached);
+      return note ? fill(m.tooltipNote, { base: body, note }) : body;
     },
     footer: (items: { dataIndex: number }[]) => {
       const note = view.footers[items[0].dataIndex];
-      return note ? [`⚠ ${note}`] : [];
+      return note ? [fill(m.footerMark, { note })] : [];
     },
   };
+}
+
+function datasetsOf(arg: unknown): ProtestDataset[] {
+  const o = arg as {
+    datasets?: ProtestDataset[];
+    data?: { datasets?: ProtestDataset[] };
+  } | null;
+  return o?.datasets ?? o?.data?.datasets ?? [];
 }
 
 const basePlugins = (subtitle: string) => ({
@@ -792,7 +749,9 @@ const basePlugins = (subtitle: string) => ({
     labels: {
       usePointStyle: true,
       boxWidth: 8,
-      filter: (item: { text: string }) => !item.text.includes("points only"),
+      // the detached twin is redundant in the legend, and is found by flag, not by its text
+      filter: (item: LegendItem, ctx: unknown) =>
+        !datasetsOf(ctx)[item.datasetIndex ?? -1]?.detachedOnly,
     },
   },
   subtitle: {
@@ -805,7 +764,7 @@ const basePlugins = (subtitle: string) => ({
 
 const baseScales = (view: View) => ({
   x: {
-    title: { display: true, text: "Date (2026)" },
+    title: { display: true, text: view.xTitle },
     grid: { display: false },
     ticks: {
       maxRotation: view.maxRotation,
@@ -832,14 +791,20 @@ const shell = (view: View, subtitle: string, title: string) => ({
   },
 });
 
+type Cfg = {
+  data: { labels: string[]; datasets: ProtestDataset[] };
+} & ChartOptions<"line">;
+
 /* ------------------------------------------- section A · chart 1 (daily) */
 
-export function buildProtestersConfig(): ChartOptions<"line"> & {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} {
+export function buildProtestersConfig(): Cfg {
+  const m = t().chart;
+  const view = dailyView();
+  const s = m.series.protestersDaily;
+
   const datasets = metricDatasets({
-    label: "Protestors (midpoint of range)",
-    detachedLabel: "Protestors — regional (points only)",
+    label: s.label,
+    detachedLabel: s.detached,
     series: turnoutDaily,
     color: "#1d4ed8",
     unit: "count",
@@ -850,35 +815,36 @@ export function buildProtestersConfig(): ChartOptions<"line"> & {
 
   const options: ChartOptions<"line"> = {
     ...shell(
-      DAILY_VIEW,
-      "Points sit at the midpoint of the published range; bars span low (ministry) → high (organisers). Dashed connector = a day with no published figure lies between.",
-      "France — daily protestors, 1 Oct – 11 Nov 2026",
+      view,
+      m.charts.protestersDaily.subtitle,
+      m.charts.protestersDaily.title,
     ),
     scales: {
-      ...baseScales(DAILY_VIEW),
+      ...baseScales(view),
       y: {
         type: "linear",
         position: "left",
         beginAtZero: true,
         suggestedMax: 1_600_000,
-        title: { display: true, text: "Protestors" },
-        ticks: { callback: (v) => compact.format(Number(v)) },
+        title: { display: true, text: m.charts.protestersDaily.y },
+        ticks: { callback: (v) => compact().format(Number(v)) },
       },
     },
   };
 
-  return { data: { labels: DAILY_VIEW.labels, datasets }, ...options };
+  return { data: { labels: view.labels, datasets }, ...options };
 }
 
 /* ------------------------------------------- section A · chart 2 (daily) */
 
-export function buildEnforcementConfig(): ChartOptions<"line"> & {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} {
+export function buildEnforcementConfig(): Cfg {
+  const m = t().chart;
+  const view = dailyView();
+
   const datasets = [
     ...metricDatasets({
-      label: "Arrests",
-      detachedLabel: "Arrests — regional / partial (points only)",
+      label: m.series.arrestsDaily.label,
+      detachedLabel: m.series.arrestsDaily.detached,
       series: arrestsDaily,
       color: "#b91c1c",
       unit: "count",
@@ -887,8 +853,8 @@ export function buildEnforcementConfig(): ChartOptions<"line"> & {
       radius: 3.5,
     }),
     ...metricDatasets({
-      label: "Injuries — security forces",
-      detachedLabel: "Injuries — security forces, regional (points only)",
+      label: m.series.forcesDaily.label,
+      detachedLabel: m.series.forcesDaily.detached,
       series: forcesDaily,
       color: "#047857",
       unit: "count",
@@ -898,8 +864,8 @@ export function buildEnforcementConfig(): ChartOptions<"line"> & {
       style: "rectRot",
     }),
     ...metricDatasets({
-      label: "Injuries — protestors",
-      detachedLabel: "Injuries — protestors, regional (points only)",
+      label: m.series.protestersInjuredDaily.label,
+      detachedLabel: m.series.protestersInjuredDaily.detached,
       series: protestersDaily,
       color: "#b45309",
       unit: "count",
@@ -912,35 +878,37 @@ export function buildEnforcementConfig(): ChartOptions<"line"> & {
 
   const options: ChartOptions<"line"> = {
     ...shell(
-      DAILY_VIEW,
-      "Bars span the lowest and highest published figure for the day. Filled markers + line = national counts; hollow = regional, partial, floor or derived values, plotted but never connected.",
-      "France — arrests and injuries per day, 1 Oct – 11 Nov 2026",
+      view,
+      m.charts.enforcementDaily.subtitle,
+      m.charts.enforcementDaily.title,
     ),
     scales: {
-      ...baseScales(DAILY_VIEW),
+      ...baseScales(view),
       y: {
         type: "linear",
         position: "left",
         beginAtZero: true,
         suggestedMax: 2_800,
-        title: { display: true, text: "Count (arrests / injuries)" },
-        ticks: { callback: (v) => compact.format(Number(v)) },
+        title: { display: true, text: m.charts.enforcementDaily.y },
+        ticks: { callback: (v) => compact().format(Number(v)) },
       },
     },
   };
 
-  return { data: { labels: DAILY_VIEW.labels, datasets }, ...options };
+  return { data: { labels: view.labels, datasets }, ...options };
 }
 
 /* ------------------------------------------- section A · chart 3 (daily) */
 
-export function buildCostConfig(): ChartOptions<"line"> & {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} {
+export function buildCostConfig(): Cfg {
+  const m = t().chart;
+  const view = dailyView();
+  const eur = (v: number): string => fill(m.eurM, { v: compact().format(v) });
+
   const datasets = [
     ...metricDatasets({
-      label: "Cost of damages (€M)",
-      detachedLabel: "Cost of damages — derived / stock (points only)",
+      label: m.series.damagesDaily.label,
+      detachedLabel: m.series.damagesDaily.detached,
       series: damagesDaily,
       color: "#7c3aed",
       unit: "eurM",
@@ -949,8 +917,8 @@ export function buildCostConfig(): ChartOptions<"line"> & {
       radius: 5,
     }),
     ...metricDatasets({
-      label: "Cost of policing (€M/day, estimated)",
-      detachedLabel: "Cost of policing — modelled headcount (points only)",
+      label: m.series.policingDaily.label,
+      detachedLabel: m.series.policingDaily.detached,
       series: policingDaily,
       color: "#0e7490",
       unit: "eurM",
@@ -960,8 +928,8 @@ export function buildCostConfig(): ChartOptions<"line"> & {
       style: "rect",
     }),
     ...metricDatasets({
-      label: "Cumulative cost of policing (€M, right axis)",
-      detachedLabel: "Cumulative cost of policing (points only)",
+      label: m.series.policingCumulative.label,
+      detachedLabel: m.series.policingCumulative.detached,
       series: policingCumulative,
       color: "#0369a1",
       unit: "eurM",
@@ -975,44 +943,41 @@ export function buildCostConfig(): ChartOptions<"line"> & {
   ];
 
   const options: ChartOptions<"line"> = {
-    ...shell(
-      DAILY_VIEW,
-      "Daily cost = officers deployed × €136–1,133 per officer-day (marginal CRS rate → Sainte-Soline all-in). Reported headcounts (60,000 on 17 Oct; 70,000 after) are filled; earlier days were never published and are modelled, so they are hollow. The cumulative line carries forward on days with no deployment and its shaded band grows with each assumed increment.",
-      "France — cost of damages, policing cost per day, and cumulative policing cost",
-    ),
+    ...shell(view, m.charts.cost.subtitle, m.charts.cost.title),
     scales: {
-      ...baseScales(DAILY_VIEW),
+      ...baseScales(view),
       y: {
         type: "linear",
         position: "left",
         beginAtZero: true,
         suggestedMax: 900,
-        title: { display: true, text: "€ millions (per day)" },
-        ticks: { callback: (v) => `€${compact.format(Number(v))}M` },
+        title: { display: true, text: m.charts.cost.yLeft },
+        ticks: { callback: (v) => eur(Number(v)) },
       },
       y1: {
         type: "linear",
         position: "right",
         beginAtZero: true,
         suggestedMax: 520,
-        title: { display: true, text: "€ millions (cumulative)" },
+        title: { display: true, text: m.charts.cost.yRight },
         grid: { drawOnChartArea: false },
-        ticks: { callback: (v) => `€${compact.format(Number(v))}M` },
+        ticks: { callback: (v) => eur(Number(v)) },
       },
     },
   };
 
-  return { data: { labels: DAILY_VIEW.labels, datasets }, ...options };
+  return { data: { labels: view.labels, datasets }, ...options };
 }
 
 /* ------------------------------------------ section B · chart 4 (weekly) */
 
-export function buildProtestersWeeklyConfig(): ChartOptions<"line"> & {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} {
+export function buildProtestersWeeklyConfig(): Cfg {
+  const m = t().chart;
+  const view = weeklyView();
+
   const datasets = metricDatasets({
-    label: "Protestors — peak day of the week",
-    detachedLabel: "Protestors — regional weeks (points only)",
+    label: m.series.protestersWeekly.label,
+    detachedLabel: m.series.protestersWeekly.detached,
     series: turnoutWeekly,
     color: "#1d4ed8",
     unit: "count",
@@ -1023,35 +988,36 @@ export function buildProtestersWeeklyConfig(): ChartOptions<"line"> & {
 
   const options: ChartOptions<"line"> = {
     ...shell(
-      WEEKLY_VIEW,
-      "Weeks run Monday–Sunday. Crowd figures show the peak day within each week; bars span the peak under the most conservative sources to the peak under the most generous. * = week clipped by the 1 Oct – 11 Nov window.",
-      "France — peak daily protestors, by week",
+      view,
+      m.charts.protestersWeekly.subtitle,
+      m.charts.protestersWeekly.title,
     ),
     scales: {
-      ...baseScales(WEEKLY_VIEW),
+      ...baseScales(view),
       y: {
         type: "linear",
         position: "left",
         beginAtZero: true,
         suggestedMax: 1_700_000,
-        title: { display: true, text: "Protestors (weekly peak)" },
-        ticks: { callback: (v) => compact.format(Number(v)) },
+        title: { display: true, text: m.charts.protestersWeekly.y },
+        ticks: { callback: (v) => compact().format(Number(v)) },
       },
     },
   };
 
-  return { data: { labels: WEEKLY_VIEW.labels, datasets }, ...options };
+  return { data: { labels: view.labels, datasets }, ...options };
 }
 
 /* ------------------------------------------ section B · chart 5 (weekly) */
 
-export function buildEnforcementWeeklyConfig(): ChartOptions<"line"> & {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} {
+export function buildEnforcementWeeklyConfig(): Cfg {
+  const m = t().chart;
+  const view = weeklyView();
+
   const datasets = [
     ...metricDatasets({
-      label: "Arrests (weekly total)",
-      detachedLabel: "Arrests — regional weeks (points only)",
+      label: m.series.arrestsWeekly.label,
+      detachedLabel: m.series.arrestsWeekly.detached,
       series: arrestsWeekly,
       color: "#b91c1c",
       unit: "count",
@@ -1060,8 +1026,8 @@ export function buildEnforcementWeeklyConfig(): ChartOptions<"line"> & {
       radius: 4,
     }),
     ...metricDatasets({
-      label: "Injuries — security forces (weekly total)",
-      detachedLabel: "Injuries — security forces, regional weeks (points only)",
+      label: m.series.forcesWeekly.label,
+      detachedLabel: m.series.forcesWeekly.detached,
       series: forcesWeekly,
       color: "#047857",
       unit: "count",
@@ -1071,8 +1037,8 @@ export function buildEnforcementWeeklyConfig(): ChartOptions<"line"> & {
       style: "rectRot",
     }),
     ...metricDatasets({
-      label: "Injuries — protestors (weekly total)",
-      detachedLabel: "Injuries — protestors, regional weeks (points only)",
+      label: m.series.protestersInjuredWeekly.label,
+      detachedLabel: m.series.protestersInjuredWeekly.detached,
       series: protestersWeekly,
       color: "#b45309",
       unit: "count",
@@ -1085,31 +1051,27 @@ export function buildEnforcementWeeklyConfig(): ChartOptions<"line"> & {
 
   const options: ChartOptions<"line"> = {
     ...shell(
-      WEEKLY_VIEW,
-      "Arrests and injuries are summed within each week; bars span the sum of the lowest to the sum of the highest published figures. Days carrying regional or partial counts are excluded from national sums and counted in the tooltip. A week with no published figure stays empty.",
-      "France — arrests and injuries, weekly totals",
+      view,
+      m.charts.enforcementWeekly.subtitle,
+      m.charts.enforcementWeekly.title,
     ),
     scales: {
-      ...baseScales(WEEKLY_VIEW),
+      ...baseScales(view),
       y: {
         type: "linear",
         position: "left",
         beginAtZero: true,
         suggestedMax: 2_800,
-        title: { display: true, text: "Count (weekly total)" },
-        ticks: { callback: (v) => compact.format(Number(v)) },
+        title: { display: true, text: m.charts.enforcementWeekly.y },
+        ticks: { callback: (v) => compact().format(Number(v)) },
       },
     },
   };
 
-  return { data: { labels: WEEKLY_VIEW.labels, datasets }, ...options };
+  return { data: { labels: view.labels, datasets }, ...options };
 }
 
 /* ------------------------------------------------------------------ mount */
-
-type Cfg = {
-  data: { labels: string[]; datasets: ProtestDataset[] };
-} & ChartOptions<"line">;
 
 export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
   const { data, ...options } = cfg;
@@ -1126,28 +1088,29 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
 export type { Quality };
 
 export interface StudentWeek {
-  key: string;
-  label: string;
+  key: string; // ISO Monday
+  start: string; // ISO Monday — same value, named for the Section C row
+  end: string; // ISO Sunday
   touchesEdge: boolean;
   p: [number, number] | null;
   a: [number, number] | null;
   f: [number, number] | null;
   i: [number, number] | null;
-  flags: Partial<Record<"p" | "a" | "f" | "i", Quality>>;
-  notes: Partial<Record<"p" | "a" | "f" | "i", string>>;
+  flags: Partial<Record<Metric, Quality>>;
+  notes: Partial<Record<Metric, NoteRef>>;
 }
 
 /** One week, flattened next to the data it comes from — no positional contract left to break. */
 function studentCell(
   s: MetricSeries,
   idx: number,
-): { band: [number, number] | null; q?: Quality; note?: string } {
+): { band: [number, number] | null; q?: Quality; noteRef?: NoteRef } {
   const band = s.bands[idx];
   if (!band) return { band: null };
   const raw = s.quality[idx] ?? "n";
   // a week whose only figures are regional/partial was detached by the aggregator
   const q: Quality = s.detach[idx] ? (raw === "f" ? "f" : "r") : raw;
-  return { band: [band[0], band[1]], q, note: s.notes[idx] ?? undefined };
+  return { band: [band[0], band[1]], q, noteRef: s.notes[idx] ?? undefined };
 }
 
 const STUDENT_SERIES = {
@@ -1157,10 +1120,13 @@ const STUDENT_SERIES = {
   i: protestersWeekly,
 } as const;
 
+const STUDENT_METRICS: Metric[] = ["p", "a", "f", "i"];
+
 export const STUDENT_WEEKS: StudentWeek[] = WEEKS.map((w, idx) => {
   const out: StudentWeek = {
     key: w.key,
-    label: w.label,
+    start: w.key,
+    end: w.end,
     touchesEdge: w.touchesEdge,
     p: null,
     a: null,
@@ -1169,11 +1135,11 @@ export const STUDENT_WEEKS: StudentWeek[] = WEEKS.map((w, idx) => {
     flags: {},
     notes: {},
   };
-  for (const m of ["p", "a", "f", "i"] as const) {
+  for (const m of STUDENT_METRICS) {
     const c = studentCell(STUDENT_SERIES[m], idx);
     out[m] = c.band;
     if (c.q) out.flags[m] = c.q;
-    if (c.note) out.notes[m] = c.note;
+    if (c.noteRef) out.notes[m] = c.noteRef;
   }
   return out;
 });
