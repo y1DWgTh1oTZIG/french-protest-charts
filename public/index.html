@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>France — protest activity, Oct–Nov 2026</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        font:
+          14px/1.4 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: #fff;
+        color: #111;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+      section {
+        margin-bottom: 40px;
+      }
+      section > header {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 6px;
+        margin-bottom: 18px;
+      }
+      section > header h1 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: #6b7280;
+        margin: 0 0 4px;
+        font-weight: 600;
+      }
+      section > header p {
+        margin: 0;
+        font-size: 12px;
+        color: #4b5563;
+      }
+      .wrap {
+        position: relative;
+        height: 460px;
+        margin-bottom: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      These charts were created using LLM assistance, and should not be relied
+      on for serious analysis without in-depth review. You can view the [full
+      transcript of the LLM
+      conversation](https://assistant.kagi.com/share/ed1ebc31-bf63-43c6-9091-7fce6d24ec9e).
+    </p>
+
+    <section id="section-daily">
+      <header>
+        <h1>Section A — daily</h1>
+        <p>
+          One x-axis slot per calendar day, 1 Oct – 11 Nov 2026. Days with no
+          published figure stay empty.
+        </p>
+      </header>
+      <div class="wrap"><canvas id="chart-protesters"></canvas></div>
+      <div class="wrap"><canvas id="chart-enforcement"></canvas></div>
+      <div class="wrap"><canvas id="chart-costs"></canvas></div>
+    </section>
+
+    <section id="section-weekly">
+      <header>
+        <h1>Section B — weekly</h1>
+        <p>
+          Weeks run Monday–Sunday. Crowd size shows the peak day; arrests and
+          injuries are summed. * marks weeks clipped by the window.
+        </p>
+      </header>
+      <div class="wrap"><canvas id="chart-protesters-weekly"></canvas></div>
+      <div class="wrap"><canvas id="chart-enforcement-weekly"></canvas></div>
+    </section>
+
+    <script type="module" src="/bundle.js"></script>
+  </body>
+</html>

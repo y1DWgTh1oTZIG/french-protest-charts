@@ -1,0 +1,23 @@
+{
+  "name": "protest-chart",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "esbuild src/client/main.ts --bundle --format=esm --target=es2022 --outfile=public/bundle.js --sourcemap",
+    "start": "npm run build && node server.ts",
+    "dev:client": "npm run build -- --watch",
+    "dev:server": "node --watch server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}
