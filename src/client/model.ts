@@ -1,6 +1,15 @@
-export type Metric = "p" | "a" | "f" | "i";
+/* Pure types and the definitions of "band" and "detached". Imports nothing. */
+
+export const METRICS = ["p", "a", "f", "i"] as const;
+export type Metric = (typeof METRICS)[number];
+
+/** n = published point · r = regional only · p = partial · f = floor
+ *  e = derived/modelled · c = stock or actions-total · w = weekly aggregate */
 export type Flag = "n" | "r" | "p" | "f" | "e" | "c" | "w";
+/** Kept as an alias so existing call sites compile; one name for one type. */
 export type Quality = Flag;
+
+/** A single figure, or a published range. */
 export type Band = number | [number, number];
 
 export type MetricKey =
@@ -10,7 +19,29 @@ export type MetricKey =
   | "protesterInjured"
   | "damagesCost";
 
-/** Structured weekly-aggregate note — rendered per locale by noteText(). */
+/** Short code used by sections B/C → long key used by the dashboards. */
+export const METRIC_OF: Readonly<Record<Metric, MetricKey>> = {
+  p: "turnout",
+  a: "arrests",
+  f: "forcesInjured",
+  i: "protesterInjured",
+};
+
+/** The single definition of "must not be joined to the national line". */
+const DETACHED: ReadonlySet<Flag> = new Set<Flag>(["r", "p", "e", "c"]);
+
+export const isDetached = (q: Flag | null | undefined): boolean =>
+  q != null && q !== "n" && DETACHED.has(q);
+
+export const bandOf = (b: Band): [number, number] =>
+  typeof b === "number" ? [b, b] : b;
+
+export const midOf = (b: Band): number => {
+  const [lo, hi] = bandOf(b);
+  return (lo + hi) / 2;
+};
+
+/** Structured weekly-aggregate note — rendered per locale by notes.ts. */
 export interface WeekNoteParts {
   days: number;
   kind: "national" | "regional";

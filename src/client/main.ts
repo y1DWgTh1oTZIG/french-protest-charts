@@ -1,107 +1,51 @@
-/**
- * src/client/main.ts — boot: locale, chrome, charts, trellis.
- * One render path: setLang emits once, scheduleRender coalesces to one frame.
- */
-
-import type { Chart } from "chart.js";
+/* src/client/main.ts — boot: locale, chrome, charts, trellis.
+   One render path: setLang emits once, scheduleRender coalesces to one frame. */
 
 import {
   applyStaticCopy,
   getLocale,
   LOCALES,
+  localeFromUrl,
   onLocaleChange,
-  setLocale,
+  setLang,
   syncLangSwitch,
   type Lang,
 } from "./i18n.ts";
-import {
-  buildCostConfig,
-  buildEnforcementConfig,
-  buildEnforcementWeeklyConfig,
-  buildProtestersConfig,
-  buildProtestersWeeklyConfig,
-  mount,
-} from "./chart.ts";
-import { mountCrossEpisode } from "./episodes.ts";
-import { initLang, localeFromUrl, mountLangSwitch } from "./lang.ts";
+import { CHARTS, mountCharts } from "./chart.ts";
+import { destroyAll } from "./canvas.ts";
+import { byId } from "./dom.ts";
+import { mountCrossEpisode, type TrellisHosts } from "./episodes.ts";
+import { applyUrlLang, mountLangSwitch } from "./lang.ts";
 import { renderChrome } from "./page.ts";
 import { renderSources } from "./sources.ts";
 
-const SECTION_AB = [
-  ["chart-protesters", buildProtestersConfig],
-  ["chart-enforcement", buildEnforcementConfig],
-  ["chart-costs", buildCostConfig],
-  ["chart-protesters-weekly", buildProtestersWeeklyConfig],
-  ["chart-enforcement-weekly", buildEnforcementWeeklyConfig],
-] as const;
-
-const TRELLIS_HOSTS = [
-  "trellis-episodes",
-  "trellis-items",
-  "legend-items",
-  "legend-events",
-] as const;
-
-let charts: Chart[] = [];
-
-function destroyCharts(): void {
-  for (const c of charts) {
-    try {
-      c.destroy();
-    } catch (err) {
-      console.error("[chart] destroy failed", err);
-    }
+function trellisHosts(): TrellisHosts | null {
+  const episodeHost = byId("trellis-episodes");
+  const itemHost = byId("trellis-items");
+  const itemLegend = byId("legend-items");
+  const eventLegend = byId("legend-events");
+  if (!episodeHost || !itemHost || !itemLegend || !eventLegend) {
+    console.warn("[trellis] one or more hosts missing");
+    return null;
   }
-  charts = [];
-}
-
-function renderCharts(): void {
-  destroyCharts();
-
-  for (const [id, build] of SECTION_AB) {
-    const el = document.getElementById(id) as HTMLCanvasElement | null;
-    if (!el) {
-      console.warn(`[chart] #${id} missing`);
-      continue;
-    }
-    try {
-      charts.push(mount(el, build()));
-    } catch (err) {
-      /* one bad chart must not blank the page */
-      console.error(`[${id}]`, err);
-    }
-  }
-
-  const hosts = {
-    episodeHost: document.getElementById("trellis-episodes"),
-    itemHost: document.getElementById("trellis-items"),
-    itemLegend: document.getElementById("legend-items"),
-    eventLegend: document.getElementById("legend-events"),
-  };
-
-  if (
-    !hosts.episodeHost ||
-    !hosts.itemHost ||
-    !hosts.itemLegend ||
-    !hosts.eventLegend
-  ) {
-    console.warn("[trellis] one or more hosts missing", hosts);
-    return;
-  }
-
-  try {
-    charts.push(...mountCrossEpisode(hosts as Required<typeof hosts>));
-  } catch (err) {
-    console.error("[trellis]", err);
-  }
+  return { episodeHost, itemHost, itemLegend, eventLegend }; // no `as Required<>` cast
 }
 
 export function render(): void {
+  destroyAll(); // one owner for every chart instance, both sections
   renderSources();
-  renderChrome(); // headers, notes, #disclaimer, #sources, <title>, <html lang>
+  renderChrome(); // headers, notes, #disclaimer, #sources, <title>
   applyStaticCopy(); // kicker, lede, card titles, legend headings
   syncLangSwitch();
-  renderCharts();
+  mountCharts();
+  const hosts = trellisHosts();
+  if (hosts) {
+    try {
+      mountCrossEpisode(hosts);
+    } catch (err) {
+      console.error("[trellis]", err);
+    }
+  }
 }
 
 /* Coalesce: several listeners switching language still produce one render. */
@@ -119,40 +63,32 @@ function scheduleRender(): void {
   });
 }
 
-/**
- * Boot. Runs only when the document has the hosts the page needs — the previous
- * run queried nine ids, got nine nulls, and drew nothing.
- */
-function boot(): void {
-  const missing = [
-    ...SECTION_AB.map(([id]) => id),
-    ...TRELLIS_HOSTS,
-    "disclaimer",
-    "sources",
-    "hdr-a",
-    "hdr-b",
-    "hdr-c",
-    "hdr-cp",
-  ].filter((id) => !document.getElementById(id));
+const REQUIRED = [
+  ...CHARTS.map((c) => c.id),
+  "trellis-episodes",
+  "trellis-items",
+  "legend-items",
+  "legend-events",
+  "disclaimer",
+  "sources",
+] as const;
 
+/** hdr-a…hdr-cp are no longer validated: page.ts already no-ops on a missing
+ *  header, so their absence was an abort switch for no reason. */
+function boot(): void {
+  const missing = REQUIRED.filter((id) => !byId(id));
   if (missing.length) {
     console.error(
-      `[boot] ${missing.length} host(s) absent from the DOM: ${missing.join(", ")}\n` +
-        `[boot] ids actually present: ${
-          [...document.querySelectorAll("[id]")]
-            .map((e) => e.id)
-            .filter(Boolean)
-            .join(", ") || "(none)"
-        }`,
+      `[boot] ${missing.length} host(s) absent from the DOM: ${missing.join(", ")}`,
     );
     return;
   }
 
-  initLang(); // ?lang= → state, no persist, no notify
+  applyUrlLang(); // ?lang= → state, no persist, before any subscriber
   mountLangSwitch(); // the only click handler for the control
   onLocaleChange(scheduleRender); // the only render trigger
   render(); // first paint
-  window.addEventListener("pagehide", destroyCharts, { once: true });
+  window.addEventListener("pagehide", destroyAll, { once: true });
 }
 
 if (document.readyState === "loading") {
@@ -161,6 +97,5 @@ if (document.readyState === "loading") {
   boot();
 }
 
-/* `?lang=en` / `?lang=fr` are the shareable entry points. */
-export { getLocale, LOCALES, localeFromUrl, setLocale };
+export { getLocale, LOCALES, localeFromUrl, setLang };
 export type { Lang };

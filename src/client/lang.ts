@@ -1,42 +1,21 @@
-/**
- * src/client/lang.ts — URL wiring for the language switch. Holds no state:
- * i18n.ts is the single source of truth.
- */
+/* URL wiring for the language switch. Holds no state: i18n.ts is the source of
+   truth. The eight re-exports, the isLocale/isLang alias pair and initLang() are
+   gone — main.ts imports from i18n.ts directly. */
 
 import {
-  DEFAULT_LANG,
-  LOCALES,
-  getLocale,
-  isLang,
-  lang,
   localeFromUrl,
   normalizeLocale,
-  onLocaleChange,
   setLang,
   syncLangSwitch,
   type Lang,
 } from "./i18n.ts";
-
-export {
-  DEFAULT_LANG,
-  LOCALES,
-  getLocale,
-  lang,
-  localeFromUrl,
-  onLocaleChange,
-  setLang,
-};
-export type { Lang };
-
-export function isLocale(value: unknown): value is Lang {
-  return isLang(value);
-}
+import { getLocale } from "./main.ts";
 
 /**
- * Applies ?lang= at boot. Does not persist (a shared link must not overwrite a
- * stored preference) and does not notify (nothing is subscribed yet).
+ * Applies ?lang= before the first render. Does not persist — a shared link must
+ * not overwrite a stored preference — and runs before any subscriber exists.
  */
-export function initLang(search?: string): Lang {
+export function applyUrlLang(search?: string): Lang {
   const from = localeFromUrl(search);
   if (from && from !== getLocale())
     setLang(from, { persist: false, notify: false });
@@ -44,7 +23,7 @@ export function initLang(search?: string): Lang {
 }
 
 /**
- * Binds the segmented control. Single owner: do not also bind clicks in main.ts,
+ * Binds the segmented control. Single owner: do not also bind clicks elsewhere,
  * or one toggle fires two switches.
  */
 export function mountLangSwitch(
@@ -60,7 +39,7 @@ export function mountLangSwitch(
     );
     if (!btn) return;
     const next = normalizeLocale(btn.dataset.setLang);
-    if (!next || next === lang()) return;
+    if (!next || next === getLocale()) return;
 
     const url = new URL(window.location.href);
     url.searchParams.set("lang", next);

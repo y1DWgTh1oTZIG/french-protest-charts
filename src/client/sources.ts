@@ -9,6 +9,7 @@
  * lives OUTSIDE #sources in index.html, so it survives the replacement.
  */
 
+import { el } from "./dom.ts";
 import { bi, fmtDate, fmtDayMonth, type Bi } from "./i18n.ts";
 
 export type GroupId = "g2026" | "hist";
@@ -270,9 +271,6 @@ export const SOURCES: readonly Source[] = [
   },
 ];
 
-/** Back-compat alias for the name an earlier draft exported. */
-export const SOURCE_GROUPS = GROUPS;
-
 /* --------------------------------------------------------------- marker key */
 
 const MARKER_KEY: { key: string; text: Bi }[] = [
@@ -322,62 +320,6 @@ const MARKER_KEY: { key: string; text: Bi }[] = [
 
 /* ----------------------------------------------------------------- render */
 
-const CSS = `
-#sources .intro { margin: 0 0 16px; font-size: 12px; line-height: 1.5; color: #4b5563; max-width: 100ch; }
-#sources .source-group { margin: 0 0 18px; }
-#sources .source-group > h2 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: #111827; margin: 0 0 6px; font-weight: 700; }
-#sources .source-group > p.blurb { margin: 0 0 6px; font-size: 11.5px; color: #6b7280; max-width: 95ch; }
-#sources .source-group ul { margin: 0; padding-left: 18px; }
-#sources .source-group li { margin: 0 0 5px; font-size: 12px; line-height: 1.4; color: #374151; }
-#sources .source-group a { color: #1b5c92; text-decoration: none; border-bottom: 1px solid #b0cfe6; }
-#sources .source-group a:hover { border-bottom-color: #1b5c92; }
-#sources .date { color: #9ca3af; white-space: nowrap; }
-#sources .what { color: #6b7280; }
-#sources .marker-list { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 6px 0 0; font-size: 11.5px; }
-#sources .marker-list dt { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #111827; }
-#sources .marker-list dd { margin: 0; color: #6b7280; }
-#sources .foot { margin: 0 0 14px; font-size: 11px; color: #6b7280; max-width: 110ch; }
-`;
-
-function ensureStyles(): void {
-  if (document.getElementById("sources-css")) return;
-  const style = document.createElement("style");
-  style.id = "sources-css";
-  style.textContent = CSS;
-  document.head.append(style);
-}
-
-function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  cls?: string,
-  text?: string,
-): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  if (cls) node.className = cls;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
-/** #sources in index.html, or a body appended to <main>/<body> so the box can never vanish. */
-function resolveHost(root?: HTMLElement | string | null): HTMLElement {
-  if (root)
-    return typeof root === "string"
-      ? (document.querySelector<HTMLElement>(root) ?? makeHost())
-      : root;
-  return (
-    document.getElementById("sources") ??
-    document.querySelector<HTMLElement>("[data-sources]") ??
-    makeHost()
-  );
-}
-
-function makeHost(): HTMLElement {
-  const sec = el("section");
-  sec.id = "sources";
-  document.querySelector("main")?.append(sec) ?? document.body.append(sec);
-  return sec;
-}
-
 function dateLabel(s: Source): string | null {
   if (!s.date) return null;
   return s.dateEnd
@@ -409,56 +351,37 @@ function sourceItem(s: Source): HTMLLIElement {
 }
 
 /** Idempotent. Keeps the static <h1> that index.html owns, replaces everything after it. */
-export function renderSources(root?: HTMLElement | string | null): void {
-  ensureStyles();
-  const host = resolveHost(root);
+export function renderSources(
+  host: HTMLElement | null = document.getElementById("sources"),
+): void {
+  if (!host) return; // boot() guarantees it; no silent re-append to <body>
 
-  const heads = [...host.children].filter(
-    (n): n is HTMLElement =>
-      /^H[1-3]$/.test(n.tagName) && !n.closest(".source-group"),
+  // keep any static heading index.html owns (now an <h2>), replace the rest
+  const kept = [...host.children].filter((n): n is HTMLElement =>
+    /^H[1-6]$/.test(n.tagName),
   );
 
-  /* index.html owns the heading; give it the active language without replacing it. */
-  const heading = heads.find((n) => n.tagName === "H1");
-  if (heading) heading.textContent = bi(BOX_TITLE);
-
-  const body: Node[] = [el("p", "intro", bi(INTRO))];
+  const box = el("div", "sources-box");
+  box.append(el("p", "intro", bi(INTRO)));
 
   for (const group of GROUPS) {
-    const items = SOURCES.filter((s) => s.group === group.id);
-    if (!items.length) {
-      console.warn(`[sources] group "${group.id}" is empty`);
-      continue;
-    }
-    const wrap = el("div", "source-group");
-    wrap.id = `src-${group.id}`;
-    wrap.append(el("h2", undefined, bi(group.title)));
-    wrap.append(el("p", "blurb", bi(group.blurb)));
-
+    const section = el("section", "source-group");
+    section.append(
+      el("h3", undefined, bi(group.title)),
+      el("p", "blurb", bi(group.blurb)),
+    );
     const list = el("ul");
-    for (const item of items) list.append(sourceItem(item));
-    wrap.append(list);
-    body.push(wrap);
+    for (const s of SOURCES)
+      if (s.group === group.id) list.append(sourceItem(s));
+    section.append(list);
+    box.append(section);
   }
 
-  const key = el("div", "source-group");
-  key.id = "src-key";
-  key.append(
-    el(
-      "h2",
-      undefined,
-      bi({ en: "How to read the markers", fr: "Comment lire les marqueurs" }),
-    ),
-  );
-  const dl = el("dl", "marker-list");
-  for (const m of MARKER_KEY) {
-    dl.append(el("dt", undefined, m.key));
-    dl.append(el("dd", undefined, bi(m.text)));
+  const key = el("dl", "marker-list");
+  for (const { key: marker, text } of MARKER_KEY) {
+    key.append(el("dt", undefined, marker), el("dd", undefined, bi(text)));
   }
-  key.append(dl);
-  body.push(key);
+  box.append(key, el("p", "foot", bi(FOOT)));
 
-  body.push(el("p", "foot", bi(FOOT)));
-
-  host.replaceChildren(...heads, ...body);
+  host.replaceChildren(...kept, box);
 }

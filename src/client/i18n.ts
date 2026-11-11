@@ -114,32 +114,17 @@ export const LOCALES: readonly Lang[] = Object.freeze([
 ] as const) as readonly Lang[];
 
 /** Descriptors, reachable by bare code and by full tag. */
-export const LOCALE_META: Readonly<Record<string, LocaleMeta>> = Object.freeze({
+export const LOCALE_META: Readonly<Record<Lang, LocaleMeta>> = {
   en: EN_META,
-  "en-GB": EN_META,
-  "en-gb": EN_META,
   fr: FR_META,
-  "fr-FR": FR_META,
-  "fr-fr": FR_META,
-});
+};
+
+export function localeMeta(locale: Lang | string = current): LocaleMeta {
+  return LOCALE_META[normalizeLocale(locale) ?? DEFAULT_LANG];
+}
 
 export const DEFAULT_LANG: Lang = "fr";
 export const DEFAULT_LOCALE: string = FR_META.tag;
-
-export function localeMeta(locale: Lang | string = current): LocaleMeta {
-  const key = String(locale);
-  return (
-    LOCALE_META[key] ?? LOCALE_META[key.slice(0, 2).toLowerCase()] ?? FR_META
-  );
-}
-
-export function localeTag(next: Lang = current): string {
-  return localeMeta(next).tag;
-}
-
-export function localeLabel(next: Lang = current): string {
-  return localeMeta(next).label;
-}
 
 /* ==================================================================== state */
 
@@ -195,13 +180,13 @@ export function localeVersion(): number {
   return version;
 }
 
-/** Synchronous accessor. */
-export function lang(): Lang {
+/** The one synchronous accessor. `lang()` was an identical twin — deleted. */
+export function getLocale(): Lang {
   return current;
 }
 
-/** Locale-era alias of lang(). */
-export function getLocale(): Lang {
+/** Synchronous accessor. */
+export function lang(): Lang {
   return current;
 }
 
@@ -238,42 +223,37 @@ function emit(next: Lang, previous: Lang): void {
 export interface SetLangOptions {
   persist?: boolean;
   notify?: boolean;
-  reflect?: boolean;
 }
 
 export function setLang(next: Lang | string, opts: SetLangOptions = {}): Lang {
+  const { persist = true, notify = true } = opts;
   const target = normalizeLocale(next);
   if (!target) {
-    console.warn(`[i18n] unrecognised locale "${String(next)}"`);
+    warnOnce(`locale:${String(next)}`, `unrecognised locale "${String(next)}"`);
     return current;
   }
-
   const previous = current;
+  if (previous === target) return current;
+
   current = target;
-  if (previous !== target) version += 1;
+  version += 1;
 
-  if (opts.persist !== false && hasDom()) {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, target);
-    } catch {
-      /* private mode or quota — never fatal */
+  const locale = localeMeta(target);
+  buildFormats(locale.tag);
+
+  if (hasDom()) {
+    if (persist) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, target);
+      } catch {
+        /* private mode or quota — never fatal */
+      }
     }
-  }
-
-  if (opts.reflect !== false && hasDom()) {
-    document.documentElement.lang = localeMeta(target).meta.htmlLang;
+    document.documentElement.lang = locale.meta.htmlLang;
     document.documentElement.dataset.lang = target;
   }
-
-  if (opts.notify !== false && previous !== target) emit(target, previous);
+  if (notify) emit(target, previous);
   return current;
-}
-
-export function setLocale(
-  next: Lang | string,
-  opts: SetLangOptions = {},
-): Lang {
-  return setLang(next, opts);
 }
 
 export function toggleLang(): Lang {
@@ -320,23 +300,12 @@ export function plural(
 
 type DateInput = Date | string | number;
 
-let numFmt: Intl.NumberFormat = new Intl.NumberFormat(EN_META.tag, {
-  maximumFractionDigits: 0,
-});
-let cptFmt: Intl.NumberFormat = new Intl.NumberFormat(EN_META.tag, {
-  notation: "compact",
-  compactDisplay: "short",
-  maximumFractionDigits: 1,
-});
-let eurFmt: Intl.NumberFormat = new Intl.NumberFormat(EN_META.tag, {
-  maximumFractionDigits: 1,
-});
-let fmtLang: Lang | null = null;
+let numFmt: Intl.NumberFormat;
+let cptFmt: Intl.NumberFormat;
+let eurFmt: Intl.NumberFormat;
+let dateFmt: Record<"long" | "short" | "day", Intl.DateTimeFormat>;
 
-function refreshFormats(): void {
-  if (fmtLang === current) return;
-  fmtLang = current;
-  const tag = localeMeta(current).tag;
+function buildFormats(tag: string): void {
   numFmt = new Intl.NumberFormat(tag, { maximumFractionDigits: 0 });
   cptFmt = new Intl.NumberFormat(tag, {
     notation: "compact",
@@ -344,25 +313,26 @@ function refreshFormats(): void {
     maximumFractionDigits: 1,
   });
   eurFmt = new Intl.NumberFormat(tag, { maximumFractionDigits: 1 });
+  dateFmt = {
+    long: new Intl.DateTimeFormat(tag, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    }),
+    short: new Intl.DateTimeFormat(tag, {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    }),
+    day: new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: "UTC" }),
+  };
 }
+buildFormats(localeMeta(current).tag);
 
-/** Locale-grouped integer. Called as a function: `nf().format(v)`. */
-export function nf(): Intl.NumberFormat {
-  refreshFormats();
-  return numFmt;
-}
-
-/** Compact magnitude, 1.2k / 1,2 k. `compact().format(v)`. */
-export function compact(): Intl.NumberFormat {
-  refreshFormats();
-  return cptFmt;
-}
-
-/** Millions of euros, one decimal max. Unit comes from `t().chart.eurM`. */
-export function eurM(): Intl.NumberFormat {
-  refreshFormats();
-  return eurFmt;
-}
+export const nf = (): Intl.NumberFormat => numFmt;
+export const compact = (): Intl.NumberFormat => cptFmt;
+export const eurM = (): Intl.NumberFormat => eurFmt;
 
 const DATE_LONG: Intl.DateTimeFormatOptions = {
   day: "numeric",
@@ -496,42 +466,6 @@ const HAS_CLOCK = /[T ]\d{2}:\d{2}/;
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
-
-/** "3 hours ago", "yesterday", else an absolute date. Never throws. */
-export function fmtWhen(
-  value: Date | string | number,
-  reference: Date | string | number = Date.now(),
-): string {
-  const d = toDate(value);
-  const r = toDate(reference);
-  if (!d || !r) return "—";
-
-  const delta = d.getTime() - r.getTime();
-  const abs = Math.abs(delta);
-  const rtf = new Intl.RelativeTimeFormat(localeMeta(current).tag, {
-    numeric: "auto",
-  });
-
-  if (abs < MINUTE) return rtf.format(0, "minute");
-  if (abs < HOUR) return rtf.format(Math.round(delta / MINUTE), "minute");
-  if (abs < DAY) return rtf.format(Math.round(delta / HOUR), "hour");
-  if (abs < 7 * DAY) return rtf.format(Math.round(delta / DAY), "day");
-
-  const isInstant =
-    value instanceof Date ||
-    typeof value === "number" ||
-    (!DATE_ONLY.test(String(value)) && HAS_CLOCK.test(String(value)));
-
-  if (!isInstant) return fmtDate(value);
-
-  return new Intl.DateTimeFormat(localeMeta(current).tag, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
-}
 
 /* ======================================================= catalogue: chart.ts */
 
@@ -1486,12 +1420,12 @@ const DICT: Record<Lang, Record<string, string>> = {
   fr: { "span.sep": SPAN_SEP.fr },
 };
 
-/** Overlay for a module's own keys. */
-export function reg(dict: Record<string, string>, forLang: Lang = "fr"): void {
-  Object.assign(DICT[forLang], dict);
-}
-
 const warned = new Set<string>();
+function warnOnce(key: string, message: string): void {
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(`[i18n] ${message}`);
+}
 const PASSTHROUGH = new Set([
   "then",
   "toJSON",
@@ -1553,18 +1487,6 @@ export function t(
     return key;
   }
   return params === undefined ? template : fill(template, params);
-}
-
-export function tp(
-  key: string,
-  params: Record<string, string | number>,
-): string {
-  return t(key, params);
-}
-
-/** Active-language hit, caller's literal second. Never leaks the other language. */
-export function tr(key: string, fallback: string): string {
-  return DICT[current][key] ?? fallback;
 }
 
 export function bi(value: Bi): string {
@@ -1669,10 +1591,6 @@ export function applyStaticCopy(root: ParentNode = document): void {
     if (!attr || attr === "text") node.textContent = text;
     else node.setAttribute(attr, text);
   }
-
-  document.documentElement.lang = localeMeta(L).meta.htmlLang;
-  document.documentElement.dataset.lang = L;
-  document.title = STATIC["doc.title"][L];
 }
 
 /** Reflects the current language onto the segmented control. */

@@ -1,6 +1,9 @@
 /**
  * src/client/page.ts — static chrome: disclaimer, section headers, axis notes,
- * sources, <title>. Idempotent; re-run on every locale change.
+ * <title>. Idempotent; re-run on every locale change.
+ *
+ * `<html lang>` / `data-lang` are written by setLang() in i18n.ts only —
+ * not here. One writer per attribute.
  */
 
 import { localeMeta, onLocaleChange, t, type SectionCopy } from "./i18n.ts";
@@ -47,11 +50,11 @@ function disclaimer(): void {
     const a = document.createElement("a");
     a.href = href;
     a.rel = "noopener noreferrer";
-    a.textContent = `${d.link}-${index}`; // or `href` if you want the URL shown
+    a.textContent = `${d.link}-${index}`;
     a.dataset.index = String(index);
 
     const li = document.createElement("li");
-    li.append(a); // append node, not a string arg
+    li.append(a);
     list.append(li);
   }
 
@@ -67,9 +70,7 @@ function disclaimer(): void {
 }
 
 export function renderChrome(): void {
-  const m = localeMeta();
-  document.documentElement.lang = m.meta.htmlLang;
-  document.documentElement.dataset.lang = m.meta.htmlLang;
+  const m = localeMeta(); // ← the line that was missing from your paste
   document.title = m.meta.title;
 
   disclaimer();
