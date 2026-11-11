@@ -32,7 +32,6 @@ interface PanelDataset extends ChartDataset<"line", Pt[]> {
   __ep: number;
   __color: string;
   __hollow: boolean[];
-  __label: string;
 }
 
 /* ------------------------------------------------------------- constants */
@@ -478,10 +477,6 @@ function buildDataset(
     __ep: epIndex,
     __color: color,
     __hollow: drawn,
-    __label:
-      points.length < all.length
-        ? fill(m.panels.seriesContinues, { name: m.episodes[ep.id].short })
-        : m.episodes[ep.id].short,
   };
 }
 
@@ -509,51 +504,6 @@ function rawExtent(
     return [1, 1e6];
   return [lo, hi];
 }
-
-/* --------------------------------------------------------------- plugins */
-
-/** Only the companion figure labels its lines: there, names differ within a panel. */
-const directLabels: Plugin<"line"> = {
-  id: "directLabels",
-  afterDatasetsDraw(chart) {
-    const { ctx, chartArea } = chart;
-    const entries: { y: number; text: string }[] = [];
-
-    chart.data.datasets.forEach((ds, i) => {
-      const d = ds as PanelDataset;
-      const meta = chart.getDatasetMeta(i);
-      if (meta.hidden) return;
-
-      for (let j = meta.data.length - 1; j >= 0; j--) {
-        const raw = d.data[j];
-        if (!raw || !Number.isFinite(raw.y)) continue;
-        const el = meta.data[j] as unknown as { x: number; y: number };
-        entries.push({ y: el.y, text: d.__label });
-        break;
-      }
-    });
-
-    entries.sort((a, b) => a.y - b.y);
-    for (let i = 1; i < entries.length; i++) {
-      if (entries[i].y - entries[i - 1].y < 11)
-        entries[i].y = entries[i - 1].y + 11;
-    }
-
-    ctx.save();
-    ctx.font = '500 9.5px system-ui, -apple-system, "Segoe UI", sans-serif';
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#374151";
-    for (const e of entries) {
-      const y = Math.max(
-        chartArea.top + 5,
-        Math.min(chartArea.bottom - 5, e.y),
-      );
-      ctx.fillText(e.text, chartArea.right + 7, y);
-    }
-    ctx.restore();
-  },
-};
 
 /* ---------------------------------------------------------------- scales */
 
@@ -791,6 +741,14 @@ export function mountCrossEpisode(opts: {
   itemLegend: HTMLElement;
   eventLegend: HTMLElement;
 }): Chart<"line">[] {
+  /* Re-render safety: drop the previous panels and their chart handles. */
+  episodePanels.length = 0;
+  itemPanels.length = 0;
+  activeItem = null;
+  activeEvent = null;
+  opts.episodeHost.replaceChildren();
+  opts.itemHost.replaceChildren();
+
   const charts: Chart<"line">[] = [];
   const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
@@ -875,7 +833,7 @@ export function mountCrossEpisode(opts: {
       maintainAspectRatio: false,
       animation: false,
       interaction: { mode: "nearest", axis: "x", intersect: false },
-      layout: { padding: { top: 6, right: 92, bottom: 0, left: 0 } },
+      layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
       scales: {
         x: xScale(ENFORCEMENT_LAST),
         y: yScale(lo, hi, true),
@@ -892,7 +850,7 @@ export function mountCrossEpisode(opts: {
       type: "line",
       data: { datasets } as unknown as ChartData<"line">,
       options,
-      plugins: [directLabels],
+      plugins: [],
     });
 
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));

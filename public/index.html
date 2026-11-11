@@ -1,237 +1,102 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr" data-lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>France — protest activity</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-      }
-      body {
-        font:
-          14px/1.4 system-ui,
-          -apple-system,
-          "Segoe UI",
-          Roboto,
-          sans-serif;
-        background: #fff;
-        color: #111;
-        padding: 16px;
-        box-sizing: border-box;
-        max-width: 1420px;
-        margin: 0 auto;
-      }
-      section {
-        margin-bottom: 44px;
-      }
-      section > header {
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 6px;
-        margin-bottom: 18px;
-      }
-      section > header h1 {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        color: #6b7280;
-        margin: 0 0 4px;
-        font-weight: 600;
-      }
-      section > header p {
-        margin: 0;
-        font-size: 12px;
-        color: #4b5563;
-        max-width: 92ch;
-      }
-      .wrap {
-        position: relative;
-        height: 460px;
-        margin-bottom: 28px;
-      }
-
-      /* ---- disclaimer ---- */
-      .disclaimer {
-        border: 1px solid #f0d38a;
-        border-left: 4px solid #d99e00;
-        background: #fffbf0;
-        padding: 10px 14px;
-        margin: 0 0 34px;
-        font-size: 12px;
-        line-height: 1.45;
-        color: #5b4708;
-        max-width: 110ch;
-      }
-      .disclaimer strong {
-        font-weight: 600;
-      }
-      .disclaimer a {
-        color: #8a5a00;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
-
-      /* ---- section C ---- */
-      .trellis {
-        display: grid;
-        gap: 22px 16px;
-        margin: 0 0 10px;
-      }
-      .trellis-panel {
-        margin: 0;
-        min-width: 0;
-      }
-      .strip {
-        display: block;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #111827;
-      }
-      .strip-meta {
-        display: block;
-        font-size: 10px;
-        color: #6b7280;
-      }
-      .strip-note {
-        margin: 3px 0 2px;
-        font-size: 10.5px;
-        line-height: 1.25;
-        color: #6b7280;
-        min-height: 26px;
-      }
-      .panel-canvas {
-        position: relative;
-        height: 215px;
-      }
-      .trellis-items .panel-canvas {
-        height: 230px;
-      }
-      .legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px 18px;
-        margin: 0 0 12px;
-        font-size: 12px;
-        color: #374151;
-      }
-      .legend button {
-        all: unset;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 2px 0;
-        cursor: default;
-      }
-      .legend .swatch {
-        width: 14px;
-        height: 3px;
-        border-radius: 2px;
-      }
-      .axis-note {
-        margin: 0 0 30px;
-        font-size: 11px;
-        color: #6b7280;
-        max-width: 110ch;
-      }
-
-      /* ---- sources ---- */
-      #sources {
-        border: 1px solid #e5e7eb;
-        background: #fafafa;
-        padding: 18px 20px 6px;
-        margin-top: 52px;
-      }
-      #sources > h1 {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        color: #6b7280;
-        margin: 0 0 6px;
-        font-weight: 600;
-      }
-      #sources > p.intro {
-        margin: 0 0 16px;
-        font-size: 12px;
-        color: #4b5563;
-        max-width: 100ch;
-      }
-      .source-group {
-        margin: 0 0 18px;
-      }
-      .source-group h2 {
-        font-size: 10.5px;
-        text-transform: uppercase;
-        letter-spacing: 0.07em;
-        color: #111827;
-        margin: 0 0 6px;
-        font-weight: 700;
-      }
-      .source-group ul {
-        margin: 0;
-        padding-left: 18px;
-      }
-      .source-group li {
-        margin: 0 0 5px;
-        font-size: 12px;
-        line-height: 1.4;
-        color: #374151;
-      }
-      .source-group a {
-        color: #1b5c92;
-        text-decoration: none;
-        border-bottom: 1px solid #b0cfe6;
-      }
-      .source-group a:hover {
-        border-bottom-color: #1b5c92;
-      }
-      .source-group .what {
-        color: #6b7280;
-      }
-      .source-group .date {
-        color: #9ca3af;
-        white-space: nowrap;
-      }
-      #sources > p.foot {
-        margin: 0 0 14px;
-        font-size: 11px;
-        color: #6b7280;
-        max-width: 110ch;
-      }
-    </style>
+    <title>Activité contestataire — octobre–novembre 2026</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <!-- type="module" is deferred: the body exists before boot() runs -->
+    <script type="module" src="./bundle.js"></script>
   </head>
   <body>
-    <div class="disclaimer" id="disclaimer"></div>
+    <header class="page-head">
+      <p class="kicker" data-i18n="hdr.kicker"></p>
+      <h1 data-i18n="hdr.title"></h1>
+      <p class="lede" data-i18n="hdr.lede"></p>
+      <div
+        class="lang-switch"
+        data-lang-switch
+        role="group"
+        aria-label="Langue"
+      >
+        <button type="button" data-set-lang="fr">FR</button>
+        <button type="button" data-set-lang="en">EN</button>
+      </div>
+    </header>
 
-    <section id="section-daily">
+    <p id="disclaimer" class="disclaimer"></p>
+
+    <section>
       <header id="hdr-a"></header>
-      <div class="wrap"><canvas id="chart-protesters"></canvas></div>
-      <div class="wrap"><canvas id="chart-enforcement"></canvas></div>
-      <div class="wrap"><canvas id="chart-costs"></canvas></div>
+      <figure class="card">
+        <div class="canvas-box">
+          <canvas
+            id="chart-protesters"
+            role="img"
+            aria-label="Manifestants, par jour"
+          ></canvas>
+        </div>
+      </figure>
+      <figure class="card">
+        <div class="canvas-box">
+          <canvas
+            id="chart-enforcement"
+            role="img"
+            aria-label="Interpellations et blessés, par jour"
+          ></canvas>
+        </div>
+      </figure>
+      <figure class="card">
+        <div class="canvas-box tall">
+          <canvas
+            id="chart-costs"
+            role="img"
+            aria-label="Dommages et coût du maintien de l’ordre"
+          ></canvas>
+        </div>
+      </figure>
     </section>
 
-    <section id="section-weekly">
+    <section>
       <header id="hdr-b"></header>
-      <div class="wrap"><canvas id="chart-protesters-weekly"></canvas></div>
-      <div class="wrap"><canvas id="chart-enforcement-weekly"></canvas></div>
+      <figure class="card">
+        <div class="canvas-box">
+          <canvas
+            id="chart-protesters-weekly"
+            role="img"
+            aria-label="Manifestants, pointe hebdomadaire"
+          ></canvas>
+        </div>
+      </figure>
+      <figure class="card">
+        <div class="canvas-box">
+          <canvas
+            id="chart-enforcement-weekly"
+            role="img"
+            aria-label="Maintien de l’ordre, totaux hebdomadaires"
+          ></canvas>
+        </div>
+      </figure>
     </section>
 
-    <section id="section-cross">
+    <section>
       <header id="hdr-c"></header>
-      <div class="legend" id="legend-items"></div>
-      <div class="trellis" id="trellis-episodes"></div>
-      <p class="axis-note" id="note-c"></p>
-
-      <header id="hdr-cp"></header>
-      <div class="legend" id="legend-events"></div>
-      <div class="trellis trellis-items" id="trellis-items"></div>
-      <p class="axis-note" id="note-cp"></p>
+      <p id="note-c" class="axis-note"></p>
+      <div id="trellis-episodes" class="trellis"></div>
+      <h3 class="legend-title" data-i18n="leg.items.title"></h3>
+      <div id="legend-items" class="legend"></div>
     </section>
 
-    <section id="sources"></section>
+    <section>
+      <header id="hdr-cp"></header>
+      <p id="note-cp" class="axis-note"></p>
+      <div id="trellis-items" class="trellis"></div>
+      <h3 class="legend-title" data-i18n="leg.movements.title"></h3>
+      <div id="legend-events" class="legend"></div>
+    </section>
 
-    <script type="module" src="/bundle.js"></script>
+    <section id="sources">
+      <h1>Sources</h1>
+    </section>
   </body>
 </html>

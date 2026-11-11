@@ -1,0 +1,473 @@
+html,
+body {
+  margin: 0;
+}
+body {
+  font:
+    14px/1.4 system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  background: #fff;
+  color: #111;
+  padding: 16px;
+  box-sizing: border-box;
+  max-width: 1420px;
+  margin: 0 auto;
+}
+section {
+  margin-bottom: 44px;
+}
+section > header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+  margin-bottom: 18px;
+}
+section > header h1 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #6b7280;
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+section > header p {
+  margin: 0;
+  font-size: 12px;
+  color: #4b5563;
+  max-width: 92ch;
+}
+.wrap {
+  position: relative;
+  height: 460px;
+  margin-bottom: 28px;
+}
+
+/* ---- disclaimer ---- */
+.disclaimer {
+  border: 1px solid #f0d38a;
+  border-left: 4px solid #d99e00;
+  background: #fffbf0;
+  padding: 10px 14px;
+  margin: 0 0 34px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5b4708;
+  max-width: 110ch;
+}
+.disclaimer strong {
+  font-weight: 600;
+}
+.disclaimer a {
+  color: #8a5a00;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---- section C ---- */
+.trellis {
+  display: grid;
+  gap: 22px 16px;
+  margin: 0 0 10px;
+}
+.trellis-panel {
+  margin: 0;
+  min-width: 0;
+}
+.strip {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #111827;
+}
+.strip-meta {
+  display: block;
+  font-size: 10px;
+  color: #6b7280;
+}
+.strip-note {
+  margin: 3px 0 2px;
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: #6b7280;
+  min-height: 26px;
+}
+.panel-canvas {
+  position: relative;
+  height: 215px;
+}
+.trellis-items .panel-canvas {
+  height: 230px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #374151;
+}
+.legend button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  cursor: default;
+}
+.legend .swatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+.axis-note {
+  margin: 0 0 30px;
+  font-size: 11px;
+  color: #6b7280;
+  max-width: 110ch;
+}
+
+/* ---- sources ---- */
+#sources {
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+  padding: 18px 20px 6px;
+  margin-top: 52px;
+}
+#sources > h1 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #6b7280;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+#sources > p.intro {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #4b5563;
+  max-width: 100ch;
+}
+.source-group {
+  margin: 0 0 18px;
+}
+.source-group h2 {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #111827;
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+.source-group ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.source-group li {
+  margin: 0 0 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #374151;
+}
+.source-group a {
+  color: #1b5c92;
+  text-decoration: none;
+  border-bottom: 1px solid #b0cfe6;
+}
+.source-group a:hover {
+  border-bottom-color: #1b5c92;
+}
+.source-group .what {
+  color: #6b7280;
+}
+.source-group .date {
+  color: #9ca3af;
+  white-space: nowrap;
+}
+#sources > p.foot {
+  margin: 0 0 14px;
+  font-size: 11px;
+  color: #6b7280;
+  max-width: 110ch;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+  margin-left: auto;
+  margin-top: 0.35rem;
+  padding: 2px;
+  border: 1px solid #d8dde3;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgb(17 24 39 / 4%);
+}
+
+.lang-switch button {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 5px 11px 4px;
+  border-radius: 999px;
+  background: transparent;
+  color: #6b7280;
+  font:
+    600 10.5px/1 system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lang-switch button:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+.lang-switch button:focus-visible {
+  outline: 2px solid #0072b2;
+  outline-offset: 2px;
+}
+
+.lang-switch button[aria-pressed="true"] {
+  background: #0072b2;
+  color: #fff;
+  cursor: default;
+}
+
+/* --- header layout: text left, switch pinned to the first baseline --- */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+.page-header__text {
+  flex: 1 1 26rem;
+  min-width: 0;
+}
+
+@media (max-width: 40rem) {
+  .lang-switch {
+    margin-left: 0;
+    order: 3;
+  }
+}
+
+/* --- disclaimer and headings inherit the same palette --- */
+.disclaimer {
+  margin: 1.25rem 0 2rem;
+  padding: 0.75rem 0 0.75rem 0.9rem;
+  border-left: 3px solid #e69f00;
+  background: #fffdf7;
+  color: #4b5563;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.disclaimer a {
+  color: #0072b2;
+}
+.section-lede {
+  max-width: 62ch;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.sources-wrap {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+.sources-lede {
+  max-width: 62ch;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+.source-group + .source-group {
+  margin-top: 1.5rem;
+}
+.source-group-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: #111827;
+}
+.source-group-blurb {
+  margin: 0 0 0.5rem;
+  max-width: 62ch;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.source-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+.source-item {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #374151;
+}
+.source-link {
+  color: #0072b2;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.source-publisher {
+  color: #111827;
+}
+.source-used {
+  color: #6b7280;
+}
+.flag-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 0.6rem;
+  margin: 0;
+  font-size: 0.78rem;
+}
+.flag-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #111827;
+}
+.flag-text {
+  margin: 0;
+  color: #6b7280;
+}
+.sources-note {
+  margin: 1.5rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.wrap {
+  position: relative;
+  height: 460px;
+  margin-bottom: 28px;
+}
+#section-weekly .wrap {
+  height: 420px;
+}
+.wrap > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 40rem) {
+  .wrap,
+  #section-weekly .wrap {
+    height: 340px;
+  }
+}
+
+.sources {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #374151;
+}
+.sources-intro {
+  margin: 0 0 1.25rem;
+  max-width: 100ch;
+  color: #4b5563;
+}
+.source-group + .source-group {
+  margin-top: 1.4rem;
+}
+.source-group-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #111827;
+}
+.source-group-blurb {
+  margin: 0 0 0.5rem;
+  max-width: 90ch;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.source-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+.source-item {
+  color: #374151;
+}
+.source-link {
+  color: #1b5c92;
+  text-decoration: none;
+  border-bottom: 1px solid #b0cfe6;
+}
+.source-link:hover {
+  border-bottom-color: #1b5c92;
+}
+.source-date {
+  color: #9ca3af;
+  white-space: nowrap;
+}
+.source-what {
+  color: #6b7280;
+}
+.marker-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 0.65rem;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.marker-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #111827;
+}
+.marker-text {
+  margin: 0;
+  color: #6b7280;
+}
+.sources-note {
+  margin: 1.4rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid #e5e7eb;
+  max-width: 100ch;
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.canvas-box {
+  position: relative;
+  height: 460px;
+}
+.canvas-box.tall {
+  height: 520px;
+}
+.canvas-box > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@media (max-width: 40rem) {
+  .canvas-box,
+  .canvas-box.tall {
+    height: 340px;
+  }
+}

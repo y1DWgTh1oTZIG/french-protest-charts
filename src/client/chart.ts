@@ -743,12 +743,77 @@ function datasetsOf(arg: unknown): ProtestDataset[] {
   return o?.datasets ?? o?.data?.datasets ?? [];
 }
 
+/* ------------------------------------------------------------- chart specs
+ * (SeriesSpec, metricDatasets, tooltipCallbacks, datasetsOf unchanged)
+ */
+
+/** 1 / 1.5 / 2 / 2.5 / 3 / 4 / 5 / 6 / 8 / 10 × 10^n — keeps bands inside the frame. */
+function niceCeil(v: number): number {
+  if (!Number.isFinite(v) || v <= 0) return 10;
+  const base = 10 ** Math.floor(Math.log10(v));
+  const n = v / base;
+  const step =
+    [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((s) => n <= s + 1e-9) ?? 10;
+  return step * base;
+}
+
+/** Upper bound from the values AND bands actually present on this axis — never a guessed constant. */
+function axisMax(
+  datasets: ProtestDataset[],
+  axis: string,
+  headroom = 1.08,
+): number {
+  let max = 0;
+  for (const ds of datasets) {
+    if ((ds.yAxisID ?? "y") !== axis) continue;
+    for (const v of ds.data) if (typeof v === "number" && v > max) max = v;
+    for (const b of ds.errorBars ?? []) if (b && b[1] > max) max = b[1];
+  }
+  return max > 0 ? niceCeil(max * headroom) : 10;
+}
+
+const Y_TICKS = {
+  maxTicksLimit: 6,
+  autoSkip: false,
+  font: { size: 10 },
+  padding: 6,
+} as const;
+
+type YScale = NonNullable<NonNullable<ChartOptions<"line">["scales"]>[string]>;
+
+function yAxis(
+  datasets: ProtestDataset[],
+  axis: string,
+  titleText: string,
+  fmtTick: (v: number) => string,
+): YScale {
+  return {
+    type: "linear",
+    position: axis === "y" ? "left" : "right",
+    beginAtZero: true,
+    max: axisMax(datasets, axis),
+    title: {
+      display: true,
+      text: titleText,
+      color: "#4b5563",
+      font: { size: 11 },
+      padding: { bottom: 6 },
+    },
+    ticks: { ...Y_TICKS, callback: (v: string | number) => fmtTick(Number(v)) },
+    grid: { color: "rgba(17,24,39,0.06)", drawTicks: false },
+  };
+}
+
 const basePlugins = (subtitle: string) => ({
   legend: {
     position: "top" as const,
+    align: "end" as const,
     labels: {
       usePointStyle: true,
       boxWidth: 8,
+      boxHeight: 8,
+      padding: 14,
+      font: { size: 11 },
       // the detached twin is redundant in the legend, and is found by flag, not by its text
       filter: (item: LegendItem, ctx: unknown) =>
         !datasetsOf(ctx)[item.datasetIndex ?? -1]?.detachedOnly,
@@ -757,20 +822,29 @@ const basePlugins = (subtitle: string) => ({
   subtitle: {
     display: true,
     text: subtitle,
+    color: "#6b7280",
     font: { size: 11 },
-    padding: { bottom: 12 },
+    padding: { top: 0, bottom: 8 },
   },
 });
 
 const baseScales = (view: View) => ({
   x: {
-    title: { display: true, text: view.xTitle },
+    title: {
+      display: true,
+      text: view.xTitle,
+      color: "#4b5563",
+      font: { size: 11 },
+      padding: { top: 4 },
+    },
     grid: { display: false },
     ticks: {
       maxRotation: view.maxRotation,
       autoSkip: true,
       maxTicksLimit: view.maxTicksLimit,
       font: { size: 10 },
+      color: "#6b7280",
+      padding: 4,
     },
   },
 });
@@ -778,14 +852,18 @@ const baseScales = (view: View) => ({
 const shell = (view: View, subtitle: string, title: string) => ({
   responsive: true,
   maintainAspectRatio: false,
+  resizeDelay: 0,
+  devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   interaction: { mode: "index" as const, intersect: false },
-  layout: { padding: { top: 16, right: 8 } },
+  layout: { padding: { top: 4, right: 16, bottom: 0, left: 4 } },
   plugins: {
     ...basePlugins(subtitle),
     title: {
       display: true,
       text: title,
+      color: "#111827",
       font: { size: 15, weight: "bold" as const },
+      padding: { top: 0, bottom: 2 },
     },
     tooltip: { callbacks: tooltipCallbacks(view) },
   },
@@ -821,14 +899,9 @@ export function buildProtestersConfig(): Cfg {
     ),
     scales: {
       ...baseScales(view),
-      y: {
-        type: "linear",
-        position: "left",
-        beginAtZero: true,
-        suggestedMax: 1_600_000,
-        title: { display: true, text: m.charts.protestersDaily.y },
-        ticks: { callback: (v) => compact().format(Number(v)) },
-      },
+      y: yAxis(datasets, "y", m.charts.protestersDaily.y, (v) =>
+        compact().format(v),
+      ),
     },
   };
 
@@ -884,14 +957,9 @@ export function buildEnforcementConfig(): Cfg {
     ),
     scales: {
       ...baseScales(view),
-      y: {
-        type: "linear",
-        position: "left",
-        beginAtZero: true,
-        suggestedMax: 2_800,
-        title: { display: true, text: m.charts.enforcementDaily.y },
-        ticks: { callback: (v) => compact().format(Number(v)) },
-      },
+      y: yAxis(datasets, "y", m.charts.enforcementDaily.y, (v) =>
+        compact().format(v),
+      ),
     },
   };
 
@@ -903,7 +971,6 @@ export function buildEnforcementConfig(): Cfg {
 export function buildCostConfig(): Cfg {
   const m = t().chart;
   const view = dailyView();
-  const eur = (v: number): string => fill(m.eurM, { v: compact().format(v) });
 
   const datasets = [
     ...metricDatasets({
@@ -946,22 +1013,14 @@ export function buildCostConfig(): Cfg {
     ...shell(view, m.charts.cost.subtitle, m.charts.cost.title),
     scales: {
       ...baseScales(view),
-      y: {
-        type: "linear",
-        position: "left",
-        beginAtZero: true,
-        suggestedMax: 900,
-        title: { display: true, text: m.charts.cost.yLeft },
-        ticks: { callback: (v) => eur(Number(v)) },
-      },
+      y: yAxis(datasets, "y", m.charts.cost.yLeft, (v) =>
+        fill(m.eurM, { v: nf().format(v) }),
+      ),
       y1: {
-        type: "linear",
-        position: "right",
-        beginAtZero: true,
-        suggestedMax: 520,
-        title: { display: true, text: m.charts.cost.yRight },
+        ...yAxis(datasets, "y1", m.charts.cost.yRight, (v) =>
+          fill(m.eurM, { v: nf().format(v) }),
+        ),
         grid: { drawOnChartArea: false },
-        ticks: { callback: (v) => eur(Number(v)) },
       },
     },
   };
@@ -994,14 +1053,9 @@ export function buildProtestersWeeklyConfig(): Cfg {
     ),
     scales: {
       ...baseScales(view),
-      y: {
-        type: "linear",
-        position: "left",
-        beginAtZero: true,
-        suggestedMax: 1_700_000,
-        title: { display: true, text: m.charts.protestersWeekly.y },
-        ticks: { callback: (v) => compact().format(Number(v)) },
-      },
+      y: yAxis(datasets, "y", m.charts.protestersWeekly.y, (v) =>
+        compact().format(v),
+      ),
     },
   };
 
@@ -1057,14 +1111,9 @@ export function buildEnforcementWeeklyConfig(): Cfg {
     ),
     scales: {
       ...baseScales(view),
-      y: {
-        type: "linear",
-        position: "left",
-        beginAtZero: true,
-        suggestedMax: 2_800,
-        title: { display: true, text: m.charts.enforcementWeekly.y },
-        ticks: { callback: (v) => compact().format(Number(v)) },
-      },
+      y: yAxis(datasets, "y", m.charts.enforcementWeekly.y, (v) =>
+        compact().format(v),
+      ),
     },
   };
 
@@ -1073,14 +1122,45 @@ export function buildEnforcementWeeklyConfig(): Cfg {
 
 /* ------------------------------------------------------------------ mount */
 
+const MIN_CHART_H = 420;
+
+/** Chart.js measures the PARENT, never the canvas. An auto-height parent resolves to the
+ *  canvas's intrinsic 150px, which is why every series collapsed onto the baseline. */
+function ensureChartBox(canvas: HTMLCanvasElement): HTMLElement {
+  let host = canvas.parentElement;
+  if (!host || host === document.body) {
+    host = document.createElement("div");
+    host.className = "wrap";
+    canvas.parentNode?.insertBefore(host, canvas);
+    host.append(canvas);
+  }
+  if (getComputedStyle(host).position === "static")
+    host.style.position = "relative";
+  if (host.clientHeight < 160) host.style.height = `${MIN_CHART_H}px`;
+  canvas.style.display = "block";
+  return host;
+}
+
+/** Charts are re-mounted on every locale change; a surviving instance on the same canvas
+ *  throws "Canvas is already in use", which aborted render() before renderSources() ran. */
+const mounted = new WeakMap<HTMLCanvasElement, Chart<"line">>();
+
 export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
+  ensureChartBox(canvas);
+  mounted.get(canvas)?.destroy();
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("2d context unavailable");
   const { data, ...options } = cfg;
-  return new Chart<"line">(canvas, {
+
+  const chart = new Chart<"line">(ctx, {
     type: "line",
     data,
     options,
     plugins: [errorBars],
   });
+  mounted.set(canvas, chart);
+  return chart;
 }
 
 /* ------------------------------------------------ export for section C */
