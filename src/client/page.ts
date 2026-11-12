@@ -10,6 +10,11 @@ import { localeMeta, onLocaleChange, t, type SectionCopy } from "./i18n.ts";
 
 const $ = (id: string): HTMLElement | null => document.getElementById(id);
 
+const REPO_LABEL = {
+  en: "Source code on GitHub",
+  fr: "Code source sur GitHub",
+} as const;
+
 function tag<K extends keyof HTMLElementTagNameMap>(
   name: K,
   className?: string,
@@ -69,10 +74,21 @@ function disclaimer(): void {
   );
 }
 
+/** The anchor is static in index.html; only its label follows the locale. */
+function repoLink(): void {
+  const a = $("repo-link");
+  if (!a) return;
+  const lang = document.documentElement.dataset.lang === "en" ? "en" : "fr";
+  const label = REPO_LABEL[lang];
+  a.setAttribute("aria-label", label);
+  a.setAttribute("title", label);
+}
+
 export function renderChrome(): void {
-  const m = localeMeta(); // ← the line that was missing from your paste
+  const m = localeMeta();
   document.title = m.meta.title;
 
+  repoLink();
   disclaimer();
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);

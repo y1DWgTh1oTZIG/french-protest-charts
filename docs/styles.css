@@ -199,7 +199,6 @@ section > header p {
   align-items: center;
   gap: 1px;
   flex: none;
-  margin-left: auto;
   margin-top: 0.35rem;
   padding: 2px;
   border: 1px solid #d8dde3;
@@ -546,4 +545,41 @@ section > header p {
 #sources .count {
   font-size: 0.75em;
   color: #6b7280;
+}
+
+/* ---- GitHub icon beside the language toggle ---- */
+.head-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.repo-link svg {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+}
+
+.repo-link:hover {
+  background: rgb(0 0 0 / 6%);
+}
+
+.repo-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }

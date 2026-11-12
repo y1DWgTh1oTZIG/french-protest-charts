@@ -15138,6 +15138,10 @@ function mountLangSwitch(host = document.querySelector(
 
 // src/client/page.ts
 var $ = (id) => document.getElementById(id);
+var REPO_LABEL = {
+  en: "Source code on GitHub",
+  fr: "Code source sur GitHub"
+};
 function tag(name, className, text) {
   const el2 = document.createElement(name);
   if (className) el2.className = className;
@@ -15182,9 +15186,18 @@ function disclaimer() {
     document.createTextNode(d.tail)
   );
 }
+function repoLink() {
+  const a = $("repo-link");
+  if (!a) return;
+  const lang = document.documentElement.dataset.lang === "en" ? "en" : "fr";
+  const label = REPO_LABEL[lang];
+  a.setAttribute("aria-label", label);
+  a.setAttribute("title", label);
+}
 function renderChrome() {
   const m = localeMeta();
   document.title = m.meta.title;
+  repoLink();
   disclaimer();
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
