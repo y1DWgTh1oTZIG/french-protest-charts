@@ -2282,7 +2282,33 @@ const MARKER_KEY: { key: string; text: Bi }[] = [
   }
 }
 
-/* ----------------------------------------------------------------- render */
+/* ----- render */
+
+/** ISO strings compare lexicographically; undated sources sort last, stably. */
+function byPublicationDate(a: Source, b: Source): number {
+  if (!a.date || !b.date) {
+    if (a.date !== b.date) return a.date ? -1 : 1;
+    return a.id.localeCompare(b.id);
+  }
+  return a.date !== b.date
+    ? a.date < b.date
+      ? -1
+      : 1
+    : (a.dateEnd ?? "").localeCompare(b.dateEnd ?? "") ||
+        a.id.localeCompare(b.id);
+}
+
+/** Bucketed and sorted once: renderSources() re-runs on every locale change. */
+const SOURCES_BY_GROUP: ReadonlyMap<GroupId, readonly Source[]> = (() => {
+  const buckets = new Map<GroupId, Source[]>();
+  for (const s of SOURCES) {
+    const bucket = buckets.get(s.group);
+    if (bucket) bucket.push(s);
+    else buckets.set(s.group, [s]);
+  }
+  for (const bucket of buckets.values()) bucket.sort(byPublicationDate);
+  return buckets;
+})();
 
 function dateLabel(s: Source): string | null {
   if (!s.date) return null;
@@ -2314,6 +2340,21 @@ function sourceItem(s: Source): HTMLLIElement {
   return li;
 }
 
+/** Collapsible group; `open` comes from the pre-render DOM so locale changes don't reset it. */
+function sourceGroup(
+  id: string,
+  summary: Node[],
+  body: Node[],
+): HTMLDetailsElement {
+  const details = el("details", "source-group");
+  details.dataset.group = id;
+
+  const head = el("summary", "group-summary");
+  head.append(...summary);
+  details.append(head, ...body);
+  return details;
+}
+
 /** Idempotent. Keeps the static <h1> that index.html owns, replaces everything after it. */
 export function renderSources(
   host: HTMLElement | null = document.getElementById("sources"),
@@ -2331,33 +2372,32 @@ export function renderSources(
   box.append(el("p", "intro", bi(INTRO)));
 
   for (const group of GROUPS) {
-    const items = SOURCES.filter((s) => s.group === group.id);
-    if (items.length === 0) continue;
+    const items = SOURCES_BY_GROUP.get(group.id);
+    if (!items || items.length === 0) continue;
 
     // count is derived, never typed into the blurb
-    const h = el("h3", undefined, bi(group.title));
-    h.append(" ", el("span", "count", String(items.length)));
+    const title = el("h3", undefined, bi(group.title));
+    title.append(" ", el("span", "count", String(items.length)));
 
     const list = el("ul");
     for (const s of items) list.append(sourceItem(s));
 
-    const section = el("section", "source-group");
-    section.append(h, el("p", "blurb", bi(group.blurb)), list);
-
-    box.append(section);
+    box.append(
+      sourceGroup(group.id, [title], [el("p", "blurb", bi(group.blurb)), list]),
+    );
   }
 
-  const mentions = el("section", "source-group");
-  mentions.append(
-    el("h3", undefined, bi(MENTIONS_TITLE)),
-    el("p", "blurb", bi(MENTIONS_BLURB)),
-  );
   const dl = el("dl", "mention-list");
   for (const { name, note } of MENTIONS) {
     dl.append(el("dt", undefined, name), el("dd", undefined, bi(note)));
   }
-  mentions.append(dl);
-  box.append(mentions);
+  box.append(
+    sourceGroup(
+      "mentions",
+      [el("h3", undefined, bi(MENTIONS_TITLE))],
+      [el("p", "blurb", bi(MENTIONS_BLURB)), dl],
+    ),
+  );
 
   const key = el("dl", "marker-list");
   for (const { key: marker, text } of MARKER_KEY) {

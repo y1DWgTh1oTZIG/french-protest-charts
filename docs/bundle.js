@@ -17331,6 +17331,23 @@ var MARKER_KEY = [
     seen.add(s.id);
   }
 }
+function byPublicationDate(a, b) {
+  if (!a.date || !b.date) {
+    if (a.date !== b.date) return a.date ? -1 : 1;
+    return a.id.localeCompare(b.id);
+  }
+  return a.date !== b.date ? a.date < b.date ? -1 : 1 : (a.dateEnd ?? "").localeCompare(b.dateEnd ?? "") || a.id.localeCompare(b.id);
+}
+var SOURCES_BY_GROUP = (() => {
+  const buckets = /* @__PURE__ */ new Map();
+  for (const s of SOURCES) {
+    const bucket = buckets.get(s.group);
+    if (bucket) bucket.push(s);
+    else buckets.set(s.group, [s]);
+  }
+  for (const bucket of buckets.values()) bucket.sort(byPublicationDate);
+  return buckets;
+})();
 function dateLabel(s) {
   if (!s.date) return null;
   return s.dateEnd ? `${fmtDayMonth(s.date)}\u2013${fmtDate(s.dateEnd)}` : fmtDate(s.date);
@@ -17354,6 +17371,14 @@ function sourceItem(s) {
   li.append(el("span", "what", bi(s.what)));
   return li;
 }
+function sourceGroup(id, summary, body) {
+  const details = el("details", "source-group");
+  details.dataset.group = id;
+  const head = el("summary", "group-summary");
+  head.append(...summary);
+  details.append(head, ...body);
+  return details;
+}
 function renderSources(host = document.getElementById("sources")) {
   if (!host) return;
   const kept = [...host.children].filter(
@@ -17363,27 +17388,27 @@ function renderSources(host = document.getElementById("sources")) {
   const box = el("div", "sources-box");
   box.append(el("p", "intro", bi(INTRO)));
   for (const group of GROUPS) {
-    const items = SOURCES.filter((s) => s.group === group.id);
-    if (items.length === 0) continue;
-    const h = el("h3", void 0, bi(group.title));
-    h.append(" ", el("span", "count", String(items.length)));
+    const items = SOURCES_BY_GROUP.get(group.id);
+    if (!items || items.length === 0) continue;
+    const title = el("h3", void 0, bi(group.title));
+    title.append(" ", el("span", "count", String(items.length)));
     const list = el("ul");
     for (const s of items) list.append(sourceItem(s));
-    const section = el("section", "source-group");
-    section.append(h, el("p", "blurb", bi(group.blurb)), list);
-    box.append(section);
+    box.append(
+      sourceGroup(group.id, [title], [el("p", "blurb", bi(group.blurb)), list])
+    );
   }
-  const mentions = el("section", "source-group");
-  mentions.append(
-    el("h3", void 0, bi(MENTIONS_TITLE)),
-    el("p", "blurb", bi(MENTIONS_BLURB))
-  );
   const dl = el("dl", "mention-list");
   for (const { name, note: note2 } of MENTIONS) {
     dl.append(el("dt", void 0, name), el("dd", void 0, bi(note2)));
   }
-  mentions.append(dl);
-  box.append(mentions);
+  box.append(
+    sourceGroup(
+      "mentions",
+      [el("h3", void 0, bi(MENTIONS_TITLE))],
+      [el("p", "blurb", bi(MENTIONS_BLURB)), dl]
+    )
+  );
   const key = el("dl", "marker-list");
   for (const { key: marker, text } of MARKER_KEY) {
     key.append(el("dt", void 0, marker), el("dd", void 0, bi(text)));

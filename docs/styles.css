@@ -583,3 +583,35 @@ section > header p {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* ---- collapsible source groups ---- */
+.source-group > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.source-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-group > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  font-size: 0.8em;
+  transform: translateY(-0.1em);
+  transition: transform 0.15s ease;
+}
+
+.source-group[open] > summary::before {
+  content: "▾";
+}
+
+.source-group > summary h3 {
+  display: inline;
+  margin: 0;
+}
+
+.source-group[open] > summary {
+  margin-bottom: 0.5rem;
+}
