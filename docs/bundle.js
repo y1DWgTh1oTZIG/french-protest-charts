@@ -13760,6 +13760,8 @@ Chart.register(
 var LEFT = "y";
 var RIGHT = "y1";
 var CAP_PX = 5;
+var DAMAGES_ANCHOR = "2026-10-24";
+var damagesRadius = (r) => DATES.map((d) => d === DAMAGES_ANCHOR ? 0 : r);
 var DEF = {
   protestersDaily: {
     data: DAILY.turnout,
@@ -13806,6 +13808,7 @@ var DEF = {
     color: "#7c3aed",
     unit: "eurM",
     radius: 5,
+    pointRadius: damagesRadius(5),
     width: 2
   },
   policingDaily: {
@@ -13928,6 +13931,15 @@ function datasetsFor(id, weekly) {
   const def = DEF[id];
   if (!def) throw new Error(`chart.ts: no DEF entry for series "${id}"`);
   if (!def.data) throw new Error(`chart.ts: series "${id}" has no data`);
+  if (def.pointRadius && def.pointRadius.length !== def.data.length) {
+    throw new Error(
+      `chart.ts: "${id}" pointRadius has ${def.pointRadius.length} entries, expected ${def.data.length}`
+    );
+  }
+  const radiusAt = (i, bump = 0) => {
+    const r = def.pointRadius?.[i] ?? def.radius;
+    return r === 0 ? 0 : r + bump;
+  };
   const copy = t().chart.series[id];
   const axis = def.axis ?? LEFT;
   const plot = (keep) => def.data.map((p) => keep(p) ? p.v : null);
@@ -13949,8 +13961,8 @@ function datasetsFor(id, weekly) {
     backgroundColor: def.color,
     borderWidth: def.width,
     pointStyle: def.style,
-    pointRadius: def.radius,
-    pointHoverRadius: def.radius + 2,
+    pointRadius: def.data.map((_, i) => radiusAt(i)),
+    pointHoverRadius: def.data.map((_, i) => radiusAt(i, 2)),
     pointHitRadius: 14,
     tension: 0,
     // Chart.js must connect nothing across a hole: the connectors plugin
@@ -13982,8 +13994,8 @@ function datasetsFor(id, weekly) {
       pointBackgroundColor: THEME.hollow,
       pointBorderColor: def.color,
       pointBorderWidth: 2,
-      pointRadius: def.radius + 1,
-      pointHoverRadius: def.radius + 3,
+      pointRadius: def.data.map((_, i) => radiusAt(i, 1)),
+      pointHoverRadius: def.data.map((_, i) => radiusAt(i, 3)),
       pointHoverBorderWidth: 3,
       pointHitRadius: 14,
       spanGaps: false
@@ -14126,6 +14138,91 @@ var connectors = {
       }
       ctx.restore();
     }
+  }
+};
+var SPAN_MARKS = [
+  {
+    from: "2026-10-17",
+    to: "2026-10-24",
+    value: 1e3,
+    color: DEF.damagesDaily.color
+  }
+];
+var MARKER = "ellipse";
+var ELLIPSE_RY = 7;
+var BRACE_CURL = 6;
+var BRACE_LIFT = 12;
+function withAlpha(hex2, a) {
+  const n = Number.parseInt(hex2.slice(1), 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+var spanMark = {
+  id: "spanMark",
+  afterDatasetsDraw(chart) {
+    const spans = chart.options.plugins?.spanMark?.spans;
+    if (!spans?.length) return;
+    const xs = chart.scales.x;
+    const ys = chart.scales[LEFT];
+    if (!xs || !ys) return;
+    const { ctx, chartArea } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+    ctx.clip();
+    ctx.lineWidth = 1.5;
+    for (const s of spans) {
+      const i0 = DATES.indexOf(s.from);
+      const i1 = DATES.indexOf(s.to);
+      if (i0 < 0 || i1 <= i0) continue;
+      const x0 = xs.getPixelForValue(i0);
+      const x1 = xs.getPixelForValue(i1);
+      if (Math.abs(x1 - x0) < 8) continue;
+      const y = ys.getPixelForValue(s.value);
+      const mid = (x0 + x1) / 2;
+      ctx.strokeStyle = s.color;
+      ctx.fillStyle = withAlpha(s.color, 0.1);
+      ctx.beginPath();
+      if (MARKER === "ellipse") {
+        ctx.setLineDash([4, 3]);
+        ctx.ellipse(
+          mid,
+          y,
+          Math.abs(x1 - x0) / 2,
+          ELLIPSE_RY,
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        const top = y - BRACE_LIFT;
+        const c = BRACE_CURL;
+        ctx.setLineDash([]);
+        ctx.moveTo(x0, top + c);
+        ctx.quadraticCurveTo(x0, top, x0 + c, top);
+        ctx.lineTo(mid - c, top);
+        ctx.quadraticCurveTo(mid, top, mid, top - c);
+        ctx.quadraticCurveTo(mid, top, mid + c, top);
+        ctx.lineTo(x1 - c, top);
+        ctx.quadraticCurveTo(x1, top, x1, top + c);
+        ctx.stroke();
+      }
+      const labelY = (MARKER === "ellipse" ? y - ELLIPSE_RY : y - BRACE_LIFT - BRACE_CURL) - 2;
+      if (labelY - 10 > chartArea.top) {
+        ctx.font = "10px system-ui, sans-serif";
+        ctx.fillStyle = s.color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(
+          `${fmtDayMonth(s.from)}\u2013${fmtDayMonth(s.to)}`,
+          mid,
+          labelY
+        );
+      }
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
   }
 };
 function fmt(v, unit) {
@@ -14290,7 +14387,7 @@ function scalesFor(v, card, ids) {
   }
   return scales;
 }
-var shell = (v, subtitle, title) => ({
+var shell = (v, subtitle, title, extra) => ({
   responsive: true,
   maintainAspectRatio: false,
   resizeDelay: 0,
@@ -14325,7 +14422,8 @@ var shell = (v, subtitle, title) => ({
       font: { size: 15, weight: "bold" },
       padding: { top: 0, bottom: 2 }
     },
-    tooltip: { callbacks: tooltipCallbacks(v) }
+    tooltip: { callbacks: tooltipCallbacks(v) },
+    ...extra
   }
 });
 function buildChart(spec) {
@@ -14336,7 +14434,12 @@ function buildChart(spec) {
       labels: v.labels,
       datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly))
     },
-    ...shell(v, card.subtitle, card.title),
+    ...shell(
+      v,
+      card.subtitle,
+      card.title,
+      spec.id === "chart-costs" ? { spanMark: { spans: SPAN_MARKS } } : void 0
+    ),
     scales: scalesFor(v, card, spec.series)
   };
 }
@@ -14365,7 +14468,7 @@ function mount(canvas, cfg) {
       type: "line",
       data,
       options,
-      plugins: [errorBars, connectors]
+      plugins: [errorBars, connectors, spanMark]
     })
   );
 }
@@ -15184,7 +15287,7 @@ var ABOUT = {
         {
           kind: "p",
           runs: [
-            "Looking at the data since Oct 17, things seem to have settled into an uneasy routine: the unions declare planned routes; the prefects ban them or propose ridiculous alternatives; the unions file urgent appeals that invariably get rejected; the weaker unions accept the alternative routes; the spicier unions join the Gilets Jaunes, students, et al. in defiant undeclared manifestations; the cops wait until most people go; and then they engage in running battles with the remaining few until the evening. But either the more-recent arrest and injury figures are currently undercounted, or there has been a steady decline in eacy since Oct 17."
+            "Looking at the data since Oct 17, things seem to have settled into an uneasy routine: the unions declare planned routes; the prefects ban them or propose ridiculous alternatives; the unions file urgent appeals that invariably get rejected; the weaker unions accept the alternative routes; the spicier unions join the Gilets Jaunes, students, et al. in defiant undeclared manifestations; the cops wait until most people go; and then they engage in running battles with the remaining few until the evening. But either the more-recent arrest and injury figures are currently undercounted, or there has been a steady decline in each since Oct 17."
           ]
         },
         {

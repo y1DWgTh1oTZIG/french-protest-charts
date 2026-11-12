@@ -69,21 +69,26 @@ const CAP_PX = 5;
 
 /* ------------------------------------------------ one row per plotted series */
 
+/** The €1,000M damages total is the span ring's right-hand anchor: keep the
+ *  datum (tooltip, band, axis max) and hide only its marker. */
+const DAMAGES_ANCHOR = "2026-10-24";
+
+const damagesRadius = (r: number): number[] =>
+  DATES.map((d) => (d === DAMAGES_ANCHOR ? 0 : r));
+
 interface SeriesDef {
   readonly data: Series;
   readonly color: string;
   readonly unit: Unit;
   readonly radius: number;
+  /** Per-index override of `radius`; a 0 hides the marker, not the point. */
+  readonly pointRadius?: readonly number[];
   readonly width: number;
   readonly style?: PointStyle;
   readonly axis?: string;
   readonly bandFill?: string;
-  /** Logarithmic scale — for a series spanning several orders of magnitude. */
   readonly log?: boolean;
-  /** Dotted connector across the Toussaint holiday. */
   readonly holiday?: "daily" | "weekly";
-  /** The band is a range of the estimate, not a measurement error: shade it,
-   *  draw no whiskers. Used by the cumulative total, whose band is a fan. */
   readonly shadeOnly?: boolean;
 }
 
@@ -138,6 +143,7 @@ const DEF = {
     color: "#7c3aed",
     unit: "eurM",
     radius: 5,
+    pointRadius: damagesRadius(5),
     width: 2,
   },
   policingDaily: {
@@ -296,6 +302,9 @@ interface ProtestDataset extends ChartDataset<"line", (number | null)[]> {
   /** hidden from the legend — the points-only twin of a line series */
   detachedOnly?: boolean;
   connectors?: ConnectorSpec;
+  /** Indexical, like Chart.js's own point options. */
+  pointRadius?: number | number[];
+  pointHoverRadius?: number | number[];
 }
 
 /** A dashed connector means "reporting paused here", so the policy is a
@@ -318,6 +327,21 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
   const def = DEF[id];
   if (!def) throw new Error(`chart.ts: no DEF entry for series "${id}"`);
   if (!def.data) throw new Error(`chart.ts: series "${id}" has no data`);
+
+  // The mask is indexed like DEF.data, so a length mismatch would silently
+  // shift every marker one slot left.
+  if (def.pointRadius && def.pointRadius.length !== def.data.length) {
+    throw new Error(
+      `chart.ts: "${id}" pointRadius has ${def.pointRadius.length} entries, ` +
+        `expected ${def.data.length}`,
+    );
+  }
+
+  const radiusAt = (i: number, bump = 0): number => {
+    const r = def.pointRadius?.[i] ?? def.radius;
+    return r === 0 ? 0 : r + bump;
+  };
+
   const copy = t().chart.series[id];
   const axis = def.axis ?? LEFT;
   const plot = (keep: (p: Pt) => boolean) =>
@@ -348,8 +372,8 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
     backgroundColor: def.color,
     borderWidth: def.width,
     pointStyle: def.style,
-    pointRadius: def.radius,
-    pointHoverRadius: def.radius + 2,
+    pointRadius: def.data.map((_, i) => radiusAt(i)),
+    pointHoverRadius: def.data.map((_, i) => radiusAt(i, 2)),
     pointHitRadius: 14,
     tension: 0,
     // Chart.js must connect nothing across a hole: the connectors plugin
@@ -383,8 +407,8 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
       pointBackgroundColor: THEME.hollow,
       pointBorderColor: def.color,
       pointBorderWidth: 2,
-      pointRadius: def.radius + 1,
-      pointHoverRadius: def.radius + 3,
+      pointRadius: def.data.map((_, i) => radiusAt(i, 1)),
+      pointHoverRadius: def.data.map((_, i) => radiusAt(i, 3)),
       pointHoverBorderWidth: 3,
       pointHitRadius: 14,
       spanGaps: false,
@@ -556,6 +580,124 @@ const connectors: Plugin<"line"> = {
       }
       ctx.restore();
     }
+  },
+};
+
+/* ----- span marker: a figure published for a date range, not a single day */
+
+type SpanMark = {
+  readonly from: string; // ISO date, inclusive
+  readonly to: string; // ISO date, inclusive
+  readonly value: number; // €M, drawn on the left axis
+  readonly color: string;
+};
+
+/** CCI France's 27 Oct tally values 17–24 Oct as a whole, so the €1bn cell is
+ *  shown spanning those dates rather than as a point on 24 Oct. */
+const SPAN_MARKS: readonly SpanMark[] = [
+  {
+    from: "2026-10-17",
+    to: "2026-10-24",
+    value: 1_000,
+    color: DEF.damagesDaily.color,
+  },
+];
+
+/** "ellipse" = dashed lozenge around the span; "brace" = overbrace, ends
+ *  curling down toward the x axis. */
+const MARKER: "ellipse" | "brace" = "ellipse";
+const ELLIPSE_RY = 7;
+const BRACE_CURL = 6;
+const BRACE_LIFT = 12;
+
+function withAlpha(hex: string, a: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+const spanMark: Plugin<"line"> = {
+  id: "spanMark",
+  afterDatasetsDraw(chart) {
+    const spans = (
+      chart.options.plugins as
+        | { spanMark?: { spans?: readonly SpanMark[] } }
+        | undefined
+    )?.spanMark?.spans;
+    if (!spans?.length) return;
+
+    const xs = chart.scales.x;
+    const ys = chart.scales[LEFT];
+    if (!xs || !ys) return;
+
+    const { ctx, chartArea } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+    ctx.clip();
+    ctx.lineWidth = 1.5;
+
+    for (const s of spans) {
+      const i0 = DATES.indexOf(s.from);
+      const i1 = DATES.indexOf(s.to);
+      if (i0 < 0 || i1 <= i0) continue;
+
+      const x0 = xs.getPixelForValue(i0);
+      const x1 = xs.getPixelForValue(i1);
+      if (Math.abs(x1 - x0) < 8) continue;
+
+      const y = ys.getPixelForValue(s.value);
+      const mid = (x0 + x1) / 2;
+
+      ctx.strokeStyle = s.color;
+      ctx.fillStyle = withAlpha(s.color, 0.1);
+      ctx.beginPath();
+
+      if (MARKER === "ellipse") {
+        ctx.setLineDash([4, 3]);
+        ctx.ellipse(
+          mid,
+          y,
+          Math.abs(x1 - x0) / 2,
+          ELLIPSE_RY,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        const top = y - BRACE_LIFT;
+        const c = BRACE_CURL;
+        ctx.setLineDash([]);
+        ctx.moveTo(x0, top + c);
+        ctx.quadraticCurveTo(x0, top, x0 + c, top);
+        ctx.lineTo(mid - c, top);
+        ctx.quadraticCurveTo(mid, top, mid, top - c);
+        ctx.quadraticCurveTo(mid, top, mid + c, top);
+        ctx.lineTo(x1 - c, top);
+        ctx.quadraticCurveTo(x1, top, x1, top + c);
+        ctx.stroke();
+      }
+
+      // caption, skipped when it would hit the frame
+      const labelY =
+        (MARKER === "ellipse" ? y - ELLIPSE_RY : y - BRACE_LIFT - BRACE_CURL) -
+        2;
+      if (labelY - 10 > chartArea.top) {
+        ctx.font = "10px system-ui, sans-serif";
+        ctx.fillStyle = s.color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(
+          `${fmtDayMonth(s.from)}–${fmtDayMonth(s.to)}`,
+          mid,
+          labelY,
+        );
+      }
+      ctx.setLineDash([]);
+    }
+
+    ctx.restore();
   },
 };
 
@@ -785,7 +927,12 @@ function scalesFor(
 
 /* ------------------------------------------------------------- chart shell */
 
-const shell = (v: View, subtitle: string, title: string) => ({
+const shell = (
+  v: View,
+  subtitle: string,
+  title: string,
+  extra?: Record<string, unknown>,
+) => ({
   responsive: true,
   maintainAspectRatio: false,
   resizeDelay: 0,
@@ -824,6 +971,7 @@ const shell = (v: View, subtitle: string, title: string) => ({
       padding: { top: 0, bottom: 2 },
     },
     tooltip: { callbacks: tooltipCallbacks(v) },
+    ...extra,
   },
 });
 
@@ -840,7 +988,14 @@ export function buildChart(spec: ChartSpec): Cfg {
       labels: v.labels,
       datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly)),
     },
-    ...shell(v, card.subtitle, card.title),
+    ...shell(
+      v,
+      card.subtitle,
+      card.title,
+      spec.id === "chart-costs"
+        ? { spanMark: { spans: SPAN_MARKS } }
+        : undefined,
+    ),
     scales: scalesFor(v, card, spec.series),
   };
 }
@@ -876,7 +1031,7 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
       type: "line",
       data,
       options,
-      plugins: [errorBars, connectors],
+      plugins: [errorBars, connectors, spanMark],
     }),
   );
 }
