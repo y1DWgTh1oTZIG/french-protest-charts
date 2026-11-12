@@ -20,6 +20,7 @@ import { bi, fmtDate, fmtDayMonth, type Bi } from "./i18n.ts";
 export type GroupId =
   | "official"
   | "press"
+  | "blockades"
   | "cost"
   | "overseas"
   | "ref2026"
@@ -61,8 +62,8 @@ const INTRO: Bi = {
 };
 
 const FOOT: Bi = {
-  en: "Not a source, but load-bearing: the index in the earlier drafts of Section C divided each series by its own first figure, and the C′ x-axis was set by the longest episode. Both were replaced — C plots raw counts on a shared log axis, and C′ is capped at week 7. Nothing here has been through external review.",
-  fr: "Ce n’est pas une source, mais cela porte la lecture : dans les brouillons antérieurs, l’indice de la section C divisait chaque série par son premier chiffre, et l’axe des x de C′ était fixé par l’épisode le plus long. Les deux ont été remplacés — C trace des effectifs bruts sur un axe log partagé, et C′ est plafonné à la semaine 7. Rien ici n’a fait l’objet d’une relecture externe.",
+  en: "Not a source, but load-bearing: the index in the earlier drafts of Section C divided each series by its own first figure, and the C′ x-axis was set by the longest episode. Both were replaced — C plots raw counts on a shared log axis, and C′ is capped at week 7. The blockade series counts establishments where pupils could not attend normally; its band runs from the ministry count to the union count, and the union's count also includes administratively closed schools. The Toussaint holiday (17 Oct – 1 Nov) is drawn dotted: no lycée was in session, so the figure did not exist. Nothing here has been through external review.",
+  fr: "Ce n’est pas une source, mais cela porte la lecture : dans les brouillons antérieurs, l’indice de la section C divisait chaque série par son premier chiffre, et l’axe des x de C′ était fixé par l’épisode le plus long. Les deux ont été remplacés — C trace des effectifs bruts sur un axe log partagé, et C′ est plafonné à la semaine 7. La série des blocages compte les établissements où les élèves ne pouvaient pas suivre normalement ; sa fourchette va du décompte ministériel au décompte syndical, et ce dernier inclut aussi les lycées fermés administrativement. Les vacances de la Toussaint (17 oct. – 1 nov.) sont en pointillés : aucun lycée n’était en cours, le chiffre n’existait donc pas. Rien ici n’a fait l’objet d’une relecture externe.",
 };
 
 const MENTIONS_TITLE: Bi = {
@@ -115,8 +116,19 @@ export const GROUPS: readonly SourceGroup[] = [
       fr: "Le mouvement de 2026 — foule, interpellations, blessés",
     },
     blurb: {
-      en: "Daily press reporting for 1 Oct – 11 Nov 2026, plus the two disputes that shaped the charts: whether the 17 Oct policing operation was actually smaller than its predecessors, and how far the injured-protester total can be trusted.",
+      en: "Daily press reporting for 15 Sep – 11 Nov 2026, plus the two disputes that shaped the charts: whether the 17 Oct policing operation was actually smaller than its predecessors, and how far the injured-protester total can be trusted.",
       fr: "La presse quotidienne du 1er oct. au 11 nov. 2026, plus les deux controverses qui ont façonné les graphiques : le dispositif du 17 oct. était-il réellement inférieur aux précédents, et jusqu’où le total de blessés parmi les manifestants est-il fiable.",
+    },
+  },
+  {
+    id: "blockades",
+    title: {
+      en: "The 2026 movement — school blockades and the school calendar",
+      fr: "Le mouvement de 2026 — blocages de lycées et calendrier scolaire",
+    },
+    blurb: {
+      en: "The blockade line on the daily and weekly charts is a separate statistic: establishments where pupils could not attend normally — blocked, or closed by decision. The band runs from the ministry count to the union count, and the two publishers do not count the same thing: the union's “à l'arrêt” includes schools closed administratively, so it is an upper bound. The Toussaint holiday (17 Oct – 1 Nov) is drawn dotted because no lycée was in session: the count did not exist, it was not zero. The Interior Ministry's daily tallies of establishments concerned and blocked are in the first group above.",
+      fr: "La courbe des blocages des graphiques quotidien et hebdomadaire est une statistique à part : les établissements où les élèves ne pouvaient pas suivre normalement — bloqués, ou fermés par décision. La fourchette va du décompte ministériel au décompte syndical, et les deux éditeurs ne comptent pas la même chose : le « à l'arrêt » syndical inclut les lycées fermés administrativement, c'est donc une borne haute. Les vacances de la Toussaint (17 oct. – 1 nov.) sont en pointillés car aucun lycée n'était en cours : le décompte n'existait pas, il n'était pas nul. Les bilans quotidiens du ministère de l'Intérieur sur les établissements concernés et bloqués figurent dans le premier groupe ci-dessus.",
     },
   },
   {
@@ -222,6 +234,62 @@ export const GROUPS: readonly SourceGroup[] = [
 /* ------------------------------------------------------------------ sources */
 
 export const SOURCES: readonly Source[] = [
+  /* ---------------------- 2026 — school blockades and the school calendar */
+
+  src(
+    "service-public-vacances",
+    "blockades",
+    "Service-Public — « Calendrier des vacances scolaires 2026-2027 »",
+    "https://www.service-public.gouv.fr/particuliers/actualites/A18563",
+    both(
+      "the Toussaint dates behind the dotted line: classes end Friday 16 October and resume Monday 2 November 2026, identical in zones A, B and C — which is why the holiday needs no zone logic.",
+      "les dates de la Toussaint derrière la ligne en pointillés : fin des cours le vendredi 16 octobre et reprise le lundi 2 novembre 2026, identiques dans les zones A, B et C — d'où l'absence de logique par zone.",
+    ),
+  ),
+
+  src(
+    "education-calendrier",
+    "blockades",
+    "Ministère de l’Éducation nationale — « Calendrier scolaire : toutes les dates des cours et des vacances »",
+    "https://www.education.gouv.fr/calendrier-scolaire-toutes-les-dates-des-cours-et-des-vacances-100148",
+    both(
+      "the official end-of-class and return-to-school dates, read against the press calendar for the last day of classes (Friday 16 October).",
+      "les dates officielles de fin de cours et de reprise, confrontées au calendrier de presse pour le dernier jour de cours (vendredi 16 octobre).",
+    ),
+  ),
+
+  src(
+    "education-bilans",
+    "blockades",
+    "Ministère de l’Éducation nationale — bilans d’établissements perturbés et fermés",
+    "https://www.education.gouv.fr",
+    both(
+      "the ministry's balances behind the blockade line: 45 blocked of 338 concerned (29 Sept), 735 establishments perturbed (3 Oct), 224 closed (8 Oct), 214 closed with 94.2% of lycées open (13 Oct), 41 blocked at the rentrée (2 Nov) and 48 (3 Nov). Where the only figure published is “établissements perturbés” or “cours suspendus” rather than “bloqués”, the point is flagged as a wider measure — the tooltip says which.",
+      "les bilans ministériels derrière la courbe des blocages : 45 bloqués sur 338 concernés (29 sept.), 735 établissements perturbés (3 oct.), 224 fermés (8 oct.), 214 fermés avec 94,2 % de lycées ouverts (13 oct.), 41 bloqués à la rentrée (2 nov.) et 48 (3 nov.). Lorsque le seul chiffre publié est « établissements perturbés » ou « cours suspendus » plutôt que « bloqués », le point est signalé comme une mesure plus large — l'infobulle précise laquelle.",
+    ),
+  ),
+
+  src(
+    "usl-comptes",
+    "blockades",
+    "Union syndicale lynéenne — appels et décomptes syndicaux",
+    "https://lyceens.org",
+    both(
+      "the organiser side of the blockade band: 640 (1 Oct), 1 800 schools “à l'arrêt” (6 Oct), 1 000 (5 Nov). The union's own definition counts schools closed administratively as well as schools actually blocked, so its figure is an upper bound rather than a like-for-like count — which is why the band is wide and the tooltip says so.",
+      "le côté syndical de la fourchette des blocages : 640 (1er oct.), 1 800 lycées « à l'arrêt » (6 oct.), 1 000 (5 nov.). La définition syndicale compte aussi les lycées fermés administrativement, et non seulement les lycées bloqués : son chiffre est une borne haute plutôt qu'un décompte comparable — d'où la largeur de la fourchette, que l'infobulle explique.",
+    ),
+  ),
+
+  src(
+    "franceinfo-blocages",
+    "blockades",
+    "Franceinfo — le suivi jour par jour des blocages de lycées",
+    "https://www.franceinfo.fr/societe/education/blocage-des-lycees/",
+    both(
+      "the live day-by-day counts used where no ministry balance was issued: 169 blockades in the morning of 1 Oct, 891 schools with classes suspended at midday on 6 Oct, more than 150 perturbed on 8 Oct, and “more than 40 schools blocked” on 10 Oct.",
+      "les décomptes journaliers en direct utilisés là où aucun bilan ministériel n'a été publié : 169 blocages le matin du 1er oct., 891 établissements avec cours suspendus à la mi-journée du 6 oct., plus de 150 perturbés le 8 oct. et « plus de 40 lycées bloqués » le 10 oct.",
+    ),
+  ),
   /* ------------------------------------------- 2026 — ministry briefings */
   src(
     "interieur",
@@ -671,7 +739,7 @@ export const SOURCES: readonly Source[] = [
 
   src(
     "lemonde-29sept-338",
-    "press",
+    "blockades",
     "Le Monde — « Blocages des lycées : 338 établissements concernés mardi, dont 45 encore bloqués, selon le ministère de l’éducation nationale »",
     "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
     both(
@@ -1029,7 +1097,7 @@ export const SOURCES: readonly Source[] = [
   ),
   src(
     "figaro-06nov-live",
-    "press",
+    "blockades",
     "Le Figaro — direct du 6 novembre : 41 lycées bloqués, de nouvelles actions attendues samedi",
     "https://www.lefigaro.fr/actualite-france/en-direct-colere-sociale-apres-la-forte-mobilisation-de-jeudi-de-nouvelles-actions-attendues-des-samedi-20261106",
     both(
@@ -2195,6 +2263,13 @@ const MARKER_KEY: { key: string; text: Bi }[] = [
       fr: "agrégat hebdomadaire — une semaine, pas un jour",
     },
   },
+  {
+    key: "x",
+    text: {
+      en: "wider measure — establishments perturbed, with classes suspended, or closed, rather than schools fully blocked",
+      fr: "mesure plus large — établissements perturbés, cours suspendus ou fermés, plutôt que des lycées entièrement bloqués",
+    },
+  },
 ];
 
 /* duplicate ids are a build error, not a runtime surprise */
@@ -2245,10 +2320,12 @@ export function renderSources(
 ): void {
   if (!host) return; // boot() guarantees it; no silent re-append to <body>
 
-  // keep any static heading index.html owns (now an <h2>), replace the rest
   const kept = [...host.children].filter((n): n is HTMLElement =>
     /^H[1-6]$/.test(n.tagName),
   );
+  // The page-level heading is static in index.html and therefore French-only;
+  // give it the localised title so the box is right in both languages.
+  if (kept[0]) kept[0].textContent = bi(BOX_TITLE);
 
   const box = el("div", "sources-box");
   box.append(el("p", "intro", bi(INTRO)));
@@ -2265,12 +2342,8 @@ export function renderSources(
     for (const s of items) list.append(sourceItem(s));
 
     const section = el("section", "source-group");
-    section.append(
-      el("section", "source-group"),
-      h,
-      el("p", "blurb", bi(group.blurb)),
-      list,
-    );
+    section.append(h, el("p", "blurb", bi(group.blurb)), list);
+
     box.append(section);
   }
 

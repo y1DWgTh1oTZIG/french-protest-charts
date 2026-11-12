@@ -4,8 +4,10 @@ export const METRICS = ["p", "a", "f", "i"] as const;
 export type Metric = (typeof METRICS)[number];
 
 /** n = published point · r = regional only · p = partial · f = floor
- *  e = derived/modelled · c = stock or actions-total · w = weekly aggregate */
-export type Flag = "n" | "r" | "p" | "f" | "e" | "c" | "w";
+ *  e = derived/modelled · c = stock or actions-total · w = weekly aggregate
+ *  "x" = a wider measure than the metric's definition (perturbés, closed). */
+export type Flag = "n" | "r" | "p" | "f" | "e" | "c" | "w" | "x";
+
 /** Kept as an alias so existing call sites compile; one name for one type. */
 export type Quality = Flag;
 
@@ -17,7 +19,8 @@ export type MetricKey =
   | "arrests"
   | "forcesInjured"
   | "protesterInjured"
-  | "damagesCost";
+  | "damagesCost"
+  | "blockades";
 
 /** Short code used by sections B/C → long key used by the dashboards. */
 export const METRIC_OF: Readonly<Record<Metric, MetricKey>> = {
@@ -50,6 +53,8 @@ export interface WeekNoteParts {
   excluded?: number;
   floored?: boolean;
   clipped?: boolean;
+  /** The week overlaps the Toussaint holiday — the metric did not exist. */
+  vacation?: boolean;
 }
 
 /** A note is a reference to copy, never the copy itself. */

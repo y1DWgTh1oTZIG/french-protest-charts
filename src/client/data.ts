@@ -152,10 +152,77 @@ export const WEEKS: readonly Week[] = (() => {
     });
 })();
 
+/* ── School holidays (vacances scolaires) ──────────────────────────────────
+   Toussaint 2026: classes end Friday 16 October and resume Monday
+   2 November — the same dates in zones A, B and C, so no zone logic.
+   Source: service-public.gouv.fr / education.gouv.fr.                     */
+export const HOLIDAY_START = "2026-10-17";
+export const HOLIDAY_END = "2026-11-01";
+
+/** Dotted pattern for the holiday connector — finer than the "no data" dash. */
+export const HOLIDAY_DASH = [1.5, 3] as const;
+
+export const inHoliday = (date: string): boolean =>
+  date >= HOLIDAY_START && date <= HOLIDAY_END;
+
+/** The week overlaps the holiday. */
+export const weekTouchesHoliday = (weekStart: string): boolean =>
+  weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
+
+/** The week sits wholly inside the holiday — the metric did not exist. */
+export const weekInHoliday = (weekStart: string): boolean =>
+  weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
+
+/** Dotted when a DAILY segment crosses the holiday. */
+export function dailyHolidaySegment(
+  a?: number | string | null,
+  b?: number | string | null,
+): boolean {
+  const dateOf = (v?: number | string | null): string | undefined => {
+    if (typeof v === "string") return v;
+    if (typeof v === "number") return DATES[Math.round(v)];
+    return undefined;
+  };
+  const da = dateOf(a);
+  const db = dateOf(b);
+  if (!da || !db) return false;
+  return da <= HOLIDAY_END && db >= HOLIDAY_START;
+}
+
+/** Dotted when a WEEKLY connector bridges the empty holiday weeks. */
+export function weeklyHolidaySegment(
+  a?: number | null,
+  b?: number | null,
+): boolean {
+  if (a === undefined || a === null || b === undefined || b === null)
+    return false;
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  for (let i = lo + 1; i < hi; i++) {
+    const wk = WEEKS[i];
+    if (wk && weekInHoliday(wk.key)) return true;
+  }
+  return false;
+}
+
 /* --------------------------------------------------------------------- facts */
 
 export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
   {
+    /* ── School blockades ─────────────────────────────────────────────────
+       Metric: establishments where pupils could not attend normally —
+       blocked, or closed by decision. Band = official count (floor) to
+       union count (ceiling); the union's "à l'arrêt" also counts
+       administratively closed schools, so the ceiling is an upper bound.
+
+       "x" = a wider measure than blockades (établissements perturbés,
+       cours suspendus, établissements fermés) — the only figure published
+       that day. "r" = regional count. "f" = publisher said "more than".
+
+       Days with no published count stay empty. During the Toussaint
+       holiday (17 Oct – 1 Nov) no lycée was in session, so the metric did
+       not exist: those days are empty and the connector is dotted.       */
+
     /* ── The movement's first fortnight ─────────────────────────────────────
        The wave began after the rentrée: teachers and parents had been on
        strike in Mayotte since 31 August (lycée Nord d'Acoua, blocked for
@@ -168,6 +235,10 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        NONE of 15–27 September carries a published turnout, arrest, injury or
        damage figure, so the week of 14–20 September is empty rather than
        estimated. The one exception is the Paris area on 25 September. */
+
+    "2026-09-15": { blockades: { low: 1, high: 1 } },
+    "2026-09-19": { blockades: { low: 1, high: 1 } },
+    "2026-09-23": { blockades: { low: 10, high: 10, q: "r" } },
 
     /* Fri 25 Sep — the Île-de-France centre of gravity: ~60 franciliens
        lycées disrupted over 24–25 Sep, mainly Seine-Saint-Denis and
@@ -193,6 +264,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
     "2026-09-28": {
       arrests: { low: 164, high: 164 },
       protesterInjured: { low: 1, high: 1, q: "f" },
+      blockades: { low: 27, high: 27 },
     },
 
     /* Tue 29 Sep — national public-service mobilisation day, which the USL
@@ -215,6 +287,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       turnout: { low: 206_000, high: 300_000, q: "p" },
       arrests: { low: 440, high: 440 },
       protesterInjured: { low: 31, high: 31, q: "p" },
+      blockades: { low: 45, high: 45 },
     },
 
     /* Wed 30 Sep — 356 establishments perturbed; 625 interpellations that
@@ -265,6 +338,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       forcesInjured: { low: 83, high: 300, q: "e" },
       protesterInjured: { low: 235, high: 235, q: "c" },
       damagesCost: { low: 1, high: 1, q: "c" },
+      blockades: { low: 222, high: 640 },
     },
 
     /* Fri 2 Oct — 1,747 interpellations that day and "more than 5,000 since
@@ -276,6 +350,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        of the movement, 40 of them headteachers. */
     "2026-10-02": {
       arrests: { low: 1_747, high: 1_747 },
+      blockades: { low: 400, high: 400, q: "f" },
     },
 
     /* Sat 3 Oct — the ministry's stock "6,059 interpellations since
@@ -286,6 +361,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        carried on the Saturday, with the derivation in this comment. */
     "2026-10-03": {
       arrests: { low: 150, high: 150, q: "e" },
+      blockades: { low: 735, high: 735, q: "x" },
     },
 
     /* Mon 5 Oct — 984 interpellations and 65 forces injured that day.
@@ -296,6 +372,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
     "2026-10-05": {
       arrests: { low: 984, high: 984 },
       forcesInjured: { low: 65, high: 65 },
+      blockades: { low: 400, high: 500, q: "x" },
     },
 
     /* Tue 6 Oct — "Acte III", first national school/student day.
@@ -310,6 +387,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       arrests: { low: 488, high: 488 },
       forcesInjured: { low: 43, high: 43 },
       damagesCost: { low: 6, high: 6, q: "c" },
+      blockades: { low: 891, high: 1_800, q: "x" },
     },
 
     /* Thu 8 Oct — "Acte IV": 71,500 ministry / 130,000+ CGT; Paris 24,500.
@@ -317,6 +395,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
     "2026-10-08": {
       turnout: { low: 71_500, high: 130_000 },
       damagesCost: { low: 6, high: 6, q: "e" },
+      blockades: { low: 224, high: 224, q: "x" },
     },
 
     /* Sat 10 Oct — national cumulative damage stock: "déjà estimées à
@@ -325,7 +404,10 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        tally). Pannekoucke's parallel AURA estimate of €25–30M is NOT
        included, so this is neither a floor nor additive with the regional
        figures. Flagged "c": a stock, never summed with flows. */
-    "2026-10-10": { damagesCost: { low: 30, high: 30, q: "c" } },
+    "2026-10-10": {
+      damagesCost: { low: 30, high: 30, q: "c" },
+      blockades: { low: 40, high: 40, q: "f" },
+    },
 
     /* Mon 12 Oct — three regional prefecture figures, all regional:
          · Rhône: 27 établissements touchés (19 lycées, 6 universités,
@@ -350,6 +432,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       arrests: { low: 13, high: 13, q: "r" },
       protesterInjured: { low: 3, high: 3, q: "r" },
       damagesCost: { low: 1.5, high: 1.5, q: "c" },
+      blockades: { low: 19, high: 19, q: "r" },
     },
 
     /* Tue 13 Oct — "Acte V": 214 high schools closed (94.2% open), 161,500
@@ -360,6 +443,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
     "2026-10-13": {
       turnout: { low: 161_500, high: 480_000 },
       forcesInjured: { low: 40, high: 40 },
+      blockades: { low: 214, high: 214, q: "x" },
     },
 
     /* Sat 17 Oct — the peak of the episode.
@@ -441,6 +525,9 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       damagesCost: { low: 0.4, high: 3.3, q: "e" },
     },
 
+    "2026-11-02": { blockades: { low: 41, high: 41 } },
+    "2026-11-03": { blockades: { low: 48, high: 500 } },
+
     /* Thu 5 Nov — national strike day, 193 actions.
        575,000 ministry (definitive) / 1.6M CGT; Paris 65,000 / 350,000.
        Arrests 448 at 18h → 642 updated. Forces injured 53 at 18h → 112.
@@ -453,6 +540,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       arrests: { low: 448, high: 642 },
       forcesInjured: { low: 53, high: 112 },
       protesterInjured: { low: 18, high: 18, q: "f" },
+      blockades: { low: 81, high: 1_000 },
     },
 
     /* Sat 7 Nov — 141 actions; ~70,000 officers, 25 blindés, 15 water-cannon
@@ -695,12 +783,68 @@ function aggregate(key: MetricKey, op: "sum" | "max"): Series {
   });
 }
 
+/* ── Weekly PEAK, never a sum ──────────────────────────────────────────────
+   The same lycée is blocked on several consecutive days; a weekly total
+   would count one school many times over. So the weekly figure is the
+   peak day of the week, exactly as for turnout.
+
+   Regional days are excluded when a national figure exists in the same
+   week; a week that is wholly inside the holiday is empty, because the
+   metric did not exist. A week whose peak comes from a wider measure
+   ("x") inherits that flag and borrows the cell's own note.            */
+function aggregateBlockades(): Series {
+  return WEEKS.map((week) => {
+    const cells: { date: string; obs: Obs; q: Flag }[] = [];
+    for (const date of week.dates) {
+      const obs = FACTS[date]?.blockades;
+      if (!obs) continue;
+      cells.push({ date, obs, q: obs.q ?? "n" });
+    }
+    if (!cells.length) return NIL;
+
+    const national = cells.filter((c) => c.q !== "r");
+    const pool = national.length ? national : cells;
+    const regionalOnly = national.length === 0;
+
+    const top = pool.reduce((best, c) => {
+      const mid = (c.obs.low + c.obs.high) / 2;
+      const bestMid = (best.obs.low + best.obs.high) / 2;
+      if (c.q === "c" && best.q !== "c") return c;
+      if (best.q === "c" && c.q !== "c") return best;
+      return mid > bestMid ? c : best;
+    });
+
+    const wide = top.q === "x";
+    const parts: WeekNoteParts = {
+      days: new Set(pool.map((c) => c.date)).size,
+      kind: regionalOnly ? "regional" : "national",
+      peak: top.date,
+      noNational: regionalOnly || undefined,
+      excluded: cells.length - pool.length || undefined,
+      floored: pool.some((c) => c.q === "f") || undefined,
+      clipped: week.touchesEdge || undefined,
+      vacation: weekTouchesHoliday(week.key) || undefined,
+    };
+
+    return {
+      v: round2((top.obs.low + top.obs.high) / 2),
+      band: [round2(top.obs.low), round2(top.obs.high)] as [number, number],
+      q: regionalOnly ? "r" : wide ? "x" : top.q === "f" ? "f" : "w",
+      note: wide
+        ? ({ k: "obs", date: top.date, metric: "blockades" } as NoteRef)
+        : ({ k: "week", p: parts } as NoteRef),
+      detach: regionalOnly,
+    };
+  });
+}
+
 export const DAILY: Readonly<Record<string, Series>> = {
   turnout: projectDaily("turnout"),
   arrests: projectDaily("arrests"),
   forcesInjured: projectDaily("forcesInjured"),
   protesterInjured: projectDaily("protesterInjured"),
   damagesCost: projectDaily("damagesCost"),
+  blockades: projectDaily("blockades"),
   policing: projectPolicingDaily(),
   policingCumulative: projectPolicingCumulative(),
 };
@@ -710,6 +854,7 @@ export const WEEKLY: Readonly<Record<string, Series>> = {
   arrests: aggregate("arrests", "sum"),
   forcesInjured: aggregate("forcesInjured", "sum"),
   protesterInjured: aggregate("protesterInjured", "sum"),
+  blockades: aggregateBlockades(),
 };
 
 /* ----------------------------------------------- section C's weekly table */

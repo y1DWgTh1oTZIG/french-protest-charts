@@ -10,11 +10,11 @@ var EN_META = {
   sections: {
     a: {
       title: "A \xB7 Daily counts, 15 September \u2013 11 November 2026",
-      blurb: "One marker per day on which something was published, from the first mainland high-school blockades on 15 September. Days with no figure stay empty rather than interpolated; gaps in a line are dashed."
+      blurb: "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lyc\xE9e was in session."
     },
     b: {
       title: "B \xB7 Weekly aggregates",
-      blurb: "Weeks run Monday to Sunday, from the week of 14 September. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which."
+      blurb: "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lyc\xE9e is blocked on several consecutive days."
     },
     c: {
       title: "C \xB7 One panel per movement",
@@ -39,11 +39,11 @@ var FR_META = {
   sections: {
     a: {
       title: "A \xB7 D\xE9comptes quotidiens, 15 septembre \u2013 11 novembre 2026",
-      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9, \xE0 partir des premiers blocages de lyc\xE9es en m\xE9tropole le 15 septembre. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s."
+      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s. La courbe des blocages de lyc\xE9es est en pointill\xE9s pendant les vacances de la Toussaint, aucun lyc\xE9e n\u2019\xE9tant en cours."
     },
     b: {
       title: "B \xB7 Agr\xE9gats hebdomadaires",
-      blurb: "Les semaines vont du lundi au dimanche, depuis la semaine du 14 septembre. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle."
+      blurb: "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite."
     },
     c: {
       title: "C \xB7 Un panneau par mouvement",
@@ -295,11 +295,11 @@ var CHART_EN = {
   suffix: {
     c: "stock",
     w: "",
-    // the series label already says "weekly total"
     e: "modelled",
     f: "lower bound",
     r: "regional",
     p: "partial",
+    x: "wider measure",
     n: "",
     regional: "regional"
   },
@@ -308,28 +308,49 @@ var CHART_EN = {
     "2026-09-25": "Paris-area figure only: 21 interpellations by midday, announced by the Pr\xE9fecture de Police.",
     "2026-09-28": "The movement goes national \u2014 actions in Marseille, Lille, the Rh\xF4ne, the Var and the Alpes-Maritimes.",
     "2026-09-29": "Act I. The crowd figure counts the public-service cort\xE8ge the school actions joined, not a student crowd.",
-    "2026-09-30": "The second day of Act I: 625 interpellations and 83 security forces injured.",
+    "2026-09-30": "The second day of Act I: 625 interpellations and 83 security forces injured. The Education ministry counted 356 establishments concerned; no count of fully blocked schools was published that day.",
     "2026-10-01": "Act II, the peak of the first week. Arrests and injuries published with no turnout figure for the day.",
     "2026-10-02": "735 establishments still perturbed, and urban violence near 158 of them.",
-    "2026-10-03": "No weekend figure was published; the arrests for 3\u20134 October are derived by subtraction.",
+    "2026-10-03": "No weekend figure was published; the arrests for 3\u20134 October are derived by subtraction. 735 establishments perturbed \u2014 a wider measure than blockades, so the point is flagged as such.",
     "2026-10-05": "The first national school day after the break, with the ministry's stock figures.",
     "2026-10-06": "Act III \u2014 the first full national student demonstration of the movement.",
+    "2026-10-07": "The Interior Ministry suspended the use of stun grenades for the student mobilisations, after a lyc\xE9e student was injured at Lens.",
+    "2026-10-09": "Justice Ministry publishes its first judicial balance: 6,877 in garde \xE0 vue since mid-September.",
+    "2026-10-10": "CNEWS compiles a national damage bill of \u20AC30M \u2014 with no ministry tally behind it.",
     "2026-10-13": "Turnout band spans a factor of three: ministry floor, organiser ceiling.",
-    "2026-10-17": "The peak day. The damage band here is the 17\u201318 October IFRAP estimate, not a daily flow.",
-    "2026-10-24": "Arrest figures include preventive stops; not all become custody placements.",
-    "2026-10-31": "No protester-injury figure was published for this day.",
-    "2026-11-05": "Turnout band runs from 575 000 to 1.6 million \u2014 the band is the disagreement, not an error bar."
+    "2026-10-16": "Last day of classes before the Toussaint holiday: from 17 October no lyc\xE9e is in session, so the blockade count stops.",
+    "2026-10-17": "The peak day. The damage band here is the 17\u201318 October IFRAP estimate, not a daily flow. Toussaint holiday \u2014 schools closed.",
+    "2026-10-19": "Toussaint holiday \u2014 students supported the lyc\xE9e movement from outside the schools.",
+    "2026-10-24": "Arrest figures include preventive stops; not all become custody placements. Toussaint holiday \u2014 the mobilisation was an inter-union day, not a school day.",
+    "2026-10-31": "No protester-injury figure was published for this day. Toussaint holiday \u2014 inter-union mobilisation.",
+    "2026-11-01": "Last day of the Toussaint holiday.",
+    "2026-11-04": "In the Rh\xF4ne, seven establishments ran in remote mode; no lyc\xE9e was reported blocked.",
+    "2026-11-05": "Turnout band runs from 575 000 to 1.6 million \u2014 the band is the disagreement, not an error bar.",
+    "2026-11-06": "In the Rh\xF4ne, 16 lyc\xE9es and two colleges saw incidents, and a lyc\xE9e in Lyon's 8th arrondissement was blocked when it was cleared.",
+    "2026-11-09": "In the Rh\xF4ne, no lyc\xE9e was blocked: 14 ran in remote mode and 11 were reported as affected. A zero cannot be plotted on a logarithmic axis, so it is recorded here rather than as a point.",
+    "2026-11-10": "In the Rh\xF4ne, about ten establishments were affected."
   },
   obsNotes: {
+    "2026-09-15": {
+      blockades: "The lyc\xE9e Victor-Hugo in Caen \u2014 the first mainland blockade. Villeneuve-d'Ascq was blocked on 14 September and Le Rheu on 7 September, both before the window opens."
+    },
+    "2026-09-19": {
+      blockades: "Lyc\xE9e Saint-Exup\xE9ry in Cr\xE9teil: students backed the teachers' strike with the school's first blockade \u2014 the origin of the national movement."
+    },
+    "2026-09-23": {
+      blockades: "\xCEle-de-France only: the Cr\xE9teil rectorate counted the blockades spreading to about ten lyc\xE9es."
+    },
     "2026-09-25": {
       arrests: "Paris area only \u2014 Pr\xE9fecture de Police figure, by midday."
     },
     "2026-09-28": {
-      protesterInjured: "One documented case: a 14-year-old hit by a police projectile. A floor, not a count."
+      protesterInjured: "One documented case: a 14-year-old hit by a police projectile. A floor, not a count.",
+      blockades: "Interior Ministry: 27 complete blockades, out of 180 establishments perturbed."
     },
     "2026-09-29": {
       turnout: "Counts the public-service cort\xE8ge the school actions joined (206 000 ministry / 300 000 CGT), not a student crowd.",
-      protesterInjured: "Students and education staff injured that day, counted by the Education ministry."
+      protesterInjured: "Students and education staff injured that day, counted by the Education ministry.",
+      blockades: "Education ministry at the time of its balance: 45 schools blocked out of 338 concerned. Le Monde counted actions at nearly 410 establishments."
     },
     "2026-09-30": {
       protesterInjured: "Cumulative since the first blockades \u2014 a stock, not a daily count."
@@ -337,33 +358,43 @@ var CHART_EN = {
     "2026-10-01": {
       forcesInjured: "Brackets a Wednesday cumulative level with a Thursday daily flow: a derived band, not a published count.",
       protesterInjured: "Cumulative level reached at the 1 October cut-off (170 students + 65 education staff) \u2014 a stock, not a daily count. Where a week ends on this cell, the level is the week\u2019s figure, never the sum of the week\u2019s flows.",
-      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October."
+      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October.",
+      blockades: "Low end: 222 schools blocked (Le Monde live, out of 1,027 establishments concerned). High end: the Union \xE9tudiante's 640. The police counted 169 blockades in the morning, and 900 actions with 400 closures by the end of the day."
+    },
+    "2026-10-02": {
+      blockades: "'More than 400 schools blocked' (Le Monde live). The Interior Ministry's own tally for 2 October: 1,027 lyc\xE9es concerned, more than 560 perturbed, 400 closed."
     },
     "2026-10-03": {
-      arrests: "Derived by subtraction: the ministry's 6 059 since 28 September (published 5 October) less the published daily figures. Covers 3 and 4 October together."
+      arrests: "Derived by subtraction: the ministry's 6 059 since 28 September (published 5 October) less the published daily figures. Covers 3 and 4 October together.",
+      blockades: "Wider measure: the Education ministry counted 735 establishments perturbed, not schools fully blocked. The highest blocked count that week was 400+ on 2 October."
     },
     "2026-10-05": {
-      arrests: "984 interpellations that day. The ministry's 6 059 since 28 September is the stock that makes the weekend figure checkable."
+      arrests: "984 interpellations that day. The ministry's 6 059 since 28 September is the stock that makes the weekend figure checkable.",
+      blockades: "Wider measure: 400 to 500 establishments closed (government spokeswoman), more than 400 to stay closed. The ministry's morning count was 413 establishments perturbed."
     },
     "2026-10-06": {
-      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October."
+      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October.",
+      blockades: "Wider measure: 891 of the 3,700 schools had their classes suspended, totally or partially, at midday (ministry). The USL counted 1,800 schools '\xE0 l'arr\xEAt' \u2014 a union figure that also includes administratively closed schools."
     },
     "2026-10-08": {
-      damagesCost: "Anchor of the 1\u20138 October \xCEle-de-France damage increment. The same \u20AC6M is published for 6 October and is not counted twice."
+      damagesCost: "Anchor of the 1\u20138 October \xCEle-de-France damage increment. The same \u20AC6M is published for 6 October and is not counted twice.",
+      blockades: "Wider measure: 224 establishments closed (ministry); more than 150 still perturbed (franceinfo). The 224 figure is the benchmark the ministry quotes back on 13 October."
     },
     "2026-10-09": {
       arrests: "Justice Ministry judicial balance, cut off 8 Oct 17:00: 6,877 people placed in garde \xE0 vue since the start of the movement, 86% minors, 2,376 being prosecuted, 21 in detention. A different scope (since mid-September) and a different statistic (custodial placements, not interpellations) from the Interior Ministry's series \u2014 not reconcilable with it."
     },
     "2026-10-10": {
-      damagesCost: "National cumulative stock since mid-September, compiled by CNEWS from regional figures \u2014 no ministry published a national tally. Pannekoucke's parallel \u20AC25\u201330M estimate for Auvergne-Rh\xF4ne-Alpes is NOT included, so this is neither a floor nor additive with the regional figures."
+      damagesCost: "National cumulative stock since mid-September, compiled by CNEWS from regional figures \u2014 no ministry published a national tally. Pannekoucke's parallel \u20AC25\u201330M estimate for Auvergne-Rh\xF4ne-Alpes is NOT included, so this is neither a floor nor additive with the regional figures.",
+      blockades: "'More than 40 schools blocked' (AFP/Reuters, 10 October)."
     },
     "2026-10-12": {
       arrests: "13 interpellations reported independently by the Rh\xF4ne prefecture (27 \xE9tablissements touched) and the Bas-Rhin prefecture in Strasbourg. Two prefectures, the same number \u2014 so 13 is a floor for the day, not the day's regional total. Not Paris.",
       protesterInjured: "\xCEle-de-France only: a proviseur, a parent d'\xE9l\xE8ve and a R\xE9gion employee injured. Counted as education and local-authority staff, on the same basis as the 29 September ministry figure.",
-      damagesCost: `Normandy \u2014 Herv\xE9 Morin, Conseil r\xE9gional de Normandie, at the regional assembly, 12 Oct: "1,5 million en Normandie" out of "d'ores et d\xE9j\xE0 30 millions d'euros" nationally. A cumulative regional stock, not a daily flow, and a component of the national stock \u2014 never added to it. \xCEle-de-France's own revised total the same day was \u20AC8.5M.`
+      damagesCost: `Normandy \u2014 Herv\xE9 Morin, Conseil r\xE9gional de Normandie, at the regional assembly, 12 Oct: "1,5 million en Normandie" out of "d'ores et d\xE9j\xE0 30 millions d'euros" nationally. A cumulative regional stock, not a daily flow, and a component of the national stock \u2014 never added to it. \xCEle-de-France's own revised total the same day was \u20AC8.5M.`,
+      blockades: "Rh\xF4ne prefecture only: 19 of the 27 establishments affected were lyc\xE9es (six universities, two colleges). \xCEle-de-France counted nearly 80 lyc\xE9es perturbed the same day."
     },
     "2026-10-13": {
-      damagesCost: "Local estimate carried from the original research \u2014 the Ard\xE8che prefecture reported no damage, so it comes from elsewhere."
+      blockades: "Wider measure: 214 establishments closed, 94.2% of lyc\xE9es open \u2014 against 224 on 8 October. The ministry called the movement 'en recul'."
     },
     "2026-10-17": {
       protesterInjured: "Derived band: the floor is the serious-injury register, the ceiling is extrapolated from street-medics treatment counts. No official count exists.",
@@ -382,8 +413,15 @@ var CHART_EN = {
     "2026-10-31": {
       damagesCost: "Local estimate \u2014 no national damage figure was published."
     },
+    "2026-11-02": {
+      blockades: "Education ministry at 9.30: 41 lyc\xE9es blocked, about 1% of the country's 3,700, with no perturbation in three quarters of the departments."
+    },
+    "2026-11-03": {
+      blockades: "Education ministry: 48 schools blocked. The USL counted nearly 500."
+    },
     "2026-11-05": {
-      protesterInjured: 'Published as a floor: "at least this many".'
+      protesterInjured: 'Published as a floor: "at least this many".',
+      blockades: "Matignon at 10.00: 81 establishments blocked (2.2%). The USL counted 1,000 schools '\xE0 l'arr\xEAt' \u2014 blocked or administratively closed, so an upper bound. The Education ministry counted 33% of establishments perturbed."
     },
     "2026-11-09": {
       arrests: "Regional prefecture figures only \u2014 Bordeaux, Lyon, Strasbourg."
@@ -398,7 +436,7 @@ var CHART_EN = {
     "2026-10-05": "deployment estimated",
     "2026-10-06": "deployment estimated",
     "2026-10-08": "deployment estimated",
-    "2026-10-12": "estimated, Paris area",
+    "2026-10-12": "estim\xE9 \u2014 \xCEle-de-France, Lyon et Strasbourg",
     "2026-10-13": "deployment estimated",
     "2026-10-17": "deployment published",
     "2026-10-18": "estimated \u2014 Paris curfew",
@@ -416,17 +454,25 @@ var CHART_EN = {
   weekPeak: "peak {date}",
   weekNoNational: "no national figure this week",
   weekExcluded: "{n} point{s} excluded (regional or subset)",
-  // CHART_EN  weekFloored: "includes a floor — not a sum",
+  weekFloored: "includes a floor \u2014 not a sum",
   weekClipped: "week clipped by the window",
   weekJoin: " \xB7 ",
   tooltipRange: "{label}: {mid} (band {low}\u2013{high})",
   tooltipPoint: "{label}: {value}",
   tooltipNote: "{base}\n{note}",
   footerMark: "\u24D8 {note}",
+  weekVacation: "partly inside the Toussaint holiday (17 Oct \u2013 1 Nov)",
+  holidayLine: "Dotted line: the Toussaint holiday, 17 October \u2013 1 November 2026. No lyc\xE9e was in session, so no school could be blocked \u2014 the count did not exist, it was not zero.",
+  metricNote: "Schools blocked or closed: establishments where pupils could not attend normally. The band runs from the official count to the union count, and the union's figure also includes administratively closed schools.",
+  blockerNote: "A wider measure than blockades \u2014 establishments perturbed, with classes suspended, or closed \u2014 used where it is the only figure published that day.",
   series: {
     protestersDaily: {
       label: "Protesters",
       detached: "Protesters (detached figure)"
+    },
+    blockadesDaily: {
+      label: "Schools blocked",
+      detached: "Schools blocked (regional count)"
     },
     arrestsDaily: { label: "Arrests", detached: "Arrests (detached figure)" },
     forcesDaily: {
@@ -453,6 +499,10 @@ var CHART_EN = {
       label: "Protesters (weekly peak)",
       detached: "Protesters (regional week)"
     },
+    blockadesWeekly: {
+      label: "Schools blocked (weekly peak)",
+      detached: "Schools blocked (regional week)"
+    },
     arrestsWeekly: {
       label: "Arrests (weekly total)",
       detached: "Arrests (regional week)"
@@ -468,9 +518,10 @@ var CHART_EN = {
   },
   charts: {
     protestersDaily: {
-      title: "Protesters, daily",
-      subtitle: "Ministry and organiser counts, one marker per published day",
-      y: "Protesters"
+      title: "Protesters and blocked schools, daily",
+      subtitle: "Crowd counts on the left axis, school blockades on the right. The dotted line is the Toussaint holiday",
+      y: "Protesters",
+      yRight: "Schools blocked or closed"
     },
     enforcementDaily: {
       title: "Arrests and injuries, daily",
@@ -483,9 +534,10 @@ var CHART_EN = {
       y: "\u20AC millions"
     },
     protestersWeekly: {
-      title: "Protesters, weekly peak",
-      subtitle: "Peak day of each week, not a weekly sum",
-      y: "Protesters (peak day)"
+      title: "Protesters and blocked schools, weekly peak",
+      subtitle: "Peak day of each week, not a weekly sum \u2014 the same lyc\xE9e is blocked on several consecutive days",
+      y: "Protesters (peak day)",
+      yRight: "Schools blocked or closed (peak)"
     },
     enforcementWeekly: {
       title: "Enforcement, weekly totals",
@@ -508,6 +560,7 @@ var CHART_FR = {
     f: "borne inf\xE9rieure",
     r: "r\xE9gional",
     p: "partiel",
+    x: "mesure plus large",
     n: "",
     regional: "r\xE9gional"
   },
@@ -516,31 +569,46 @@ var CHART_FR = {
     "2026-09-25": "Chiffre de la r\xE9gion parisienne uniquement : 21 interpellations \xE0 midi, annonc\xE9es par la pr\xE9fecture de police.",
     "2026-09-28": "Le mouvement prend une dimension nationale \u2014 actions \xE0 Marseille, Lille, dans le Rh\xF4ne, le Var et les Alpes-Maritimes.",
     "2026-09-29": "Acte I. Le chiffre de foule compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e, pas une foule \xE9tudiante.",
-    "2026-09-30": "Deuxi\xE8me jour de l\u2019acte I : 625 interpellations et 83 bless\xE9s des forces de l\u2019ordre.",
+    "2026-09-30": "Deuxi\xE8me jour de l\u2019acte I : 625 interpellations et 83 bless\xE9s des forces de l\u2019ordre. Le minist\xE8re de l\u2019\xC9ducation compte 356 \xE9tablissements concern\xE9s ; aucun d\xE9compte de lyc\xE9es enti\xE8rement bloqu\xE9s n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0.",
     "2026-10-01": "Acte II, la pointe de la premi\xE8re semaine. Interpellations et bless\xE9s publi\xE9s sans chiffre de foule pour la journ\xE9e.",
     "2026-10-02": "735 \xE9tablissements encore perturb\xE9s, et des violences urbaines pr\xE8s de 158 d\u2019entre eux.",
-    "2026-10-03": "Aucun chiffre de week-end n\u2019a \xE9t\xE9 publi\xE9 ; les interpellations des 3\u20134 octobre sont d\xE9riv\xE9es par soustraction.",
+    "2026-10-03": "Aucun chiffre de week-end n\u2019a \xE9t\xE9 publi\xE9 ; les interpellations des 3\u20134 octobre sont d\xE9riv\xE9es par soustraction. 735 \xE9tablissements perturb\xE9s \u2014 une mesure plus large que les blocages ; le point est signal\xE9 comme tel.",
     "2026-10-05": "Premi\xE8re journ\xE9e nationale scolaire apr\xE8s les vacances, avec les stocks minist\xE9riels.",
     "2026-10-06": "Acte III \u2014 premi\xE8re manifestation \xE9tudiante nationale de plein exercice.",
-    "2026-10-07": "The Interior Ministry suspended the use of stun grenades for the student mobilisations, after a lyc\xE9e student was injured at Lens.",
-    "2026-10-09": "Justice Ministry publishes its first judicial balance: 6,877 in garde \xE0 vue since mid-September.",
-    "2026-10-10": "CNEWS compiles a national damage bill of \u20AC30M \u2014 with no ministry tally behind it.",
     "2026-10-13": "La fourchette de foule va du simple au triple : plancher minist\xE9riel, plafond syndical.",
-    "2026-10-17": "La journ\xE9e de pointe. La fourchette de dommages ici est l\u2019estimation IFRAP des 17\u201318 octobre, non un flux quotidien.",
-    "2026-10-24": "Les interpellations incluent les contr\xF4les pr\xE9ventifs ; toutes ne deviennent pas des gardes \xE0 vue.",
-    "2026-10-31": "Aucun chiffre de bless\xE9s parmi les manifestants n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0.",
-    "2026-11-05": "La fourchette de foule va de 575 000 \xE0 1,6 million \u2014 la fourchette est la divergence, pas une barre d\u2019erreur."
+    "2026-10-16": "Dernier jour de cours avant les vacances de la Toussaint : \xE0 partir du 17 octobre aucun lyc\xE9e n\u2019est en cours, le d\xE9compte des blocages s\u2019interrompt.",
+    "2026-10-17": "La journ\xE9e de pointe. La fourchette de dommages ici est l\u2019estimation IFRAP des 17\u201318 octobre, non un flux quotidien. Vacances de la Toussaint \u2014 \xE9tablissements ferm\xE9s. ",
+    "2026-10-19": "Vacances de la Toussaint \u2014 les \xE9tudiants soutiennent le mouvement lyc\xE9een depuis l\u2019ext\xE9rieur des \xE9tablissements.",
+    "2026-10-24": "Les interpellations incluent les contr\xF4les pr\xE9ventifs ; toutes ne deviennent pas des gardes \xE0 vue. Vacances de la Toussaint \u2014 la mobilisation \xE9tait une journ\xE9e interprofessionnelle, pas une journ\xE9e scolaire.",
+    "2026-10-31": "Aucun chiffre de bless\xE9s parmi les manifestants n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0. Vacances de la Toussaint \u2014 mobilisation interprofessionnelle.",
+    "2026-11-01": "Dernier jour des vacances de la Toussaint.",
+    "2026-11-04": "Dans le Rh\xF4ne, sept \xE9tablissements ont fait cours \xE0 distance ; aucun lyc\xE9e n\u2019est signal\xE9 comme bloqu\xE9.",
+    "2026-11-05": "La fourchette de foule va de 575 000 \xE0 1,6 million \u2014 la fourchette est la divergence, pas une barre d\u2019erreur.",
+    "2026-11-06": "Dans le Rh\xF4ne, incidents dans 16 lyc\xE9es et deux coll\xE8ges, et un lyc\xE9e du 8e arrondissement de Lyon bloqu\xE9 lors de son \xE9vacuation.",
+    "2026-11-09": "Dans le Rh\xF4ne, aucun lyc\xE9e n\u2019est bloqu\xE9 : 14 fonctionnent \xE0 distance et 11 sont signal\xE9s comme touch\xE9s. Un z\xE9ro ne peut pas \xEAtre port\xE9 sur un axe logarithmique, il est donc consign\xE9 ici et non comme point.",
+    "2026-11-10": "Dans le Rh\xF4ne, une dizaine d\u2019\xE9tablissements sont touch\xE9s."
   },
   obsNotes: {
+    "2026-09-15": {
+      blockades: "Le lyc\xE9e Victor-Hugo de Caen \u2014 le premier blocus en m\xE9tropole. Villeneuve-d\u2019Ascq avait \xE9t\xE9 bloqu\xE9 le 14 septembre et Le Rheu le 7 septembre, avant l\u2019ouverture de la fen\xEAtre."
+    },
+    "2026-09-19": {
+      blockades: "Lyc\xE9e Saint-Exup\xE9ry de Cr\xE9teil : les \xE9l\xE8ves soutiennent la gr\xE8ve des enseignants par le premier blocus de l\u2019\xE9tablissement \u2014 l\u2019origine du mouvement national."
+    },
+    "2026-09-23": {
+      blockades: "\xCEle-de-France uniquement : selon le rectorat de Cr\xE9teil, les blocus s\u2019\xE9tendent rapidement \xE0 une dizaine de lyc\xE9es."
+    },
     "2026-09-25": {
       arrests: "R\xE9gion parisienne uniquement \u2014 chiffres de la pr\xE9fecture de police, \xE0 midi."
     },
     "2026-09-28": {
-      protesterInjured: "Un cas document\xE9 : un gar\xE7on de 14 ans touch\xE9 par un projectile de police. Un plancher, pas un d\xE9compte."
+      protesterInjured: "Un cas document\xE9 : un gar\xE7on de 14 ans touch\xE9 par un projectile de police. Un plancher, pas un d\xE9compte.",
+      blockades: "Minist\xE8re de l\u2019Int\xE9rieur : 27 blocages totaux, sur 180 \xE9tablissements perturb\xE9s."
     },
     "2026-09-29": {
       turnout: "Compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e (206 000 minist\xE8re / 300 000 CGT), pas une foule \xE9tudiante.",
-      protesterInjured: "\xC9l\xE8ves et personnels de l\u2019\xE9ducation bless\xE9s ce jour-l\xE0, compt\xE9s par le minist\xE8re de l\u2019\xC9ducation."
+      protesterInjured: "\xC9l\xE8ves et personnels de l\u2019\xE9ducation bless\xE9s ce jour-l\xE0, compt\xE9s par le minist\xE8re de l\u2019\xC9ducation.",
+      blockades: "Minist\xE8re de l\u2019\xC9ducation au moment de son bilan : 45 lyc\xE9es bloqu\xE9s sur 338 concern\xE9s. Le Monde recense des actions dans pr\xE8s de 410 \xE9tablissements."
     },
     "2026-09-30": {
       protesterInjured: "Cumul depuis les premiers blocages \u2014 un stock, pas un d\xE9compte quotidien."
@@ -548,25 +616,39 @@ var CHART_FR = {
     "2026-10-01": {
       forcesInjured: "Encadre un niveau cumul\xE9 du mercredi et un flux quotidien du jeudi : une fourchette d\xE9riv\xE9e, pas un chiffre publi\xE9.",
       protesterInjured: "Niveau cumul\xE9 atteint \xE0 l\u2019arr\xEAt du 1er octobre (170 \xE9l\xE8ves + 65 personnels de l\u2019\xE9ducation) \u2014 un stock, pas un d\xE9compte quotidien. Lorsqu\u2019une semaine se termine sur cette cellule, le niveau est le chiffre de la semaine, jamais la somme des flux de la semaine.",
-      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre."
+      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre.",
+      blockades: "Borne basse : 222 lyc\xE9es bloqu\xE9s (Le Monde en direct, sur 1 027 \xE9tablissements concern\xE9s). Borne haute : les 640 de l\u2019Union \xE9tudiante. La police comptait 169 blocages le matin, et 900 actions avec 400 fermetures en fin de journ\xE9e."
+    },
+    "2026-10-02": {
+      blockades: "\xAB Plus de 400 lyc\xE9es bloqu\xE9s \xBB (Le Monde en direct). Le d\xE9compte du minist\xE8re de l\u2019Int\xE9rieur pour le 2 octobre : 1 027 lyc\xE9es concern\xE9s, plus de 560 perturb\xE9s, 400 ferm\xE9s."
     },
     "2026-10-03": {
-      arrests: "D\xE9riv\xE9 par soustraction : les 6 059 interpellations depuis le 28 septembre (publi\xE9s le 5 octobre) moins les chiffres journaliers publi\xE9s. Couvre les 3 et 4 octobre ensemble."
+      arrests: "D\xE9riv\xE9 par soustraction : les 6 059 interpellations depuis le 28 septembre (publi\xE9s le 5 octobre) moins les chiffres journaliers publi\xE9s. Couvre les 3 et 4 octobre ensemble.",
+      blockades: "Mesure plus large : le minist\xE8re de l\u2019\xC9ducation compte 735 \xE9tablissements perturb\xE9s, et non des lyc\xE9es enti\xE8rement bloqu\xE9s. Le plus haut d\xE9compte de blocages de la semaine est de 400+ le 2 octobre."
     },
     "2026-10-05": {
-      arrests: "984 interpellations ce jour-l\xE0. Le stock minist\xE9riel de 6 059 depuis le 28 septembre est ce qui rend v\xE9rifiable le chiffre du week-end."
+      arrests: "984 interpellations ce jour-l\xE0. Le stock minist\xE9riel de 6 059 depuis le 28 septembre est ce qui rend v\xE9rifiable le chiffre du week-end.",
+      blockades: "Mesure plus large : 400 \xE0 500 \xE9tablissements ferm\xE9s (porte-parole du gouvernement), plus de 400 doivent le rester. Le comptage de mi-matin du minist\xE8re est de 413 \xE9tablissements perturb\xE9s."
     },
     "2026-10-06": {
-      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre."
+      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre.",
+      blockades: "Mesure plus large : 891 \xE9tablissements sur 3 700 ont eu leurs cours suspendus, totalement ou partiellement, \xE0 la mi-journ\xE9e (minist\xE8re). L\u2019USL compte 1 800 lyc\xE9es \xAB \xE0 l\u2019arr\xEAt \xBB \u2014 un d\xE9compte syndical qui inclut aussi les lyc\xE9es ferm\xE9s administrativement."
     },
     "2026-10-08": {
-      damagesCost: "Ancrage de l\u2019incr\xE9ment de dommages francilien du 1er au 8 octobre. Les m\xEAmes 6 M\u20AC sont publi\xE9s au 6 octobre et ne sont pas compt\xE9s deux fois."
+      damagesCost: "Ancrage de l\u2019incr\xE9ment de dommages francilien du 1er au 8 octobre. Les m\xEAmes 6 M\u20AC sont publi\xE9s au 6 octobre et ne sont pas compt\xE9s deux fois.",
+      blockades: "Mesure plus large : 224 \xE9tablissements ferm\xE9s (minist\xE8re) ; plus de 150 encore perturb\xE9s (franceinfo). Le chiffre de 224 est celui que le minist\xE8re rappellera le 13 octobre."
+    },
+    "2026-10-10": {
+      blockades: "\xAB Plus de 40 lyc\xE9es bloqu\xE9s \xBB (AFP/Reuters, 10 octobre)."
     },
     "2026-10-12": {
-      arrests: "Chiffre r\xE9gional uniquement \u2014 d\xE9compte de pr\xE9fecture."
+      arrests: "13 interpellations rapport\xE9es ind\xE9pendamment par la pr\xE9fecture du Rh\xF4ne (27 \xE9tablissements touch\xE9s) et par celle du Bas-Rhin \xE0 Strasbourg. Deux pr\xE9fectures, le m\xEAme nombre : 13 est donc un plancher pour la journ\xE9e, pas le total r\xE9gional du jour. Ce n\u2019est pas Paris.",
+      protesterInjured: "\xCEle-de-France uniquement : un proviseur, un parent d\u2019\xE9l\xE8ve et un agent de la R\xE9gion bless\xE9s. Compt\xE9s comme personnels de l\u2019\xE9ducation et des collectivit\xE9s, sur la m\xEAme base que le chiffre minist\xE9riel du 29 septembre.",
+      damagesCost: "Normandie \u2014 Herv\xE9 Morin, Conseil r\xE9gional de Normandie, \xE0 l\u2019assembl\xE9e r\xE9gionale le 12 oct. : \xAB 1,5 million en Normandie \xBB sur \xAB d\u2019ores et d\xE9j\xE0 30 millions d\u2019euros \xBB au niveau national. Un stock r\xE9gional cumul\xE9, pas un flux quotidien, et une composante du stock national \u2014 jamais additionn\xE9. Le total francilien r\xE9vis\xE9 le m\xEAme jour \xE9tait de 8,5 M\u20AC.",
+      blockades: "Pr\xE9fecture du Rh\xF4ne uniquement : 19 des 27 \xE9tablissements touch\xE9s \xE9taient des lyc\xE9es (six universit\xE9s, deux coll\xE8ges). L\u2019\xCEle-de-France comptait pr\xE8s de 80 lyc\xE9es perturb\xE9s le m\xEAme jour."
     },
     "2026-10-13": {
-      damagesCost: "Estimation locale reprise de la recherche initiale \u2014 la pr\xE9fecture de l\u2019Ard\xE8che a signal\xE9 aucun dommage."
+      blockades: "Mesure plus large : 214 \xE9tablissements ferm\xE9s, 94,2 % de lyc\xE9es ouverts \u2014 contre 224 le 8 octobre. Le minist\xE8re parle d\u2019un mouvement \xAB en recul \xBB."
     },
     "2026-10-17": {
       protesterInjured: "Fourchette d\xE9riv\xE9e : le plancher est le registre des blessures graves, le plafond est extrapol\xE9 \xE0 partir des soins dispens\xE9s par les street-medics. Aucun d\xE9compte officiel n\u2019existe.",
@@ -585,8 +667,15 @@ var CHART_FR = {
     "2026-10-31": {
       damagesCost: "Estimation locale \u2014 aucun chiffre national de dommages n\u2019a \xE9t\xE9 publi\xE9."
     },
+    "2026-11-02": {
+      blockades: "Minist\xE8re de l\u2019\xC9ducation \xE0 9 h 30 : 41 lyc\xE9es bloqu\xE9s, environ 1 % des 3 700 du pays, et aucune perturbation dans les trois quarts des d\xE9partements."
+    },
+    "2026-11-03": {
+      blockades: "Minist\xE8re de l\u2019\xC9ducation : 48 lyc\xE9es bloqu\xE9s. L\u2019USL en compte pr\xE8s de 500."
+    },
     "2026-11-05": {
-      protesterInjured: "Publi\xE9 comme plancher : \xAB au moins \xBB. "
+      protesterInjured: "Publi\xE9 comme plancher : \xAB au moins \xBB. ",
+      blockades: "Matignon \xE0 10 h : 81 \xE9tablissements bloqu\xE9s (2,2 %). L\u2019USL compte 1 000 lyc\xE9es \xAB \xE0 l\u2019arr\xEAt \xBB \u2014 bloqu\xE9s ou ferm\xE9s administrativement, donc une borne haute. Le minist\xE8re de l\u2019\xC9ducation compte 33 % d\u2019\xE9tablissements perturb\xE9s."
     },
     "2026-11-09": {
       arrests: "Chiffres de pr\xE9fectures r\xE9gionales uniquement \u2014 Bordeaux, Lyon, Strasbourg."
@@ -619,17 +708,25 @@ var CHART_FR = {
   weekPeak: "pointe le {date}",
   weekNoNational: "aucun chiffre national cette semaine",
   weekExcluded: "{n} point{s} exclu(s) (r\xE9gional ou sous-ensemble)",
-  // CHART_FR  weekFloored: "comprend un plancher — pas une somme",
+  weekFloored: "comprend un plancher \u2014 pas une somme",
   weekClipped: "semaine tronqu\xE9e par la fen\xEAtre",
   weekJoin: " \xB7 ",
   tooltipRange: "{label} : {mid} (fourchette {low}\u2013{high})",
   tooltipPoint: "{label} : {value}",
   tooltipNote: "{base}\n{note}",
   footerMark: "\u24D8 {note}",
+  weekVacation: "en partie pendant les vacances de la Toussaint (17 oct. \u2013 1 nov.)",
+  holidayLine: "Ligne en pointill\xE9s : les vacances de la Toussaint, du 17 octobre au 1er novembre 2026. Aucun lyc\xE9e n\u2019\xE9tait en cours, aucun ne pouvait \xEAtre bloqu\xE9 \u2014 le d\xE9compte n\u2019existait pas, il n\u2019\xE9tait pas nul.",
+  metricNote: "Lyc\xE9es bloqu\xE9s ou ferm\xE9s : les \xE9tablissements o\xF9 les \xE9l\xE8ves ne pouvaient pas suivre normalement. La fourchette va du d\xE9compte officiel au d\xE9compte syndical, et ce dernier inclut les lyc\xE9es ferm\xE9s administrativement.",
+  blockerNote: "Mesure plus large que les blocages \u2014 \xE9tablissements perturb\xE9s, cours suspendus ou ferm\xE9s \u2014 utilis\xE9e lorsque c\u2019est le seul chiffre publi\xE9 ce jour-l\xE0.",
   series: {
     protestersDaily: {
       label: "Manifestants",
       detached: "Manifestants (chiffre \xE9cart\xE9 de la courbe)"
+    },
+    blockadesDaily: {
+      label: "Lyc\xE9es bloqu\xE9s",
+      detached: "Lyc\xE9es bloqu\xE9s (d\xE9compte r\xE9gional)"
     },
     arrestsDaily: {
       label: "Interpellations",
@@ -659,6 +756,10 @@ var CHART_FR = {
       label: "Manifestants (pointe hebdomadaire)",
       detached: "Manifestants (semaine r\xE9gionale)"
     },
+    blockadesWeekly: {
+      label: "Lyc\xE9es bloqu\xE9s (pointe hebdomadaire)",
+      detached: "Lyc\xE9es bloqu\xE9s (semaine r\xE9gionale)"
+    },
     arrestsWeekly: {
       label: "Interpellations (total hebdomadaire)",
       detached: "Interpellations (semaine r\xE9gionale)"
@@ -674,9 +775,10 @@ var CHART_FR = {
   },
   charts: {
     protestersDaily: {
-      title: "Manifestants, par jour",
-      subtitle: "Comptages minist\xE9riels et syndicaux, un marqueur par jour publi\xE9",
-      y: "Manifestants"
+      title: "Manifestants et lyc\xE9es bloqu\xE9s, par jour",
+      subtitle: "Foules sur l\u2019axe de gauche, blocages de lyc\xE9es sur l\u2019axe de droite. La ligne en pointill\xE9s est les vacances de la Toussaint",
+      y: "Manifestants",
+      yRight: "Lyc\xE9es bloqu\xE9s ou ferm\xE9s"
     },
     enforcementDaily: {
       title: "Interpellations et bless\xE9s, par jour",
@@ -689,9 +791,10 @@ var CHART_FR = {
       y: "Millions d\u2019\u20AC"
     },
     protestersWeekly: {
-      title: "Manifestants, pointe hebdomadaire",
-      subtitle: "Jour de pointe de chaque semaine, pas une somme hebdomadaire",
-      y: "Manifestants (jour de pointe)"
+      title: "Manifestants et lyc\xE9es bloqu\xE9s, pointe hebdomadaire",
+      subtitle: "Jour de pointe de chaque semaine, pas une somme hebdomadaire \u2014 un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite",
+      y: "Manifestants (jour de pointe)",
+      yRight: "Lyc\xE9es bloqu\xE9s ou ferm\xE9s (pointe)"
     },
     enforcementWeekly: {
       title: "Maintien de l\u2019ordre, totaux hebdomadaires",
@@ -956,7 +1059,8 @@ var CATALOGUE = {
       e: "modelled",
       f: "floor",
       c: "stock",
-      w: "weekly"
+      w: "weekly",
+      x: "wider measure"
     },
     // en
     tooltip: {
@@ -981,139 +1085,6 @@ var CATALOGUE = {
         "transcript-4.md"
       ],
       tail: ""
-    },
-    sources: {
-      title: "Sources and method",
-      intro: "Every series traces to a publisher below. Where publishers disagree the chart carries a range instead of a point: the range is the disagreement, not an error bar. Hollow markers are regional, Paris-only, modelled or stock figures and are never joined to the national line.",
-      groups: [
-        {
-          heading: "2026 movement \u2014 the September phase",
-          items: [
-            {
-              label: "Ouest-France \u2014 the first mainland blockade, Le Rheu, 7 September",
-              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
-              what: "the movement's origin point, before the window opens"
-            },
-            {
-              label: "Actu \u2014 the Caen and Villeneuve-d'Ascq blockades, 15 September",
-              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
-              what: "the first days inside the chart window"
-            },
-            {
-              label: "Franceinfo \u2014 how a few school blockades became a national movement",
-              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
-              what: "the chronology of September, including Cr\xE9teil"
-            },
-            {
-              label: "Ouest-France \u2014 21 interpellations in the Paris area, 25 September",
-              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
-              what: "the only figure before the national turn"
-            },
-            {
-              label: "Le Monde \u2014 338 establishments concerned, Act I, 29 September",
-              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
-              what: "Act I: establishments, injuries and arrests"
-            },
-            {
-              label: "Le Monde \u2014 625 interpellations, 30 September",
-              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
-              what: "the second day of Act I"
-            },
-            {
-              label: "Le Figaro \u2014 the daily arrest figures, 1, 2, 5 and 6 October",
-              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
-              what: "Act II and Act III"
-            },
-            {
-              label: "Wikip\xE9dia \u2014 the full dated chronology of the movement",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
-              what: "the spine of the September rows"
-            }
-          ]
-        },
-        {
-          heading: "2026 movement \u2014 official counts",
-          items: [
-            {
-              label: "Ministry of the Interior \u2014 weekly protest tallies",
-              href: "https://www.interieur.gouv.fr",
-              what: "national turnout, arrests, officer injuries"
-            },
-            {
-              label: "Prefecture of police of Paris",
-              href: "https://www.prefecturedepolice.interieur.gouv.fr",
-              what: "Paris-only arrest figures",
-              when: "2026-10-18"
-            },
-            {
-              label: "Ministry of Justice \u2014 custody and prosecutions",
-              href: "https://www.justice.gouv.fr",
-              what: "the custody/arrest distinction"
-            },
-            {
-              label: "CGT and the inter-union collective",
-              href: "https://www.cgt.fr",
-              what: "the upper bound of every turnout range"
-            }
-          ]
-        },
-        {
-          heading: "2026 movement \u2014 damage and its cost",
-          items: [
-            {
-              label: "IFRAP \u2014 cost of the 17\u201318 October damage",
-              href: "https://www.ifrap.org",
-              what: "the \u20AC244\u2013866M material-damage band"
-            },
-            {
-              label: "CCI France \u2014 damaged-shop census",
-              href: "https://www.cci.fr",
-              what: "shop counts behind the weekly increments"
-            },
-            {
-              label: "Prefecture of \xCEle-de-France",
-              href: "https://www.iledefrance.gouv.fr",
-              what: "the \u20AC1M damage stock \u2014 a stock, not a daily flow"
-            }
-          ]
-        },
-        {
-          heading: "Earlier movements, 1968\u20132025",
-          items: [
-            {
-              label: "May 1968 \u2014 encyclopaedic summary of published counts",
-              href: "https://fr.wikipedia.org/wiki/Mai_68",
-              what: "crowd counts, arrests, injuries"
-            },
-            {
-              label: "CPE 2006 \u2014 student and school movement",
-              href: "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
-              what: "four weeks of published figures"
-            },
-            {
-              label: "Gilets jaunes, acts 1\u201344",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
-              what: "ministry counts compiled act by act"
-            },
-            {
-              label: "Riots of June 2023",
-              href: "https://fr.wikipedia.org/wiki/%C3%89meutes_de_2023_en_France",
-              what: "arrests and injuries over five nights"
-            },
-            {
-              label: "Pension reform, 2023",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_de_2023",
-              what: "the inter-union turnout range"
-            },
-            {
-              label: "\xAB Bloquons tout \xBB, 2025",
-              href: "https://fr.wikipedia.org/wiki/Bloquons_tout",
-              what: "blockades and partial counts"
-            }
-          ]
-        }
-      ],
-      foot: "Historical episodes come from encyclopaedic summaries, not primary archives. Read them as orders of magnitude. Policing cost is modelled: officers deployed \xD7 \u20AC136\u20131 133 per officer-day. The deployment figures for September and early October are estimates, flagged as such in the tooltip; the movement total is \u20AC54\u2013630M."
     }
   },
   fr: {
@@ -1142,7 +1113,8 @@ var CATALOGUE = {
       e: "mod\xE9lis\xE9",
       f: "plancher",
       c: "stock",
-      w: "hebdomadaire"
+      w: "hebdomadaire",
+      x: "mesure plus large"
     },
     // fr
     tooltip: {
@@ -1167,139 +1139,6 @@ var CATALOGUE = {
         "transcript-4.md"
       ],
       tail: ""
-    },
-    sources: {
-      title: "Sources et m\xE9thode",
-      intro: "Chaque s\xE9rie est rattach\xE9e \xE0 un \xE9diteur ci-dessous. Lorsque deux \xE9diteurs divergent, le graphique affiche une fourchette plut\xF4t qu\u2019un point : la fourchette est la divergence, pas une barre d\u2019erreur. Les marqueurs creux sont r\xE9gionaux, parisiens, mod\xE9lis\xE9s ou des stocks, et ne sont jamais reli\xE9s \xE0 la courbe nationale.",
-      groups: [
-        {
-          heading: "Mouvement 2026 \u2014 la phase de septembre",
-          items: [
-            {
-              label: "Ouest-France \u2014 le tout premier blocus en m\xE9tropole, Le Rheu, 7 septembre",
-              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
-              what: "le point d\u2019origine du mouvement, avant l\u2019ouverture de la fen\xEAtre"
-            },
-            {
-              label: "Actu \u2014 les blocages de Caen et de Villeneuve-d\u2019Ascq, 15 septembre",
-              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
-              what: "les premiers jours \xE0 l\u2019int\xE9rieur de la fen\xEAtre"
-            },
-            {
-              label: "Franceinfo \u2014 comment quelques blocages de lyc\xE9es sont devenus un mouvement d\u2019ampleur",
-              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
-              what: "la chronologie de septembre, avec Cr\xE9teil"
-            },
-            {
-              label: "Ouest-France \u2014 21 interpellations dans l\u2019agglom\xE9ration parisienne, 25 septembre",
-              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
-              what: "le seul chiffre avant le tournant national"
-            },
-            {
-              label: "Le Monde \u2014 338 \xE9tablissements concern\xE9s, acte I, 29 septembre",
-              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
-              what: "acte I : \xE9tablissements, bless\xE9s et interpellations"
-            },
-            {
-              label: "Le Monde \u2014 625 interpellations, 30 septembre",
-              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
-              what: "le deuxi\xE8me jour de l\u2019acte I"
-            },
-            {
-              label: "Le Figaro \u2014 les chiffres journaliers d\u2019interpellations, 1er, 2, 5 et 6 octobre",
-              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
-              what: "acte II et acte III"
-            },
-            {
-              label: "Wikip\xE9dia \u2014 la chronologie dat\xE9e compl\xE8te du mouvement",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
-              what: "l\u2019axe sur lequel sont pos\xE9es les lignes de septembre"
-            }
-          ]
-        },
-        {
-          heading: "Mouvement 2026 \u2014 d\xE9comptes officiels",
-          items: [
-            {
-              label: "Minist\xE8re de l\u2019Int\xE9rieur \u2014 bilans hebdomadaires",
-              href: "https://www.interieur.gouv.fr",
-              what: "foules nationales, interpellations, bless\xE9s parmi les forces"
-            },
-            {
-              label: "Pr\xE9fecture de police de Paris",
-              href: "https://www.prefecturedepolice.interieur.gouv.fr",
-              what: "interpellations parisiennes",
-              when: "2026-10-18"
-            },
-            {
-              label: "Minist\xE8re de la Justice \u2014 gardes \xE0 vue et poursuites",
-              href: "https://www.justice.gouv.fr",
-              what: "la distinction garde \xE0 vue / interpellation"
-            },
-            {
-              label: "CGT et l\u2019intersyndicale",
-              href: "https://www.cgt.fr",
-              what: "la borne haute de chaque fourchette de foule"
-            }
-          ]
-        },
-        {
-          heading: "Mouvement 2026 \u2014 dommages et co\xFBt",
-          items: [
-            {
-              label: "IFRAP \u2014 co\xFBt des dommages des 17\u201318 octobre",
-              href: "https://www.ifrap.org",
-              what: "la fourchette 244\u2013866 M\u20AC de dommages mat\xE9riels"
-            },
-            {
-              label: "CCI France \u2014 recensement des commerces sinistr\xE9s",
-              href: "https://www.cci.fr",
-              what: "les d\xE9comptes qui fondent les incr\xE9ments hebdomadaires"
-            },
-            {
-              label: "Pr\xE9fecture de la r\xE9gion \xCEle-de-France",
-              href: "https://www.iledefrance.gouv.fr",
-              what: "le stock de 1 M\u20AC \u2014 un stock, pas un flux quotidien"
-            }
-          ]
-        },
-        {
-          heading: "Mouvements ant\xE9rieurs, 1968\u20132025",
-          items: [
-            {
-              label: "Mai 1968 \u2014 synth\xE8se encyclop\xE9dique des d\xE9comptes",
-              href: "https://fr.wikipedia.org/wiki/Mai_68",
-              what: "foules, interpellations, bless\xE9s"
-            },
-            {
-              label: "CPE 2006 \u2014 mouvement lyc\xE9en et \xE9tudiant",
-              href: "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
-              what: "quatre semaines de chiffres publi\xE9s"
-            },
-            {
-              label: "Gilets jaunes, actes 1 \xE0 44",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
-              what: "d\xE9comptes minist\xE9riels compil\xE9s acte par acte"
-            },
-            {
-              label: "\xC9meutes de juin 2023",
-              href: "https://fr.wikipedia.org/wiki/%C3%89meutes_de_2023_en_France",
-              what: "interpellations et bless\xE9s sur cinq nuits"
-            },
-            {
-              label: "R\xE9forme des retraites, 2023",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_de_2023",
-              what: "la fourchette intersyndicale de foule"
-            },
-            {
-              label: "\xAB Bloquons tout \xBB, 2025",
-              href: "https://fr.wikipedia.org/wiki/Bloquons_tout",
-              what: "blocages et d\xE9comptes partiels"
-            }
-          ]
-        }
-      ],
-      foot: "Les \xE9pisodes historiques proviennent de synth\xE8ses encyclop\xE9diques, non d\u2019archives primaires. \xC0 lire comme des ordres de grandeur. Le co\xFBt du maintien de l\u2019ordre est mod\xE9lis\xE9 : agents d\xE9ploy\xE9s \xD7 136\u20131 133 \u20AC par agent-jour. Les dispositifs de septembre et de d\xE9but octobre sont des estimations, signal\xE9es comme telles dans l\u2019infobulle ; le total du mouvement est de 54 \xE0 630 M\u20AC."
     }
   }
 };
@@ -1410,6 +1249,10 @@ var STATIC = {
   "card.ew.title": {
     en: "Enforcement, weekly totals",
     fr: "Maintien de l\u2019ordre, totaux hebdomadaires"
+  },
+  "leg.holiday.title": {
+    en: "Dotted line = the Toussaint school holiday",
+    fr: "Ligne en pointill\xE9s = les vacances de la Toussaint"
   },
   "leg.items.title": {
     en: "Highlight a measure",
@@ -13165,6 +13008,60 @@ var TimeSeriesScale = class extends TimeScale {
   }
 };
 
+// src/client/canvas.ts
+var THEME = {
+  ink: "#111827",
+  label: "#4b5563",
+  muted: "#6b7280",
+  grid: "#E5E5E5",
+  axisGrid: "rgba(17,24,23,0.06)",
+  hollow: "#ffffff",
+  dim: 0.18
+};
+function alpha2(hex2, a) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex2);
+  if (!m) throw new Error(`alpha() expects #rrggbb, got "${hex2}"`);
+  const n = Number.parseInt(m[1], 16);
+  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
+}
+function segIndex(ctx, which) {
+  const given = which === 0 ? ctx.p0DataIndex : ctx.p1DataIndex;
+  if (typeof given === "number" && Number.isFinite(given)) {
+    return Math.round(given);
+  }
+  const pt = which === 0 ? ctx.p0 : ctx.p1;
+  const parsed = pt?.parsed?.x;
+  if (typeof parsed === "number" && Number.isInteger(parsed)) return parsed;
+  const px = pt?.x;
+  const axis = ctx.chart?.options?.indexAxis === "y" ? "y" : "x";
+  const scale = ctx.chart?.scales?.[axis];
+  if (typeof px === "number" && typeof scale?.getValueForPixel === "function") {
+    const v = scale.getValueForPixel(px);
+    if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
+  }
+  return void 0;
+}
+var gapSegment = (slots = 1, dash = [6, 4]) => ({
+  borderDash: (ctx) => {
+    const i0 = segIndex(ctx, 0);
+    const i1 = segIndex(ctx, 1);
+    if (i0 === void 0 || i1 === void 0) return void 0;
+    return Math.abs(i1 - i0) > slots + 0.01 ? dash : void 0;
+  }
+});
+var live = /* @__PURE__ */ new Set();
+var track = (chart) => (live.add(chart), chart);
+function destroyAll() {
+  for (const chart of live) {
+    try {
+      chart.destroy();
+    } catch (err) {
+      console.error("[chart] destroy failed", err);
+    }
+  }
+  live.clear();
+}
+
 // src/client/model.ts
 var METRICS = ["p", "a", "f", "i"];
 var METRIC_OF = {
@@ -13218,7 +13115,47 @@ var WEEKS = (() => {
     return { key, end, dates, touchesEdge: key < START || end > END };
   });
 })();
+var HOLIDAY_START = "2026-10-17";
+var HOLIDAY_END = "2026-11-01";
+var HOLIDAY_DASH = [1.5, 3];
+var weekTouchesHoliday = (weekStart) => weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
+var weekInHoliday = (weekStart) => weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
+function dailyHolidaySegment(a, b) {
+  const dateOf = (v) => {
+    if (typeof v === "string") return v;
+    if (typeof v === "number") return DATES[Math.round(v)];
+    return void 0;
+  };
+  const da = dateOf(a);
+  const db = dateOf(b);
+  if (!da || !db) return false;
+  return da <= HOLIDAY_END && db >= HOLIDAY_START;
+}
+function weeklyHolidaySegment(a, b) {
+  if (a === void 0 || a === null || b === void 0 || b === null)
+    return false;
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  for (let i = lo + 1; i < hi; i++) {
+    const wk = WEEKS[i];
+    if (wk && weekInHoliday(wk.key)) return true;
+  }
+  return false;
+}
 var FACTS = {
+  /* ── School blockades ─────────────────────────────────────────────────
+         Metric: establishments where pupils could not attend normally —
+         blocked, or closed by decision. Band = official count (floor) to
+         union count (ceiling); the union's "à l'arrêt" also counts
+         administratively closed schools, so the ceiling is an upper bound.
+  
+         "x" = a wider measure than blockades (établissements perturbés,
+         cours suspendus, établissements fermés) — the only figure published
+         that day. "r" = regional count. "f" = publisher said "more than".
+  
+         Days with no published count stay empty. During the Toussaint
+         holiday (17 Oct – 1 Nov) no lycée was in session, so the metric did
+         not exist: those days are empty and the connector is dotted.       */
   /* ── The movement's first fortnight ─────────────────────────────────────
          The wave began after the rentrée: teachers and parents had been on
          strike in Mayotte since 31 August (lycée Nord d'Acoua, blocked for
@@ -13231,6 +13168,9 @@ var FACTS = {
          NONE of 15–27 September carries a published turnout, arrest, injury or
          damage figure, so the week of 14–20 September is empty rather than
          estimated. The one exception is the Paris area on 25 September. */
+  "2026-09-15": { blockades: { low: 1, high: 1 } },
+  "2026-09-19": { blockades: { low: 1, high: 1 } },
+  "2026-09-23": { blockades: { low: 10, high: 10, q: "r" } },
   /* Fri 25 Sep — the Île-de-France centre of gravity: ~60 franciliens
      lycées disrupted over 24–25 Sep, mainly Seine-Saint-Denis and
      Val-de-Marne (Saint-Denis, Sarcelles, Gonesse, Stains, Saint-Ouen,
@@ -13253,7 +13193,8 @@ var FACTS = {
      one documented casualty is a minimum, not a count. */
   "2026-09-28": {
     arrests: { low: 164, high: 164 },
-    protesterInjured: { low: 1, high: 1, q: "f" }
+    protesterInjured: { low: 1, high: 1, q: "f" },
+    blockades: { low: 27, high: 27 }
   },
   /* Tue 29 Sep — national public-service mobilisation day, which the USL
      called students to join; it is the movement's Act I.
@@ -13274,7 +13215,8 @@ var FACTS = {
   "2026-09-29": {
     turnout: { low: 206e3, high: 3e5, q: "p" },
     arrests: { low: 440, high: 440 },
-    protesterInjured: { low: 31, high: 31, q: "p" }
+    protesterInjured: { low: 31, high: 31, q: "p" },
+    blockades: { low: 45, high: 45 }
   },
   /* Wed 30 Sep — 356 establishments perturbed; 625 interpellations that
      day, which with 440 on the 29th makes the two-day total 1,065.
@@ -13322,7 +13264,8 @@ var FACTS = {
     arrests: { low: 1949, high: 1949 },
     forcesInjured: { low: 83, high: 300, q: "e" },
     protesterInjured: { low: 235, high: 235, q: "c" },
-    damagesCost: { low: 1, high: 1, q: "c" }
+    damagesCost: { low: 1, high: 1, q: "c" },
+    blockades: { low: 222, high: 640 }
   },
   /* Fri 2 Oct — 1,747 interpellations that day and "more than 5,000 since
      Monday" (the daily series gives 4,925); 735 establishments perturbed,
@@ -13332,7 +13275,8 @@ var FACTS = {
      arrondissement. Geffray: 65 education staff injured since the start
      of the movement, 40 of them headteachers. */
   "2026-10-02": {
-    arrests: { low: 1747, high: 1747 }
+    arrests: { low: 1747, high: 1747 },
+    blockades: { low: 400, high: 400, q: "f" }
   },
   /* Sat 3 Oct — the ministry's stock "6,059 interpellations since
      28 September" (5 Oct) minus 984 on Monday 5 Oct leaves 5,075 through
@@ -13341,7 +13285,8 @@ var FACTS = {
      derived by subtraction, not a Saturday figure — flagged "e" and
      carried on the Saturday, with the derivation in this comment. */
   "2026-10-03": {
-    arrests: { low: 150, high: 150, q: "e" }
+    arrests: { low: 150, high: 150, q: "e" },
+    blockades: { low: 735, high: 735, q: "x" }
   },
   /* Mon 5 Oct — 984 interpellations and 65 forces injured that day.
      Stocks published the same day: 6,059 interpellations since 28 Sep;
@@ -13350,7 +13295,8 @@ var FACTS = {
      start, 34 of them headteachers. */
   "2026-10-05": {
     arrests: { low: 984, high: 984 },
-    forcesInjured: { low: 65, high: 65 }
+    forcesInjured: { low: 65, high: 65 },
+    blockades: { low: 400, high: 500, q: "x" }
   },
   /* Tue 6 Oct — "Acte III", first national school/student day.
      256,000 ministry / 450,000 organisers; Paris 56,000 / 100,000.
@@ -13363,13 +13309,15 @@ var FACTS = {
     turnout: { low: 256e3, high: 45e4 },
     arrests: { low: 488, high: 488 },
     forcesInjured: { low: 43, high: 43 },
-    damagesCost: { low: 6, high: 6, q: "c" }
+    damagesCost: { low: 6, high: 6, q: "c" },
+    blockades: { low: 891, high: 1800, q: "x" }
   },
   /* Thu 8 Oct — "Acte IV": 71,500 ministry / 130,000+ CGT; Paris 24,500.
      Anchor of the 1–8 Oct Île-de-France damage increment (€6M). */
   "2026-10-08": {
     turnout: { low: 71500, high: 13e4 },
-    damagesCost: { low: 6, high: 6, q: "e" }
+    damagesCost: { low: 6, high: 6, q: "e" },
+    blockades: { low: 224, high: 224, q: "x" }
   },
   /* Sat 10 Oct — national cumulative damage stock: "déjà estimées à
      30 millions d'euros en France" since mid-September (CNEWS's own
@@ -13377,7 +13325,10 @@ var FACTS = {
      tally). Pannekoucke's parallel AURA estimate of €25–30M is NOT
      included, so this is neither a floor nor additive with the regional
      figures. Flagged "c": a stock, never summed with flows. */
-  "2026-10-10": { damagesCost: { low: 30, high: 30, q: "c" } },
+  "2026-10-10": {
+    damagesCost: { low: 30, high: 30, q: "c" },
+    blockades: { low: 40, high: 40, q: "f" }
+  },
   /* Mon 12 Oct — three regional prefecture figures, all regional:
        · Rhône: 27 établissements touchés (19 lycées, 6 universités,
          2 collèges), 13 interpellations.
@@ -13400,7 +13351,8 @@ var FACTS = {
   "2026-10-12": {
     arrests: { low: 13, high: 13, q: "r" },
     protesterInjured: { low: 3, high: 3, q: "r" },
-    damagesCost: { low: 1.5, high: 1.5, q: "c" }
+    damagesCost: { low: 1.5, high: 1.5, q: "c" },
+    blockades: { low: 19, high: 19, q: "r" }
   },
   /* Tue 13 Oct — "Acte V": 214 high schools closed (94.2% open), 161,500
      ministry / 480,000 youth intersyndicate (41,500 Paris), 40 police
@@ -13409,7 +13361,8 @@ var FACTS = {
      was Normandy, and it was published on 12 October. */
   "2026-10-13": {
     turnout: { low: 161500, high: 48e4 },
-    forcesInjured: { low: 40, high: 40 }
+    forcesInjured: { low: 40, high: 40 },
+    blockades: { low: 214, high: 214, q: "x" }
   },
   /* Sat 17 Oct — the peak of the episode.
          110 → 430 → 441 actions; ~60,000 officers deployed.
@@ -13485,6 +13438,8 @@ var FACTS = {
     forcesInjured: { low: 116, high: 159 },
     damagesCost: { low: 0.4, high: 3.3, q: "e" }
   },
+  "2026-11-02": { blockades: { low: 41, high: 41 } },
+  "2026-11-03": { blockades: { low: 48, high: 500 } },
   /* Thu 5 Nov — national strike day, 193 actions.
      575,000 ministry (definitive) / 1.6M CGT; Paris 65,000 / 350,000.
      Arrests 448 at 18h → 642 updated. Forces injured 53 at 18h → 112.
@@ -13496,7 +13451,8 @@ var FACTS = {
     turnout: { low: 575e3, high: 16e5 },
     arrests: { low: 448, high: 642 },
     forcesInjured: { low: 53, high: 112 },
-    protesterInjured: { low: 18, high: 18, q: "f" }
+    protesterInjured: { low: 18, high: 18, q: "f" },
+    blockades: { low: 81, high: 1e3 }
   },
   /* Sat 7 Nov — 141 actions; ~70,000 officers, 25 blindés, 15 water-cannon
      trucks; ~40,000 preventive checks; Caen campus dispersed by 50 CRS.
@@ -13675,12 +13631,52 @@ function aggregate(key, op) {
     };
   });
 }
+function aggregateBlockades() {
+  return WEEKS.map((week) => {
+    const cells = [];
+    for (const date of week.dates) {
+      const obs = FACTS[date]?.blockades;
+      if (!obs) continue;
+      cells.push({ date, obs, q: obs.q ?? "n" });
+    }
+    if (!cells.length) return NIL;
+    const national = cells.filter((c) => c.q !== "r");
+    const pool = national.length ? national : cells;
+    const regionalOnly = national.length === 0;
+    const top = pool.reduce((best, c) => {
+      const mid = (c.obs.low + c.obs.high) / 2;
+      const bestMid = (best.obs.low + best.obs.high) / 2;
+      if (c.q === "c" && best.q !== "c") return c;
+      if (best.q === "c" && c.q !== "c") return best;
+      return mid > bestMid ? c : best;
+    });
+    const wide = top.q === "x";
+    const parts = {
+      days: new Set(pool.map((c) => c.date)).size,
+      kind: regionalOnly ? "regional" : "national",
+      peak: top.date,
+      noNational: regionalOnly || void 0,
+      excluded: cells.length - pool.length || void 0,
+      floored: pool.some((c) => c.q === "f") || void 0,
+      clipped: week.touchesEdge || void 0,
+      vacation: weekTouchesHoliday(week.key) || void 0
+    };
+    return {
+      v: round2((top.obs.low + top.obs.high) / 2),
+      band: [round2(top.obs.low), round2(top.obs.high)],
+      q: regionalOnly ? "r" : wide ? "x" : top.q === "f" ? "f" : "w",
+      note: wide ? { k: "obs", date: top.date, metric: "blockades" } : { k: "week", p: parts },
+      detach: regionalOnly
+    };
+  });
+}
 var DAILY = {
   turnout: projectDaily("turnout"),
   arrests: projectDaily("arrests"),
   forcesInjured: projectDaily("forcesInjured"),
   protesterInjured: projectDaily("protesterInjured"),
   damagesCost: projectDaily("damagesCost"),
+  blockades: projectDaily("blockades"),
   policing: projectPolicingDaily(),
   policingCumulative: projectPolicingCumulative()
 };
@@ -13688,7 +13684,8 @@ var WEEKLY = {
   turnout: aggregate("turnout", "max"),
   arrests: aggregate("arrests", "sum"),
   forcesInjured: aggregate("forcesInjured", "sum"),
-  protesterInjured: aggregate("protesterInjured", "sum")
+  protesterInjured: aggregate("protesterInjured", "sum"),
+  blockades: aggregateBlockades()
 };
 var WEEK_FLAG_OVERRIDE = {
   // Week of 28 Sep: the injury figure is the cumulative level reached on
@@ -13719,38 +13716,6 @@ var STUDENT_WEEKS = WEEKS.map((week, idx) => {
   }
   return out;
 });
-
-// src/client/canvas.ts
-var THEME = {
-  ink: "#111827",
-  label: "#4b5563",
-  muted: "#6b7280",
-  grid: "#E5E5E5",
-  axisGrid: "rgba(17,24,39,0.06)",
-  hollow: "#ffffff",
-  dim: 0.18
-};
-function alpha2(hex2, a) {
-  const m = /^#([0-9a-f]{6})$/i.exec(hex2);
-  if (!m) throw new Error(`alpha() expects #rrggbb, got "${hex2}"`);
-  const n = Number.parseInt(m[1], 16);
-  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
-}
-var gapSegment = (slots = 1, dash = [6, 4]) => ({
-  borderDash: (ctx) => Math.abs(ctx.p1.parsed.x - ctx.p0.parsed.x) > slots + 0.01 ? dash : void 0
-});
-var live = /* @__PURE__ */ new Set();
-var track = (chart) => (live.add(chart), chart);
-function destroyAll() {
-  for (const chart of live) {
-    try {
-      chart.destroy();
-    } catch (err) {
-      console.error("[chart] destroy failed", err);
-    }
-  }
-  live.clear();
-}
 
 // src/client/dom.ts
 var byId = (id) => document.getElementById(id);
@@ -13794,6 +13759,7 @@ function noteText(ref) {
       if (p.excluded) parts.push(fill(m.weekExcluded, { n: p.excluded }));
       if (p.floored) parts.push(m.weekFloored);
       if (p.clipped) parts.push(m.weekClipped);
+      if (p.vacation) parts.push(m.weekVacation);
       return parts.join(m.weekJoin);
     }
     default:
@@ -13802,7 +13768,7 @@ function noteText(ref) {
 }
 function suffixFor(q, detached) {
   const s = t().chart.suffix;
-  const text = q === "c" ? s.c : q === "w" ? s.w : q === "e" ? s.e : q === "f" ? s.f : detached ? s.regional : "";
+  const text = q === "c" ? s.c : q === "w" ? s.w : q === "e" ? s.e : q === "f" ? s.f : q === "x" ? s.x : detached ? s.regional : "";
   return text ? fill(t().chart.suffixWrap, { text }) : "";
 }
 
@@ -13829,6 +13795,16 @@ var DEF = {
     unit: "count",
     radius: 4,
     width: 2
+  },
+  blockadesDaily: {
+    data: DAILY.blockades,
+    color: "#8C564B",
+    unit: "count",
+    radius: 3,
+    width: 1.75,
+    axis: RIGHT,
+    log: true,
+    holiday: "daily"
   },
   arrestsDaily: {
     data: DAILY.arrests,
@@ -13874,7 +13850,8 @@ var DEF = {
     unit: "eurM",
     radius: 0,
     width: 2,
-    bandFill: "rgba(3,105,161,0.12)"
+    bandFill: "rgba(3,105,161,0.12)",
+    shadeOnly: true
   },
   protestersWeekly: {
     data: WEEKLY.turnout,
@@ -13882,6 +13859,16 @@ var DEF = {
     unit: "count",
     radius: 5,
     width: 2
+  },
+  blockadesWeekly: {
+    data: WEEKLY.blockades,
+    color: "#8C564B",
+    unit: "count",
+    radius: 3,
+    width: 1.75,
+    axis: RIGHT,
+    log: true,
+    holiday: "weekly"
   },
   arrestsWeekly: {
     data: WEEKLY.arrests,
@@ -13912,7 +13899,7 @@ var CHARTS = [
     id: "chart-protesters",
     copy: "protestersDaily",
     weekly: false,
-    series: ["protestersDaily"]
+    series: ["protestersDaily", "blockadesDaily"]
   },
   {
     id: "chart-enforcement",
@@ -13930,7 +13917,7 @@ var CHARTS = [
     id: "chart-protesters-weekly",
     copy: "protestersWeekly",
     weekly: true,
-    series: ["protestersWeekly"]
+    series: ["protestersWeekly", "blockadesWeekly"]
   },
   {
     id: "chart-enforcement-weekly",
@@ -13963,12 +13950,17 @@ function view(weekly) {
     maxTicksLimit: 25
   };
 }
-function datasetsFor(id) {
+var DAILY_GAP = 7;
+var WEEKLY_GAP = 1;
+function datasetsFor(id, weekly) {
   const def = DEF[id];
+  if (!def) throw new Error(`chart.ts: no DEF entry for series "${id}"`);
+  if (!def.data) throw new Error(`chart.ts: series "${id}" has no data`);
   const copy = t().chart.series[id];
   const axis = def.axis ?? LEFT;
   const plot = (keep) => def.data.map((p) => keep(p) ? p.v : null);
   const bands = (keep) => def.data.map((p) => keep(p) ? p.band : null);
+  const holiday = def.holiday === "weekly" ? weeklyHolidaySegment : def.holiday === "daily" ? dailyHolidaySegment : void 0;
   const line = {
     label: copy.label,
     data: plot((p) => !p.detach),
@@ -13978,6 +13970,7 @@ function datasetsFor(id) {
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
     bandFillColor: def.bandFill,
+    noWhiskers: Boolean(def.shadeOnly),
     quality: def.data.map((p) => p.q),
     notes: def.data.map((p) => p.note),
     borderColor: def.color,
@@ -13988,8 +13981,14 @@ function datasetsFor(id) {
     pointHoverRadius: def.radius + 2,
     pointHitRadius: 14,
     tension: 0,
-    spanGaps: true,
-    segment: gapSegment()
+    // Chart.js must connect nothing across a hole: the connectors plugin
+    // draws every bridge itself, so solid/dashed/dotted is decided once.
+    spanGaps: false,
+    connectors: {
+      series: def.data,
+      slots: weekly ? WEEKLY_GAP : DAILY_GAP,
+      holiday
+    }
   };
   if (!def.data.some((p) => p.detach)) return [line];
   return [
@@ -14003,6 +14002,7 @@ function datasetsFor(id) {
       detachedOnly: true,
       errorBars: bands((p) => p.detach),
       errorBarColor: def.color,
+      noWhiskers: Boolean(def.shadeOnly),
       quality: line.quality,
       notes: line.notes,
       borderWidth: 0,
@@ -14020,11 +14020,52 @@ function datasetsFor(id) {
 }
 var errorBars = {
   id: "errorBars",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const ds = chart.data.datasets[i];
+      if (!ds.bandFill || !ds.errorBars) continue;
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) continue;
+      const scale = chart.scales[meta.yAxisID ?? LEFT];
+      if (!scale) continue;
+      const pts = meta.data;
+      const lowPts = [];
+      const highPts = [];
+      for (let j = 0; j < pts.length; j++) {
+        const band = ds.errorBars[j];
+        const p = pts[j];
+        if (!band || p.skip) continue;
+        lowPts.push([p.x, scale.getPixelForValue(band[0])]);
+        highPts.push([p.x, scale.getPixelForValue(band[1])]);
+      }
+      if (lowPts.length < 2) continue;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(
+        chartArea.left,
+        chartArea.top,
+        chartArea.width,
+        chartArea.height
+      );
+      ctx.clip();
+      ctx.beginPath();
+      ctx.moveTo(lowPts[0][0], lowPts[0][1]);
+      for (let k = 1; k < lowPts.length; k++)
+        ctx.lineTo(lowPts[k][0], lowPts[k][1]);
+      for (let k = highPts.length - 1; k >= 0; k--)
+        ctx.lineTo(highPts[k][0], highPts[k][1]);
+      ctx.closePath();
+      ctx.fillStyle = ds.bandFillColor ?? "rgba(14,116,144,0.14)";
+      ctx.fill();
+      ctx.restore();
+    }
+  },
   afterDatasetsDraw(chart) {
     const { ctx, chartArea } = chart;
     for (let i = 0; i < chart.data.datasets.length; i++) {
       const ds = chart.data.datasets[i];
-      if (!ds.errorBars) continue;
+      if (!ds.errorBars || ds.noWhiskers) continue;
       const meta = chart.getDatasetMeta(i);
       if (meta.hidden) continue;
       const scale = chart.scales[meta.yAxisID ?? LEFT];
@@ -14039,30 +14080,6 @@ var errorBars = {
         chartArea.height
       );
       ctx.clip();
-      if (ds.bandFill) {
-        const lowPts = [];
-        const highPts = [];
-        for (let j = 0; j < pts.length; j++) {
-          const band = ds.errorBars[j];
-          const p = pts[j];
-          if (!band || p.skip) continue;
-          lowPts.push([p.x, scale.getPixelForValue(band[0])]);
-          highPts.push([p.x, scale.getPixelForValue(band[1])]);
-        }
-        if (lowPts.length > 1) {
-          ctx.beginPath();
-          ctx.moveTo(lowPts[0][0], lowPts[0][1]);
-          for (let k = 1; k < lowPts.length; k++)
-            ctx.lineTo(lowPts[k][0], lowPts[k][1]);
-          for (let k = highPts.length - 1; k >= 0; k--)
-            ctx.lineTo(highPts[k][0], highPts[k][1]);
-          ctx.closePath();
-          ctx.fillStyle = ds.bandFillColor ?? "rgba(14,116,144,0.14)";
-          ctx.fill();
-        }
-        ctx.restore();
-        continue;
-      }
       ctx.strokeStyle = ds.errorBarColor ?? THEME.muted;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -14080,6 +14097,61 @@ var errorBars = {
         ctx.lineTo(p.x + CAP_PX, yLow);
       }
       ctx.stroke();
+      ctx.restore();
+    }
+  }
+};
+var connectors = {
+  id: "connectors",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    const xs = scales.x;
+    if (!chartArea || !xs) return;
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const ds = chart.data.datasets[i];
+      const spec = ds.connectors;
+      if (!spec) continue;
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) continue;
+      const ys = scales[meta.yAxisID ?? LEFT];
+      if (!ys) continue;
+      const logAxis = ys.type === "logarithmic";
+      const at = [];
+      for (let j = 0; j < spec.series.length; j++) {
+        const p = spec.series[j];
+        if (p && p.v != null && p.v > (logAxis ? 0 : -Infinity) && !p.detach) {
+          at.push(j);
+        }
+      }
+      if (at.length < 2) continue;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(
+        chartArea.left,
+        chartArea.top,
+        chartArea.width,
+        chartArea.height
+      );
+      ctx.clip();
+      ctx.strokeStyle = ds.borderColor ?? THEME.ink;
+      ctx.lineWidth = ds.borderWidth ?? 1;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "butt";
+      for (let k = 1; k < at.length; k++) {
+        const a = at[k - 1];
+        const b = at[k];
+        if (b - a === 1) continue;
+        const va = spec.series[a]?.v;
+        const vb = spec.series[b]?.v;
+        if (va == null || vb == null) continue;
+        const dotted = spec.holiday?.(a, b) === true;
+        const dashed = dotted || b - a > spec.slots;
+        ctx.setLineDash(dotted ? [...HOLIDAY_DASH] : dashed ? [6, 4] : []);
+        ctx.beginPath();
+        ctx.moveTo(xs.getPixelForValue(a), ys.getPixelForValue(va));
+        ctx.lineTo(xs.getPixelForValue(b), ys.getPixelForValue(vb));
+        ctx.stroke();
+      }
       ctx.restore();
     }
   }
@@ -14139,12 +14211,39 @@ var Y_TICKS = {
   font: { size: 10 },
   padding: 6
 };
-function yAxis(title, list, unit, position) {
-  return {
-    type: "linear",
+function logTicks(min, max) {
+  const out = [];
+  const from2 = Math.floor(Math.log10(Math.max(min, 1e-6)));
+  const to2 = Math.ceil(Math.log10(Math.max(max, 1)));
+  for (let e = from2; e <= to2; e++) {
+    const v = 10 ** e;
+    if (v >= min * 1.0001 && v <= max * 0.9999) out.push(v);
+  }
+  if (max > 1) out.push(max);
+  return out;
+}
+function axisMin(list) {
+  let min = Infinity;
+  for (const series of list) {
+    for (const p of series) {
+      if (p.v !== null && p.v > 0 && p.v < min) min = p.v;
+      if (p.band && p.band[0] > 0 && p.band[0] < min) min = p.band[0];
+    }
+  }
+  return Number.isFinite(min) ? min : 1;
+}
+function yAxis(title, list, unit, position, log = false) {
+  const max = axisMax(list);
+  const floor = axisMin(list) * 0.9;
+  const tick = (n) => {
+    if (!log) return tickFormat(unit)(n);
+    const l = Math.log10(n);
+    const decade = Math.abs(l - Math.round(l)) < 1e-9;
+    return decade || Math.abs(n - max) < 1e-9 ? tickFormat(unit)(n) : "";
+  };
+  const base = {
     position,
-    beginAtZero: true,
-    max: axisMax(list),
+    max,
     title: {
       display: true,
       text: title,
@@ -14154,9 +14253,19 @@ function yAxis(title, list, unit, position) {
     },
     ticks: {
       ...Y_TICKS,
-      callback: (v) => tickFormat(unit)(Number(v))
+      callback: (v) => tick(Number(v))
     },
     grid: { color: THEME.axisGrid, drawTicks: false }
+  };
+  if (!log) return { type: "linear", beginAtZero: true, ...base };
+  return {
+    type: "logarithmic",
+    min: floor,
+    ...base,
+    ticks: { ...base.ticks, autoSkip: false },
+    afterBuildTicks: (axis) => {
+      axis.ticks = logTicks(floor, max).map((value) => ({ value }));
+    }
   };
 }
 function baseScales(v) {
@@ -14185,14 +14294,11 @@ function scalesFor(v, card, ids) {
   const defs = ids.map((id) => DEF[id]);
   const left = defs.filter((d) => (d.axis ?? LEFT) === LEFT);
   const right = defs.filter((d) => d.axis === RIGHT);
+  const leftList = (left.length ? left : defs).map((d) => d.data);
+  const leftUnit = left[0]?.unit ?? defs[0]?.unit ?? "count";
   const scales = {
     ...baseScales(v),
-    [LEFT]: yAxis(
-      card.y ?? card.yLeft ?? "",
-      left.map((d) => d.data),
-      left[0].unit,
-      "left"
-    )
+    [LEFT]: yAxis(card.y ?? card.yLeft ?? "", leftList, leftUnit, "left")
   };
   if (right.length) {
     scales[RIGHT] = {
@@ -14200,9 +14306,14 @@ function scalesFor(v, card, ids) {
         card.yRight ?? "",
         right.map((d) => d.data),
         right[0].unit,
-        "right"
+        "right",
+        right.some((d) => d.log)
       ),
-      grid: { drawOnChartArea: false }
+      grid: {
+        color: THEME.axisGrid,
+        drawTicks: false,
+        drawOnChartArea: false
+      }
     };
   }
   return scales;
@@ -14249,7 +14360,10 @@ function buildChart(spec) {
   const card = t().chart.charts[spec.copy];
   const v = view(spec.weekly);
   return {
-    data: { labels: v.labels, datasets: spec.series.flatMap(datasetsFor) },
+    data: {
+      labels: v.labels,
+      datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly))
+    },
     ...shell(v, card.subtitle, card.title),
     scales: scalesFor(v, card, spec.series)
   };
@@ -14279,7 +14393,7 @@ function mount(canvas, cfg) {
       type: "line",
       data,
       options,
-      plugins: [errorBars]
+      plugins: [errorBars, connectors]
     })
   );
 }
@@ -14715,7 +14829,7 @@ function logBounds(lo, hi) {
   const pad = Math.max(0.06, (h - l) * 0.05);
   return [10 ** (l - pad), 10 ** (h + pad)];
 }
-function logTicks(min, max) {
+function logTicks2(min, max) {
   const l = Math.log10(min);
   const span = Math.log10(max) - l;
   const mantissas = span > 4.5 ? [1] : span > 1.5 ? [1, 3] : [1, 2, 5];
@@ -14729,7 +14843,7 @@ function logTicks(min, max) {
   return out;
 }
 function yScale(min, max, showLabels) {
-  const ticks = logTicks(min, max);
+  const ticks = logTicks2(min, max);
   return {
     type: "logarithmic",
     min,
@@ -15081,13 +15195,14 @@ function renderChrome() {
 }
 
 // src/client/sources.ts
+var BOX_TITLE = { en: "Sources and method", fr: "Sources et m\xE9thode" };
 var INTRO = {
   en: "Compiled by an LLM from the reports below; no figure here is a primary measurement made for this page. Where a movement has an official count, the interior ministry is the source of the arrest and officer-injury numbers and the unions publish the competing turnout figure. Counts that only ever existed as scattered daily press reports were summed by hand, which is where most of the error will be.",
   fr: "Compil\xE9 par une IA \xE0 partir des sources ci-dessous ; aucun chiffre ici n\u2019est une mesure primaire r\xE9alis\xE9e pour cette page. Lorsqu\u2019un mouvement dispose d\u2019un d\xE9compte officiel, le minist\xE8re de l\u2019Int\xE9rieur est la source des interpellations et des bless\xE9s parmi les forces, les syndicats publiant la foule concurrente. Les d\xE9comptes qui n\u2019ont exist\xE9 que sous forme de br\xE8ves quotidiennes dispers\xE9es ont \xE9t\xE9 additionn\xE9s \xE0 la main : c\u2019est l\xE0 que se concentre l\u2019essentiel de l\u2019erreur."
 };
 var FOOT = {
-  en: "Not a source, but load-bearing: the index in the earlier drafts of Section C divided each series by its own first figure, and the C\u2032 x-axis was set by the longest episode. Both were replaced \u2014 C plots raw counts on a shared log axis, and C\u2032 is capped at week 7. Nothing here has been through external review.",
-  fr: "Ce n\u2019est pas une source, mais cela porte la lecture : dans les brouillons ant\xE9rieurs, l\u2019indice de la section C divisait chaque s\xE9rie par son premier chiffre, et l\u2019axe des x de C\u2032 \xE9tait fix\xE9 par l\u2019\xE9pisode le plus long. Les deux ont \xE9t\xE9 remplac\xE9s \u2014 C trace des effectifs bruts sur un axe log partag\xE9, et C\u2032 est plafonn\xE9 \xE0 la semaine 7. Rien ici n\u2019a fait l\u2019objet d\u2019une relecture externe."
+  en: "Not a source, but load-bearing: the index in the earlier drafts of Section C divided each series by its own first figure, and the C\u2032 x-axis was set by the longest episode. Both were replaced \u2014 C plots raw counts on a shared log axis, and C\u2032 is capped at week 7. The blockade series counts establishments where pupils could not attend normally; its band runs from the ministry count to the union count, and the union's count also includes administratively closed schools. The Toussaint holiday (17 Oct \u2013 1 Nov) is drawn dotted: no lyc\xE9e was in session, so the figure did not exist. Nothing here has been through external review.",
+  fr: "Ce n\u2019est pas une source, mais cela porte la lecture : dans les brouillons ant\xE9rieurs, l\u2019indice de la section C divisait chaque s\xE9rie par son premier chiffre, et l\u2019axe des x de C\u2032 \xE9tait fix\xE9 par l\u2019\xE9pisode le plus long. Les deux ont \xE9t\xE9 remplac\xE9s \u2014 C trace des effectifs bruts sur un axe log partag\xE9, et C\u2032 est plafonn\xE9 \xE0 la semaine 7. La s\xE9rie des blocages compte les \xE9tablissements o\xF9 les \xE9l\xE8ves ne pouvaient pas suivre normalement ; sa fourchette va du d\xE9compte minist\xE9riel au d\xE9compte syndical, et ce dernier inclut aussi les lyc\xE9es ferm\xE9s administrativement. Les vacances de la Toussaint (17 oct. \u2013 1 nov.) sont en pointill\xE9s : aucun lyc\xE9e n\u2019\xE9tait en cours, le chiffre n\u2019existait donc pas. Rien ici n\u2019a fait l\u2019objet d\u2019une relecture externe."
 };
 var MENTIONS_TITLE = {
   en: "Named in the reporting, not linked",
@@ -15123,8 +15238,19 @@ var GROUPS = [
       fr: "Le mouvement de 2026 \u2014 foule, interpellations, bless\xE9s"
     },
     blurb: {
-      en: "Daily press reporting for 1 Oct \u2013 11 Nov 2026, plus the two disputes that shaped the charts: whether the 17 Oct policing operation was actually smaller than its predecessors, and how far the injured-protester total can be trusted.",
+      en: "Daily press reporting for 15 Sep \u2013 11 Nov 2026, plus the two disputes that shaped the charts: whether the 17 Oct policing operation was actually smaller than its predecessors, and how far the injured-protester total can be trusted.",
       fr: "La presse quotidienne du 1er oct. au 11 nov. 2026, plus les deux controverses qui ont fa\xE7onn\xE9 les graphiques : le dispositif du 17 oct. \xE9tait-il r\xE9ellement inf\xE9rieur aux pr\xE9c\xE9dents, et jusqu\u2019o\xF9 le total de bless\xE9s parmi les manifestants est-il fiable."
+    }
+  },
+  {
+    id: "blockades",
+    title: {
+      en: "The 2026 movement \u2014 school blockades and the school calendar",
+      fr: "Le mouvement de 2026 \u2014 blocages de lyc\xE9es et calendrier scolaire"
+    },
+    blurb: {
+      en: "The blockade line on the daily and weekly charts is a separate statistic: establishments where pupils could not attend normally \u2014 blocked, or closed by decision. The band runs from the ministry count to the union count, and the two publishers do not count the same thing: the union's \u201C\xE0 l'arr\xEAt\u201D includes schools closed administratively, so it is an upper bound. The Toussaint holiday (17 Oct \u2013 1 Nov) is drawn dotted because no lyc\xE9e was in session: the count did not exist, it was not zero. The Interior Ministry's daily tallies of establishments concerned and blocked are in the first group above.",
+      fr: "La courbe des blocages des graphiques quotidien et hebdomadaire est une statistique \xE0 part : les \xE9tablissements o\xF9 les \xE9l\xE8ves ne pouvaient pas suivre normalement \u2014 bloqu\xE9s, ou ferm\xE9s par d\xE9cision. La fourchette va du d\xE9compte minist\xE9riel au d\xE9compte syndical, et les deux \xE9diteurs ne comptent pas la m\xEAme chose : le \xAB \xE0 l'arr\xEAt \xBB syndical inclut les lyc\xE9es ferm\xE9s administrativement, c'est donc une borne haute. Les vacances de la Toussaint (17 oct. \u2013 1 nov.) sont en pointill\xE9s car aucun lyc\xE9e n'\xE9tait en cours : le d\xE9compte n'existait pas, il n'\xE9tait pas nul. Les bilans quotidiens du minist\xE8re de l'Int\xE9rieur sur les \xE9tablissements concern\xE9s et bloqu\xE9s figurent dans le premier groupe ci-dessus."
     }
   },
   {
@@ -15227,6 +15353,57 @@ var GROUPS = [
   }
 ];
 var SOURCES = [
+  /* ---------------------- 2026 — school blockades and the school calendar */
+  src(
+    "service-public-vacances",
+    "blockades",
+    "Service-Public \u2014 \xAB Calendrier des vacances scolaires 2026-2027 \xBB",
+    "https://www.service-public.gouv.fr/particuliers/actualites/A18563",
+    both(
+      "the Toussaint dates behind the dotted line: classes end Friday 16 October and resume Monday 2 November 2026, identical in zones A, B and C \u2014 which is why the holiday needs no zone logic.",
+      "les dates de la Toussaint derri\xE8re la ligne en pointill\xE9s : fin des cours le vendredi 16 octobre et reprise le lundi 2 novembre 2026, identiques dans les zones A, B et C \u2014 d'o\xF9 l'absence de logique par zone."
+    )
+  ),
+  src(
+    "education-calendrier",
+    "blockades",
+    "Minist\xE8re de l\u2019\xC9ducation nationale \u2014 \xAB Calendrier scolaire : toutes les dates des cours et des vacances \xBB",
+    "https://www.education.gouv.fr/calendrier-scolaire-toutes-les-dates-des-cours-et-des-vacances-100148",
+    both(
+      "the official end-of-class and return-to-school dates, read against the press calendar for the last day of classes (Friday 16 October).",
+      "les dates officielles de fin de cours et de reprise, confront\xE9es au calendrier de presse pour le dernier jour de cours (vendredi 16 octobre)."
+    )
+  ),
+  src(
+    "education-bilans",
+    "blockades",
+    "Minist\xE8re de l\u2019\xC9ducation nationale \u2014 bilans d\u2019\xE9tablissements perturb\xE9s et ferm\xE9s",
+    "https://www.education.gouv.fr",
+    both(
+      "the ministry's balances behind the blockade line: 45 blocked of 338 concerned (29 Sept), 735 establishments perturbed (3 Oct), 224 closed (8 Oct), 214 closed with 94.2% of lyc\xE9es open (13 Oct), 41 blocked at the rentr\xE9e (2 Nov) and 48 (3 Nov). Where the only figure published is \u201C\xE9tablissements perturb\xE9s\u201D or \u201Ccours suspendus\u201D rather than \u201Cbloqu\xE9s\u201D, the point is flagged as a wider measure \u2014 the tooltip says which.",
+      "les bilans minist\xE9riels derri\xE8re la courbe des blocages : 45 bloqu\xE9s sur 338 concern\xE9s (29 sept.), 735 \xE9tablissements perturb\xE9s (3 oct.), 224 ferm\xE9s (8 oct.), 214 ferm\xE9s avec 94,2 % de lyc\xE9es ouverts (13 oct.), 41 bloqu\xE9s \xE0 la rentr\xE9e (2 nov.) et 48 (3 nov.). Lorsque le seul chiffre publi\xE9 est \xAB \xE9tablissements perturb\xE9s \xBB ou \xAB cours suspendus \xBB plut\xF4t que \xAB bloqu\xE9s \xBB, le point est signal\xE9 comme une mesure plus large \u2014 l'infobulle pr\xE9cise laquelle."
+    )
+  ),
+  src(
+    "usl-comptes",
+    "blockades",
+    "Union syndicale lyn\xE9enne \u2014 appels et d\xE9comptes syndicaux",
+    "https://lyceens.org",
+    both(
+      "the organiser side of the blockade band: 640 (1 Oct), 1 800 schools \u201C\xE0 l'arr\xEAt\u201D (6 Oct), 1 000 (5 Nov). The union's own definition counts schools closed administratively as well as schools actually blocked, so its figure is an upper bound rather than a like-for-like count \u2014 which is why the band is wide and the tooltip says so.",
+      "le c\xF4t\xE9 syndical de la fourchette des blocages : 640 (1er oct.), 1 800 lyc\xE9es \xAB \xE0 l'arr\xEAt \xBB (6 oct.), 1 000 (5 nov.). La d\xE9finition syndicale compte aussi les lyc\xE9es ferm\xE9s administrativement, et non seulement les lyc\xE9es bloqu\xE9s : son chiffre est une borne haute plut\xF4t qu'un d\xE9compte comparable \u2014 d'o\xF9 la largeur de la fourchette, que l'infobulle explique."
+    )
+  ),
+  src(
+    "franceinfo-blocages",
+    "blockades",
+    "Franceinfo \u2014 le suivi jour par jour des blocages de lyc\xE9es",
+    "https://www.franceinfo.fr/societe/education/blocage-des-lycees/",
+    both(
+      "the live day-by-day counts used where no ministry balance was issued: 169 blockades in the morning of 1 Oct, 891 schools with classes suspended at midday on 6 Oct, more than 150 perturbed on 8 Oct, and \u201Cmore than 40 schools blocked\u201D on 10 Oct.",
+      "les d\xE9comptes journaliers en direct utilis\xE9s l\xE0 o\xF9 aucun bilan minist\xE9riel n'a \xE9t\xE9 publi\xE9 : 169 blocages le matin du 1er oct., 891 \xE9tablissements avec cours suspendus \xE0 la mi-journ\xE9e du 6 oct., plus de 150 perturb\xE9s le 8 oct. et \xAB plus de 40 lyc\xE9es bloqu\xE9s \xBB le 10 oct."
+    )
+  ),
   /* ------------------------------------------- 2026 — ministry briefings */
   src(
     "interieur",
@@ -15639,7 +15816,7 @@ var SOURCES = [
   ),
   src(
     "lemonde-29sept-338",
-    "press",
+    "blockades",
     "Le Monde \u2014 \xAB Blocages des lyc\xE9es : 338 \xE9tablissements concern\xE9s mardi, dont 45 encore bloqu\xE9s, selon le minist\xE8re de l\u2019\xE9ducation nationale \xBB",
     "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
     both(
@@ -15980,7 +16157,7 @@ var SOURCES = [
   ),
   src(
     "figaro-06nov-live",
-    "press",
+    "blockades",
     "Le Figaro \u2014 direct du 6 novembre : 41 lyc\xE9es bloqu\xE9s, de nouvelles actions attendues samedi",
     "https://www.lefigaro.fr/actualite-france/en-direct-colere-sociale-apres-la-forte-mobilisation-de-jeudi-de-nouvelles-actions-attendues-des-samedi-20261106",
     both(
@@ -17124,6 +17301,13 @@ var MARKER_KEY = [
       en: "weekly aggregate \u2014 a week, not a day",
       fr: "agr\xE9gat hebdomadaire \u2014 une semaine, pas un jour"
     }
+  },
+  {
+    key: "x",
+    text: {
+      en: "wider measure \u2014 establishments perturbed, with classes suspended, or closed, rather than schools fully blocked",
+      fr: "mesure plus large \u2014 \xE9tablissements perturb\xE9s, cours suspendus ou ferm\xE9s, plut\xF4t que des lyc\xE9es enti\xE8rement bloqu\xE9s"
+    }
   }
 ];
 {
@@ -17162,6 +17346,7 @@ function renderSources(host = document.getElementById("sources")) {
   const kept = [...host.children].filter(
     (n) => /^H[1-6]$/.test(n.tagName)
   );
+  if (kept[0]) kept[0].textContent = bi(BOX_TITLE);
   const box = el("div", "sources-box");
   box.append(el("p", "intro", bi(INTRO)));
   for (const group of GROUPS) {
@@ -17172,12 +17357,7 @@ function renderSources(host = document.getElementById("sources")) {
     const list = el("ul");
     for (const s of items) list.append(sourceItem(s));
     const section = el("section", "source-group");
-    section.append(
-      el("section", "source-group"),
-      h,
-      el("p", "blurb", bi(group.blurb)),
-      list
-    );
+    section.append(h, el("p", "blurb", bi(group.blurb)), list);
     box.append(section);
   }
   const mentions = el("section", "source-group");

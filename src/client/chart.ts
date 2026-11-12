@@ -2,17 +2,17 @@
    differed only in their arguments are now one table (DEF) and one builder. */
 
 import {
+  CategoryScale,
   Chart,
+  Legend,
   LineController,
   LineElement,
-  PointElement,
   LinearScale,
   LogarithmicScale,
-  CategoryScale,
-  Tooltip,
-  Legend,
-  Title,
+  PointElement,
   SubTitle,
+  Title,
+  Tooltip,
   type ChartData,
   type ChartDataset,
   type ChartOptions,
@@ -20,7 +20,19 @@ import {
   type Plugin,
   type PointStyle,
 } from "chart.js";
-
+import { THEME, track } from "./canvas.ts";
+import {
+  DAILY,
+  dailyHolidaySegment,
+  DATES,
+  HOLIDAY_DASH,
+  WEEKLY,
+  weeklyHolidaySegment,
+  WEEKS,
+  type Pt,
+  type Series,
+} from "./data.ts";
+import { byId } from "./dom.ts";
 import {
   compact,
   eurM,
@@ -33,11 +45,8 @@ import {
   type ChartCardCopy,
   type ChartCopy,
 } from "./i18n.ts";
-import { DAILY, DATES, WEEKLY, WEEKS, type Pt, type Series } from "./data.ts";
-import { THEME, gapSegment, track } from "./canvas.ts";
-import { byId } from "./dom.ts";
+import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
-import { isDetached, type Band, type Flag, type NoteRef } from "./model.ts";
 
 Chart.register(
   LineController,
@@ -53,7 +62,6 @@ Chart.register(
 );
 
 type Unit = "count" | "eurM";
-type SeriesId = keyof ChartCopy["series"];
 
 const LEFT = "y";
 const RIGHT = "y1";
@@ -70,15 +78,37 @@ interface SeriesDef {
   readonly style?: PointStyle;
   readonly axis?: string;
   readonly bandFill?: string;
+  /** Logarithmic scale — for a series spanning several orders of magnitude. */
+  readonly log?: boolean;
+  /** Dotted connector across the Toussaint holiday. */
+  readonly holiday?: "daily" | "weekly";
+  /** The band is a range of the estimate, not a measurement error: shade it,
+   *  draw no whiskers. Used by the cumulative total, whose band is a fan. */
+  readonly shadeOnly?: boolean;
 }
 
-const DEF: Readonly<Record<SeriesId, SeriesDef>> = {
+/**
+ * `satisfies` rather than `Record<SeriesId, SeriesDef>`: the key set is
+ * inferred from the object, so `keyof typeof DEF` is a literal union and a
+ * misspelled key becomes a compile error instead of a runtime undefined.
+ */
+const DEF = {
   protestersDaily: {
     data: DAILY.turnout,
     color: "#1d4ed8",
     unit: "count",
     radius: 4,
     width: 2,
+  },
+  blockadesDaily: {
+    data: DAILY.blockades,
+    color: "#8C564B",
+    unit: "count",
+    radius: 3,
+    width: 1.75,
+    axis: RIGHT,
+    log: true,
+    holiday: "daily",
   },
   arrestsDaily: {
     data: DAILY.arrests,
@@ -125,6 +155,7 @@ const DEF: Readonly<Record<SeriesId, SeriesDef>> = {
     radius: 0,
     width: 2,
     bandFill: "rgba(3,105,161,0.12)",
+    shadeOnly: true,
   },
   protestersWeekly: {
     data: WEEKLY.turnout,
@@ -132,6 +163,16 @@ const DEF: Readonly<Record<SeriesId, SeriesDef>> = {
     unit: "count",
     radius: 5,
     width: 2,
+  },
+  blockadesWeekly: {
+    data: WEEKLY.blockades,
+    color: "#8C564B",
+    unit: "count",
+    radius: 3,
+    width: 1.75,
+    axis: RIGHT,
+    log: true,
+    holiday: "weekly",
   },
   arrestsWeekly: {
     data: WEEKLY.arrests,
@@ -156,7 +197,10 @@ const DEF: Readonly<Record<SeriesId, SeriesDef>> = {
     width: 1.5,
     style: "triangle",
   },
-};
+} satisfies Record<string, SeriesDef>;
+
+/** Literal union of the keys actually defined — a typo is now a type error. */
+type SeriesId = keyof typeof DEF;
 
 /** The five canvases, declared once — main.ts no longer keeps a parallel list. */
 export interface ChartSpec {
@@ -171,7 +215,7 @@ export const CHARTS: readonly ChartSpec[] = [
     id: "chart-protesters",
     copy: "protestersDaily",
     weekly: false,
-    series: ["protestersDaily"],
+    series: ["protestersDaily", "blockadesDaily"],
   },
   {
     id: "chart-enforcement",
@@ -189,7 +233,7 @@ export const CHARTS: readonly ChartSpec[] = [
     id: "chart-protesters-weekly",
     copy: "protestersWeekly",
     weekly: true,
-    series: ["protestersWeekly"],
+    series: ["protestersWeekly", "blockadesWeekly"],
   },
   {
     id: "chart-enforcement-weekly",
@@ -244,22 +288,49 @@ interface ProtestDataset extends ChartDataset<"line", (number | null)[]> {
   errorBarColor?: string;
   bandFill?: boolean;
   bandFillColor?: string;
+  /** Suppress the whisker pass; the band array is still used for fill + tooltip. */
+  noWhiskers?: boolean;
   quality?: (Flag | null)[];
   notes?: (NoteRef | null)[];
   unit?: Unit;
   /** hidden from the legend — the points-only twin of a line series */
   detachedOnly?: boolean;
+  connectors?: ConnectorSpec;
 }
 
+/** A dashed connector means "reporting paused here", so the policy is a
+ *  property of the SERIES, not of a point pair. `segment` cannot express it:
+ *  it is resolved per adjacent index pair and its runs are snapped onto
+ *  visible points, so a long dashed gap bleeds into the next short one. */
+interface ConnectorSpec {
+  readonly series: Series;
+  /** Dash a connector that skips more than this many x-slots. */
+  readonly slots: number;
+  /** Dotted instead, when the connector bridges the Toussaint holiday. */
+  readonly holiday?: (a: number, b: number) => boolean;
+}
+
+const DAILY_GAP = 7; // a reporting break starts at 8 days
+const WEEKLY_GAP = 1; // one empty week
+
 /** A line plus, when the series contains any detached point, a hollow twin. */
-function datasetsFor(id: SeriesId): ProtestDataset[] {
+function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
   const def = DEF[id];
+  if (!def) throw new Error(`chart.ts: no DEF entry for series "${id}"`);
+  if (!def.data) throw new Error(`chart.ts: series "${id}" has no data`);
   const copy = t().chart.series[id];
   const axis = def.axis ?? LEFT;
   const plot = (keep: (p: Pt) => boolean) =>
     def.data.map((p) => (keep(p) ? p.v : null));
   const bands = (keep: (p: Pt) => boolean) =>
     def.data.map((p) => (keep(p) ? p.band : null));
+
+  const holiday =
+    def.holiday === "weekly"
+      ? weeklyHolidaySegment
+      : def.holiday === "daily"
+        ? dailyHolidaySegment
+        : undefined;
 
   const line: ProtestDataset = {
     label: copy.label,
@@ -270,6 +341,7 @@ function datasetsFor(id: SeriesId): ProtestDataset[] {
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
     bandFillColor: def.bandFill,
+    noWhiskers: Boolean(def.shadeOnly),
     quality: def.data.map((p) => p.q),
     notes: def.data.map((p) => p.note),
     borderColor: def.color,
@@ -280,8 +352,14 @@ function datasetsFor(id: SeriesId): ProtestDataset[] {
     pointHoverRadius: def.radius + 2,
     pointHitRadius: 14,
     tension: 0,
-    spanGaps: true,
-    segment: gapSegment(),
+    // Chart.js must connect nothing across a hole: the connectors plugin
+    // draws every bridge itself, so solid/dashed/dotted is decided once.
+    spanGaps: false,
+    connectors: {
+      series: def.data,
+      slots: weekly ? WEEKLY_GAP : DAILY_GAP,
+      holiday,
+    },
   };
 
   if (!def.data.some((p) => p.detach)) return [line];
@@ -297,6 +375,7 @@ function datasetsFor(id: SeriesId): ProtestDataset[] {
       detachedOnly: true,
       errorBars: bands((p) => p.detach),
       errorBarColor: def.color,
+      noWhiskers: Boolean(def.shadeOnly),
       quality: line.quality,
       notes: line.notes,
       borderWidth: 0,
@@ -317,12 +396,56 @@ function datasetsFor(id: SeriesId): ProtestDataset[] {
 
 const errorBars: Plugin<"line"> = {
   id: "errorBars",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const ds = chart.data.datasets[i] as ProtestDataset;
+      if (!ds.bandFill || !ds.errorBars) continue;
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) continue;
+      const scale = chart.scales[meta.yAxisID ?? LEFT];
+      if (!scale) continue;
+
+      const pts = meta.data as { x: number; skip?: boolean }[];
+      const lowPts: [number, number][] = [];
+      const highPts: [number, number][] = [];
+
+      for (let j = 0; j < pts.length; j++) {
+        const band = ds.errorBars[j];
+        const p = pts[j];
+        if (!band || p.skip) continue;
+        lowPts.push([p.x, scale.getPixelForValue(band[0])]);
+        highPts.push([p.x, scale.getPixelForValue(band[1])]);
+      }
+      if (lowPts.length < 2) continue;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(
+        chartArea.left,
+        chartArea.top,
+        chartArea.width,
+        chartArea.height,
+      );
+      ctx.clip();
+      ctx.beginPath();
+      ctx.moveTo(lowPts[0][0], lowPts[0][1]);
+      for (let k = 1; k < lowPts.length; k++)
+        ctx.lineTo(lowPts[k][0], lowPts[k][1]);
+      for (let k = highPts.length - 1; k >= 0; k--)
+        ctx.lineTo(highPts[k][0], highPts[k][1]);
+      ctx.closePath();
+      ctx.fillStyle = ds.bandFillColor ?? "rgba(14,116,144,0.14)";
+      ctx.fill();
+      ctx.restore();
+    }
+  },
   afterDatasetsDraw(chart) {
     const { ctx, chartArea } = chart;
 
     for (let i = 0; i < chart.data.datasets.length; i++) {
       const ds = chart.data.datasets[i] as ProtestDataset;
-      if (!ds.errorBars) continue;
+      if (!ds.errorBars || ds.noWhiskers) continue;
 
       const meta = chart.getDatasetMeta(i);
       if (meta.hidden) continue;
@@ -341,35 +464,6 @@ const errorBars: Plugin<"line"> = {
         chartArea.height,
       );
       ctx.clip();
-
-      // cumulative series: shade the envelope instead of drawing a bar per day
-      if (ds.bandFill) {
-        const lowPts: [number, number][] = [];
-        const highPts: [number, number][] = [];
-
-        for (let j = 0; j < pts.length; j++) {
-          const band = ds.errorBars[j];
-          const p = pts[j];
-          if (!band || p.skip) continue;
-          lowPts.push([p.x, scale.getPixelForValue(band[0])]);
-          highPts.push([p.x, scale.getPixelForValue(band[1])]);
-        }
-
-        if (lowPts.length > 1) {
-          ctx.beginPath();
-          ctx.moveTo(lowPts[0][0], lowPts[0][1]);
-          for (let k = 1; k < lowPts.length; k++)
-            ctx.lineTo(lowPts[k][0], lowPts[k][1]);
-          for (let k = highPts.length - 1; k >= 0; k--)
-            ctx.lineTo(highPts[k][0], highPts[k][1]);
-          ctx.closePath();
-          ctx.fillStyle = ds.bandFillColor ?? "rgba(14,116,144,0.14)";
-          ctx.fill();
-        }
-
-        ctx.restore();
-        continue;
-      }
 
       ctx.strokeStyle = ds.errorBarColor ?? THEME.muted;
       ctx.lineWidth = 1.5;
@@ -392,6 +486,74 @@ const errorBars: Plugin<"line"> = {
       }
 
       ctx.stroke();
+      ctx.restore();
+    }
+  },
+};
+
+/* Solid where the hole is short, [6,4] where reporting paused, [1.5,3] across
+   the Toussaint holiday. Drawn under the markers, over the grid and the band. */
+const connectors: Plugin<"line"> = {
+  id: "connectors",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    const xs = scales.x;
+    if (!chartArea || !xs) return;
+
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const ds = chart.data.datasets[i] as ProtestDataset;
+      const spec = ds.connectors;
+      if (!spec) continue;
+
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) continue;
+
+      const ys = scales[meta.yAxisID ?? LEFT];
+      if (!ys) continue;
+      const logAxis = ys.type === "logarithmic";
+
+      // plotted points only; a detached marker ends the run
+      const at: number[] = [];
+      for (let j = 0; j < spec.series.length; j++) {
+        const p = spec.series[j];
+        if (p && p.v != null && p.v > (logAxis ? 0 : -Infinity) && !p.detach) {
+          at.push(j);
+        }
+      }
+      if (at.length < 2) continue;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(
+        chartArea.left,
+        chartArea.top,
+        chartArea.width,
+        chartArea.height,
+      );
+      ctx.clip();
+      ctx.strokeStyle = (ds.borderColor as string) ?? THEME.ink;
+      ctx.lineWidth = (ds.borderWidth as number) ?? 1;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "butt";
+
+      for (let k = 1; k < at.length; k++) {
+        const a = at[k - 1];
+        const b = at[k];
+        if (b - a === 1) continue;
+
+        const va = spec.series[a]?.v;
+        const vb = spec.series[b]?.v;
+        if (va == null || vb == null) continue;
+
+        const dotted = spec.holiday?.(a, b) === true;
+        const dashed = dotted || b - a > spec.slots;
+
+        ctx.setLineDash(dotted ? [...HOLIDAY_DASH] : dashed ? [6, 4] : []);
+        ctx.beginPath();
+        ctx.moveTo(xs.getPixelForValue(a), ys.getPixelForValue(va));
+        ctx.lineTo(xs.getPixelForValue(b), ys.getPixelForValue(vb));
+        ctx.stroke();
+      }
       ctx.restore();
     }
   },
@@ -483,18 +645,55 @@ const Y_TICKS = {
   padding: 6,
 } as const;
 
+/** 1 / 10 / 100 / 1k / 2k. Eleven minor log ticks is what made the axis
+ *  unreadable; Chart.js will not thin them itself once autoSkip is false. */
+function logTicks(min: number, max: number): number[] {
+  const out: number[] = [];
+  const from = Math.floor(Math.log10(Math.max(min, 1e-6)));
+  const to = Math.ceil(Math.log10(Math.max(max, 1)));
+  for (let e = from; e <= to; e++) {
+    const v = 10 ** e;
+    if (v >= min * 1.0001 && v <= max * 0.9999) out.push(v);
+  }
+  if (max > 1) out.push(max);
+  return out;
+}
+
+/** Lower bound for a log axis: the smallest positive value present. */
+function axisMin(list: readonly Series[]): number {
+  let min = Infinity;
+  for (const series of list) {
+    for (const p of series) {
+      if (p.v !== null && p.v > 0 && p.v < min) min = p.v;
+      if (p.band && p.band[0] > 0 && p.band[0] < min) min = p.band[0];
+    }
+  }
+  return Number.isFinite(min) ? min : 1;
+}
+
 /** The tick formatter follows the unit, so call sites stop re-passing it. */
 function yAxis(
   title: string,
   list: readonly Series[],
   unit: Unit,
   position: "left" | "right",
+  log = false,
 ) {
-  return {
-    type: "linear" as const,
+  const max = axisMax(list);
+  const floor = axisMin(list) * 0.9;
+
+  // generateTicks emits 1/2/3/4/5/6/8/10/12/15/20… and buildTicks never calls
+  // ticks.callback, so the minors have to be blanked here.
+  const tick = (n: number): string => {
+    if (!log) return tickFormat(unit)(n);
+    const l = Math.log10(n);
+    const decade = Math.abs(l - Math.round(l)) < 1e-9;
+    return decade || Math.abs(n - max) < 1e-9 ? tickFormat(unit)(n) : "";
+  };
+
+  const base = {
     position,
-    beginAtZero: true,
-    max: axisMax(list),
+    max,
     title: {
       display: true,
       text: title,
@@ -504,9 +703,21 @@ function yAxis(
     },
     ticks: {
       ...Y_TICKS,
-      callback: (v: string | number) => tickFormat(unit)(Number(v)),
+      callback: (v: string | number) => tick(Number(v)),
     },
     grid: { color: THEME.axisGrid, drawTicks: false },
+  };
+
+  if (!log) return { type: "linear" as const, beginAtZero: true, ...base };
+
+  return {
+    type: "logarithmic" as const,
+    min: floor,
+    ...base,
+    ticks: { ...base.ticks, autoSkip: false },
+    afterBuildTicks: (axis: { ticks: { value: number }[] }) => {
+      axis.ticks = logTicks(floor, max).map((value) => ({ value }));
+    },
   };
 }
 
@@ -544,14 +755,14 @@ function scalesFor(
   const left = defs.filter((d) => (d.axis ?? LEFT) === LEFT);
   const right = defs.filter((d) => d.axis === RIGHT);
 
+  // A spec with only a right-axis series must still get an `y` scale: the
+  // datasets reference yAxisID "y", and a missing scale throws inside mount().
+  const leftList = (left.length ? left : defs).map((d) => d.data);
+  const leftUnit: Unit = left[0]?.unit ?? defs[0]?.unit ?? "count";
+
   const scales: Scales = {
     ...baseScales(v),
-    [LEFT]: yAxis(
-      card.y ?? card.yLeft ?? "",
-      left.map((d) => d.data),
-      left[0].unit,
-      "left",
-    ),
+    [LEFT]: yAxis(card.y ?? card.yLeft ?? "", leftList, leftUnit, "left"),
   };
   if (right.length) {
     scales[RIGHT] = {
@@ -560,8 +771,13 @@ function scalesFor(
         right.map((d) => d.data),
         right[0].unit,
         "right",
+        right.some((d) => d.log),
       ),
-      grid: { drawOnChartArea: false },
+      grid: {
+        color: THEME.axisGrid,
+        drawTicks: false,
+        drawOnChartArea: false,
+      },
     };
   }
   return scales;
@@ -620,7 +836,10 @@ export function buildChart(spec: ChartSpec): Cfg {
   const card = t().chart.charts[spec.copy];
   const v = view(spec.weekly);
   return {
-    data: { labels: v.labels, datasets: spec.series.flatMap(datasetsFor) },
+    data: {
+      labels: v.labels,
+      datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly)),
+    },
     ...shell(v, card.subtitle, card.title),
     scales: scalesFor(v, card, spec.series),
   };
@@ -657,7 +876,7 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
       type: "line",
       data,
       options,
-      plugins: [errorBars],
+      plugins: [errorBars, connectors],
     }),
   );
 }

@@ -62,6 +62,7 @@ export function noteText(ref: NoteRef | null | undefined): string {
       if (p.excluded) parts.push(fill(m.weekExcluded, { n: p.excluded }));
       if (p.floored) parts.push(m.weekFloored);
       if (p.clipped) parts.push(m.weekClipped);
+      if (p.vacation) parts.push(m.weekVacation); // ← new
       return parts.join(m.weekJoin);
     }
 
@@ -85,8 +86,10 @@ export function suffixFor(
           ? s.e
           : q === "f"
             ? s.f
-            : detached
-              ? s.regional
-              : "";
+            : q === "x"
+              ? s.x // ← new
+              : detached
+                ? s.regional
+                : "";
   return text ? fill(t().chart.suffixWrap, { text }) : "";
 }

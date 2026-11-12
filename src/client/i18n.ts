@@ -50,12 +50,12 @@ const EN_META: LocaleMeta = {
     a: {
       title: "A · Daily counts, 15 September – 11 November 2026",
       blurb:
-        "One marker per day on which something was published, from the first mainland high-school blockades on 15 September. Days with no figure stay empty rather than interpolated; gaps in a line are dashed.",
+        "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lycée was in session.",
     },
     b: {
       title: "B · Weekly aggregates",
       blurb:
-        "Weeks run Monday to Sunday, from the week of 14 September. A peak-day crowd and a summed weekly arrest count are not the same statistic — the tooltip says which is which.",
+        "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic — the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lycée is blocked on several consecutive days.",
     },
     c: {
       title: "C · One panel per movement",
@@ -85,12 +85,12 @@ const FR_META: LocaleMeta = {
     a: {
       title: "A · Décomptes quotidiens, 15 septembre – 11 novembre 2026",
       blurb:
-        "Un marqueur par jour où un chiffre a été publié, à partir des premiers blocages de lycées en métropole le 15 septembre. Les jours sans chiffre restent vides plutôt qu’interpolés ; les lacunes d’une courbe sont en pointillés.",
+        "Un marqueur par jour où un chiffre a été publié. Les jours sans chiffre restent vides plutôt qu’interpolés ; les lacunes d’une courbe sont en pointillés. La courbe des blocages de lycées est en pointillés pendant les vacances de la Toussaint, aucun lycée n’étant en cours.",
     },
     b: {
       title: "B · Agrégats hebdomadaires",
       blurb:
-        "Les semaines vont du lundi au dimanche, depuis la semaine du 14 septembre. Une foule de jour de pointe et un total hebdomadaire d’interpellations ne sont pas la même statistique — l’infobulle précise laquelle.",
+        "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d’interpellations ne sont pas la même statistique — l’infobulle précise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un même lycée est bloqué plusieurs jours de suite.",
     },
     c: {
       title: "C · Un panneau par mouvement",
@@ -514,6 +514,10 @@ export interface ChartCopy {
   readonly footerMark: string;
   readonly series: Readonly<Record<string, SeriesCopy>>;
   readonly charts: Readonly<Record<string, ChartCardCopy>>;
+  readonly weekVacation: string;
+  readonly holidayLine: string;
+  readonly metricNote: string;
+  readonly blockerNote: string;
 }
 
 const CHART_EN: ChartCopy = {
@@ -525,11 +529,12 @@ const CHART_EN: ChartCopy = {
   eurM: "€{v}M",
   suffix: {
     c: "stock",
-    w: "", // the series label already says "weekly total"
+    w: "",
     e: "modelled",
     f: "lower bound",
     r: "regional",
     p: "partial",
+    x: "wider measure",
     n: "",
     regional: "regional",
   },
@@ -542,40 +547,75 @@ const CHART_EN: ChartCopy = {
     "2026-09-29":
       "Act I. The crowd figure counts the public-service cortège the school actions joined, not a student crowd.",
     "2026-09-30":
-      "The second day of Act I: 625 interpellations and 83 security forces injured.",
+      "The second day of Act I: 625 interpellations and 83 security forces injured. The Education ministry counted 356 establishments concerned; no count of fully blocked schools was published that day.",
     "2026-10-01":
       "Act II, the peak of the first week. Arrests and injuries published with no turnout figure for the day.",
     "2026-10-02":
       "735 establishments still perturbed, and urban violence near 158 of them.",
     "2026-10-03":
-      "No weekend figure was published; the arrests for 3–4 October are derived by subtraction.",
+      "No weekend figure was published; the arrests for 3–4 October are derived by subtraction. 735 establishments perturbed — a wider measure than blockades, so the point is flagged as such.",
     "2026-10-05":
       "The first national school day after the break, with the ministry's stock figures.",
     "2026-10-06":
       "Act III — the first full national student demonstration of the movement.",
+    "2026-10-07":
+      "The Interior Ministry suspended the use of stun grenades for the student mobilisations, after a lycée student was injured at Lens.",
+    "2026-10-09":
+      "Justice Ministry publishes its first judicial balance: 6,877 in garde à vue since mid-September.",
+    "2026-10-10":
+      "CNEWS compiles a national damage bill of €30M — with no ministry tally behind it.",
     "2026-10-13":
       "Turnout band spans a factor of three: ministry floor, organiser ceiling.",
+    "2026-10-16":
+      "Last day of classes before the Toussaint holiday: from 17 October no lycée is in session, so the blockade count stops.",
     "2026-10-17":
-      "The peak day. The damage band here is the 17–18 October IFRAP estimate, not a daily flow.",
+      "The peak day. The damage band here is the 17–18 October IFRAP estimate, not a daily flow. Toussaint holiday — schools closed.",
+    "2026-10-19":
+      "Toussaint holiday — students supported the lycée movement from outside the schools.",
     "2026-10-24":
-      "Arrest figures include preventive stops; not all become custody placements.",
-    "2026-10-31": "No protester-injury figure was published for this day.",
+      "Arrest figures include preventive stops; not all become custody placements. Toussaint holiday — the mobilisation was an inter-union day, not a school day.",
+    "2026-10-31":
+      "No protester-injury figure was published for this day. Toussaint holiday — inter-union mobilisation.",
+    "2026-11-01": "Last day of the Toussaint holiday.",
+    "2026-11-04":
+      "In the Rhône, seven establishments ran in remote mode; no lycée was reported blocked.",
     "2026-11-05":
       "Turnout band runs from 575 000 to 1.6 million — the band is the disagreement, not an error bar.",
+    "2026-11-06":
+      "In the Rhône, 16 lycées and two colleges saw incidents, and a lycée in Lyon's 8th arrondissement was blocked when it was cleared.",
+    "2026-11-09":
+      "In the Rhône, no lycée was blocked: 14 ran in remote mode and 11 were reported as affected. A zero cannot be plotted on a logarithmic axis, so it is recorded here rather than as a point.",
+    "2026-11-10": "In the Rhône, about ten establishments were affected.",
   },
   obsNotes: {
+    "2026-09-15": {
+      blockades:
+        "The lycée Victor-Hugo in Caen — the first mainland blockade. Villeneuve-d'Ascq was blocked on 14 September and Le Rheu on 7 September, both before the window opens.",
+    },
+    "2026-09-19": {
+      blockades:
+        "Lycée Saint-Exupéry in Créteil: students backed the teachers' strike with the school's first blockade — the origin of the national movement.",
+    },
+    "2026-09-23": {
+      blockades:
+        "Île-de-France only: the Créteil rectorate counted the blockades spreading to about ten lycées.",
+    },
     "2026-09-25": {
       arrests: "Paris area only — Préfecture de Police figure, by midday.",
     },
     "2026-09-28": {
       protesterInjured:
         "One documented case: a 14-year-old hit by a police projectile. A floor, not a count.",
+      blockades:
+        "Interior Ministry: 27 complete blockades, out of 180 establishments perturbed.",
     },
     "2026-09-29": {
       turnout:
         "Counts the public-service cortège the school actions joined (206 000 ministry / 300 000 CGT), not a student crowd.",
       protesterInjured:
         "Students and education staff injured that day, counted by the Education ministry.",
+      blockades:
+        "Education ministry at the time of its balance: 45 schools blocked out of 338 concerned. Le Monde counted actions at nearly 410 establishments.",
     },
     "2026-09-30": {
       protesterInjured:
@@ -588,22 +628,36 @@ const CHART_EN: ChartCopy = {
         "Cumulative level reached at the 1 October cut-off (170 students + 65 education staff) — a stock, not a daily count. Where a week ends on this cell, the level is the week’s figure, never the sum of the week’s flows.",
       damagesCost:
         "Part of the 1–8 October Île-de-France increment; the anchor of that run is 8 October.",
+      blockades:
+        "Low end: 222 schools blocked (Le Monde live, out of 1,027 establishments concerned). High end: the Union étudiante's 640. The police counted 169 blockades in the morning, and 900 actions with 400 closures by the end of the day.",
+    },
+    "2026-10-02": {
+      blockades:
+        "'More than 400 schools blocked' (Le Monde live). The Interior Ministry's own tally for 2 October: 1,027 lycées concerned, more than 560 perturbed, 400 closed.",
     },
     "2026-10-03": {
       arrests:
         "Derived by subtraction: the ministry's 6 059 since 28 September (published 5 October) less the published daily figures. Covers 3 and 4 October together.",
+      blockades:
+        "Wider measure: the Education ministry counted 735 establishments perturbed, not schools fully blocked. The highest blocked count that week was 400+ on 2 October.",
     },
     "2026-10-05": {
       arrests:
         "984 interpellations that day. The ministry's 6 059 since 28 September is the stock that makes the weekend figure checkable.",
+      blockades:
+        "Wider measure: 400 to 500 establishments closed (government spokeswoman), more than 400 to stay closed. The ministry's morning count was 413 establishments perturbed.",
     },
     "2026-10-06": {
       damagesCost:
         "Part of the 1–8 October Île-de-France increment; the anchor of that run is 8 October.",
+      blockades:
+        "Wider measure: 891 of the 3,700 schools had their classes suspended, totally or partially, at midday (ministry). The USL counted 1,800 schools 'à l'arrêt' — a union figure that also includes administratively closed schools.",
     },
     "2026-10-08": {
       damagesCost:
         "Anchor of the 1–8 October Île-de-France damage increment. The same €6M is published for 6 October and is not counted twice.",
+      blockades:
+        "Wider measure: 224 establishments closed (ministry); more than 150 still perturbed (franceinfo). The 224 figure is the benchmark the ministry quotes back on 13 October.",
     },
     "2026-10-09": {
       arrests:
@@ -612,6 +666,7 @@ const CHART_EN: ChartCopy = {
     "2026-10-10": {
       damagesCost:
         "National cumulative stock since mid-September, compiled by CNEWS from regional figures — no ministry published a national tally. Pannekoucke's parallel €25–30M estimate for Auvergne-Rhône-Alpes is NOT included, so this is neither a floor nor additive with the regional figures.",
+      blockades: "'More than 40 schools blocked' (AFP/Reuters, 10 October).",
     },
     "2026-10-12": {
       arrests:
@@ -620,10 +675,12 @@ const CHART_EN: ChartCopy = {
         "Île-de-France only: a proviseur, a parent d'élève and a Région employee injured. Counted as education and local-authority staff, on the same basis as the 29 September ministry figure.",
       damagesCost:
         'Normandy — Hervé Morin, Conseil régional de Normandie, at the regional assembly, 12 Oct: "1,5 million en Normandie" out of "d\'ores et déjà 30 millions d\'euros" nationally. A cumulative regional stock, not a daily flow, and a component of the national stock — never added to it. Île-de-France\'s own revised total the same day was €8.5M.',
+      blockades:
+        "Rhône prefecture only: 19 of the 27 establishments affected were lycées (six universities, two colleges). Île-de-France counted nearly 80 lycées perturbed the same day.",
     },
     "2026-10-13": {
-      damagesCost:
-        "Local estimate carried from the original research — the Ardèche prefecture reported no damage, so it comes from elsewhere.",
+      blockades:
+        "Wider measure: 214 establishments closed, 94.2% of lycées open — against 224 on 8 October. The ministry called the movement 'en recul'.",
     },
     "2026-10-17": {
       protesterInjured:
@@ -646,8 +703,18 @@ const CHART_EN: ChartCopy = {
     "2026-10-31": {
       damagesCost: "Local estimate — no national damage figure was published.",
     },
+    "2026-11-02": {
+      blockades:
+        "Education ministry at 9.30: 41 lycées blocked, about 1% of the country's 3,700, with no perturbation in three quarters of the departments.",
+    },
+    "2026-11-03": {
+      blockades:
+        "Education ministry: 48 schools blocked. The USL counted nearly 500.",
+    },
     "2026-11-05": {
       protesterInjured: 'Published as a floor: "at least this many".',
+      blockades:
+        "Matignon at 10.00: 81 establishments blocked (2.2%). The USL counted 1,000 schools 'à l'arrêt' — blocked or administratively closed, so an upper bound. The Education ministry counted 33% of establishments perturbed.",
     },
     "2026-11-09": {
       arrests: "Regional prefecture figures only — Bordeaux, Lyon, Strasbourg.",
@@ -662,7 +729,7 @@ const CHART_EN: ChartCopy = {
     "2026-10-05": "deployment estimated",
     "2026-10-06": "deployment estimated",
     "2026-10-08": "deployment estimated",
-    "2026-10-12": "estimated, Paris area",
+    "2026-10-12": "estimé — Île-de-France, Lyon et Strasbourg",
     "2026-10-13": "deployment estimated",
     "2026-10-17": "deployment published",
     "2026-10-18": "estimated — Paris curfew",
@@ -679,17 +746,29 @@ const CHART_EN: ChartCopy = {
   weekRegionalOnly: "{n} day{s}, regional only",
   weekPeak: "peak {date}",
   weekNoNational: "no national figure this week",
-  weekExcluded: "{n} point{s} excluded (regional or subset)", // CHART_EN  weekFloored: "includes a floor — not a sum",
+  weekExcluded: "{n} point{s} excluded (regional or subset)",
+  weekFloored: "includes a floor — not a sum",
   weekClipped: "week clipped by the window",
   weekJoin: " · ",
   tooltipRange: "{label}: {mid} (band {low}–{high})",
   tooltipPoint: "{label}: {value}",
   tooltipNote: "{base}\n{note}",
   footerMark: "ⓘ {note}",
+  weekVacation: "partly inside the Toussaint holiday (17 Oct – 1 Nov)",
+  holidayLine:
+    "Dotted line: the Toussaint holiday, 17 October – 1 November 2026. No lycée was in session, so no school could be blocked — the count did not exist, it was not zero.",
+  metricNote:
+    "Schools blocked or closed: establishments where pupils could not attend normally. The band runs from the official count to the union count, and the union's figure also includes administratively closed schools.",
+  blockerNote:
+    "A wider measure than blockades — establishments perturbed, with classes suspended, or closed — used where it is the only figure published that day.",
   series: {
     protestersDaily: {
       label: "Protesters",
       detached: "Protesters (detached figure)",
+    },
+    blockadesDaily: {
+      label: "Schools blocked",
+      detached: "Schools blocked (regional count)",
     },
     arrestsDaily: { label: "Arrests", detached: "Arrests (detached figure)" },
     forcesDaily: {
@@ -716,6 +795,10 @@ const CHART_EN: ChartCopy = {
       label: "Protesters (weekly peak)",
       detached: "Protesters (regional week)",
     },
+    blockadesWeekly: {
+      label: "Schools blocked (weekly peak)",
+      detached: "Schools blocked (regional week)",
+    },
     arrestsWeekly: {
       label: "Arrests (weekly total)",
       detached: "Arrests (regional week)",
@@ -731,9 +814,11 @@ const CHART_EN: ChartCopy = {
   },
   charts: {
     protestersDaily: {
-      title: "Protesters, daily",
-      subtitle: "Ministry and organiser counts, one marker per published day",
+      title: "Protesters and blocked schools, daily",
+      subtitle:
+        "Crowd counts on the left axis, school blockades on the right. The dotted line is the Toussaint holiday",
       y: "Protesters",
+      yRight: "Schools blocked or closed",
     },
     enforcementDaily: {
       title: "Arrests and injuries, daily",
@@ -747,9 +832,11 @@ const CHART_EN: ChartCopy = {
       y: "€ millions",
     },
     protestersWeekly: {
-      title: "Protesters, weekly peak",
-      subtitle: "Peak day of each week, not a weekly sum",
+      title: "Protesters and blocked schools, weekly peak",
+      subtitle:
+        "Peak day of each week, not a weekly sum — the same lycée is blocked on several consecutive days",
       y: "Protesters (peak day)",
+      yRight: "Schools blocked or closed (peak)",
     },
     enforcementWeekly: {
       title: "Enforcement, weekly totals",
@@ -773,6 +860,7 @@ const CHART_FR: ChartCopy = {
     f: "borne inférieure",
     r: "régional",
     p: "partiel",
+    x: "mesure plus large",
     n: "",
     regional: "régional",
   },
@@ -785,35 +873,53 @@ const CHART_FR: ChartCopy = {
     "2026-09-29":
       "Acte I. Le chiffre de foule compte le cortège de la fonction publique rejoint par les actions lycée, pas une foule étudiante.",
     "2026-09-30":
-      "Deuxième jour de l’acte I : 625 interpellations et 83 blessés des forces de l’ordre.",
+      "Deuxième jour de l’acte I : 625 interpellations et 83 blessés des forces de l’ordre. Le ministère de l’Éducation compte 356 établissements concernés ; aucun décompte de lycées entièrement bloqués n’a été publié ce jour-là.",
     "2026-10-01":
       "Acte II, la pointe de la première semaine. Interpellations et blessés publiés sans chiffre de foule pour la journée.",
     "2026-10-02":
       "735 établissements encore perturbés, et des violences urbaines près de 158 d’entre eux.",
     "2026-10-03":
-      "Aucun chiffre de week-end n’a été publié ; les interpellations des 3–4 octobre sont dérivées par soustraction.",
+      "Aucun chiffre de week-end n’a été publié ; les interpellations des 3–4 octobre sont dérivées par soustraction. 735 établissements perturbés — une mesure plus large que les blocages ; le point est signalé comme tel.",
     "2026-10-05":
       "Première journée nationale scolaire après les vacances, avec les stocks ministériels.",
     "2026-10-06":
       "Acte III — première manifestation étudiante nationale de plein exercice.",
-    "2026-10-07":
-      "The Interior Ministry suspended the use of stun grenades for the student mobilisations, after a lycée student was injured at Lens.",
-    "2026-10-09":
-      "Justice Ministry publishes its first judicial balance: 6,877 in garde à vue since mid-September.",
-    "2026-10-10":
-      "CNEWS compiles a national damage bill of €30M — with no ministry tally behind it.",
     "2026-10-13":
       "La fourchette de foule va du simple au triple : plancher ministériel, plafond syndical.",
+    "2026-10-16":
+      "Dernier jour de cours avant les vacances de la Toussaint : à partir du 17 octobre aucun lycée n’est en cours, le décompte des blocages s’interrompt.",
     "2026-10-17":
-      "La journée de pointe. La fourchette de dommages ici est l’estimation IFRAP des 17–18 octobre, non un flux quotidien.",
+      "La journée de pointe. La fourchette de dommages ici est l’estimation IFRAP des 17–18 octobre, non un flux quotidien. Vacances de la Toussaint — établissements fermés. ",
+    "2026-10-19":
+      "Vacances de la Toussaint — les étudiants soutiennent le mouvement lycéeen depuis l’extérieur des établissements.",
     "2026-10-24":
-      "Les interpellations incluent les contrôles préventifs ; toutes ne deviennent pas des gardes à vue.",
+      "Les interpellations incluent les contrôles préventifs ; toutes ne deviennent pas des gardes à vue. Vacances de la Toussaint — la mobilisation était une journée interprofessionnelle, pas une journée scolaire.",
     "2026-10-31":
-      "Aucun chiffre de blessés parmi les manifestants n’a été publié ce jour-là.",
+      "Aucun chiffre de blessés parmi les manifestants n’a été publié ce jour-là. Vacances de la Toussaint — mobilisation interprofessionnelle.",
+    "2026-11-01": "Dernier jour des vacances de la Toussaint.",
+    "2026-11-04":
+      "Dans le Rhône, sept établissements ont fait cours à distance ; aucun lycée n’est signalé comme bloqué.",
     "2026-11-05":
       "La fourchette de foule va de 575 000 à 1,6 million — la fourchette est la divergence, pas une barre d’erreur.",
+    "2026-11-06":
+      "Dans le Rhône, incidents dans 16 lycées et deux collèges, et un lycée du 8e arrondissement de Lyon bloqué lors de son évacuation.",
+    "2026-11-09":
+      "Dans le Rhône, aucun lycée n’est bloqué : 14 fonctionnent à distance et 11 sont signalés comme touchés. Un zéro ne peut pas être porté sur un axe logarithmique, il est donc consigné ici et non comme point.",
+    "2026-11-10": "Dans le Rhône, une dizaine d’établissements sont touchés.",
   },
   obsNotes: {
+    "2026-09-15": {
+      blockades:
+        "Le lycée Victor-Hugo de Caen — le premier blocus en métropole. Villeneuve-d’Ascq avait été bloqué le 14 septembre et Le Rheu le 7 septembre, avant l’ouverture de la fenêtre.",
+    },
+    "2026-09-19": {
+      blockades:
+        "Lycée Saint-Exupéry de Créteil : les élèves soutiennent la grève des enseignants par le premier blocus de l’établissement — l’origine du mouvement national.",
+    },
+    "2026-09-23": {
+      blockades:
+        "Île-de-France uniquement : selon le rectorat de Créteil, les blocus s’étendent rapidement à une dizaine de lycées.",
+    },
     "2026-09-25": {
       arrests:
         "Région parisienne uniquement — chiffres de la préfecture de police, à midi.",
@@ -821,12 +927,16 @@ const CHART_FR: ChartCopy = {
     "2026-09-28": {
       protesterInjured:
         "Un cas documenté : un garçon de 14 ans touché par un projectile de police. Un plancher, pas un décompte.",
+      blockades:
+        "Ministère de l’Intérieur : 27 blocages totaux, sur 180 établissements perturbés.",
     },
     "2026-09-29": {
       turnout:
         "Compte le cortège de la fonction publique rejoint par les actions lycée (206 000 ministère / 300 000 CGT), pas une foule étudiante.",
       protesterInjured:
         "Élèves et personnels de l’éducation blessés ce jour-là, comptés par le ministère de l’Éducation.",
+      blockades:
+        "Ministère de l’Éducation au moment de son bilan : 45 lycées bloqués sur 338 concernés. Le Monde recense des actions dans près de 410 établissements.",
     },
     "2026-09-30": {
       protesterInjured:
@@ -839,29 +949,53 @@ const CHART_FR: ChartCopy = {
         "Niveau cumulé atteint à l’arrêt du 1er octobre (170 élèves + 65 personnels de l’éducation) — un stock, pas un décompte quotidien. Lorsqu’une semaine se termine sur cette cellule, le niveau est le chiffre de la semaine, jamais la somme des flux de la semaine.",
       damagesCost:
         "Une part de l’incrément francilien du 1er au 8 octobre ; l’ancrage de cette série est le 8 octobre.",
+      blockades:
+        "Borne basse : 222 lycées bloqués (Le Monde en direct, sur 1 027 établissements concernés). Borne haute : les 640 de l’Union étudiante. La police comptait 169 blocages le matin, et 900 actions avec 400 fermetures en fin de journée.",
+    },
+    "2026-10-02": {
+      blockades:
+        "« Plus de 400 lycées bloqués » (Le Monde en direct). Le décompte du ministère de l’Intérieur pour le 2 octobre : 1 027 lycées concernés, plus de 560 perturbés, 400 fermés.",
     },
     "2026-10-03": {
       arrests:
         "Dérivé par soustraction : les 6 059 interpellations depuis le 28 septembre (publiés le 5 octobre) moins les chiffres journaliers publiés. Couvre les 3 et 4 octobre ensemble.",
+      blockades:
+        "Mesure plus large : le ministère de l’Éducation compte 735 établissements perturbés, et non des lycées entièrement bloqués. Le plus haut décompte de blocages de la semaine est de 400+ le 2 octobre.",
     },
     "2026-10-05": {
       arrests:
         "984 interpellations ce jour-là. Le stock ministériel de 6 059 depuis le 28 septembre est ce qui rend vérifiable le chiffre du week-end.",
+      blockades:
+        "Mesure plus large : 400 à 500 établissements fermés (porte-parole du gouvernement), plus de 400 doivent le rester. Le comptage de mi-matin du ministère est de 413 établissements perturbés.",
     },
     "2026-10-06": {
       damagesCost:
         "Une part de l’incrément francilien du 1er au 8 octobre ; l’ancrage de cette série est le 8 octobre.",
+      blockades:
+        "Mesure plus large : 891 établissements sur 3 700 ont eu leurs cours suspendus, totalement ou partiellement, à la mi-journée (ministère). L’USL compte 1 800 lycées « à l’arrêt » — un décompte syndical qui inclut aussi les lycées fermés administrativement.",
     },
     "2026-10-08": {
       damagesCost:
         "Ancrage de l’incrément de dommages francilien du 1er au 8 octobre. Les mêmes 6 M€ sont publiés au 6 octobre et ne sont pas comptés deux fois.",
+      blockades:
+        "Mesure plus large : 224 établissements fermés (ministère) ; plus de 150 encore perturbés (franceinfo). Le chiffre de 224 est celui que le ministère rappellera le 13 octobre.",
+    },
+    "2026-10-10": {
+      blockades: "« Plus de 40 lycées bloqués » (AFP/Reuters, 10 octobre).",
     },
     "2026-10-12": {
-      arrests: "Chiffre régional uniquement — décompte de préfecture.",
+      arrests:
+        "13 interpellations rapportées indépendamment par la préfecture du Rhône (27 établissements touchés) et par celle du Bas-Rhin à Strasbourg. Deux préfectures, le même nombre : 13 est donc un plancher pour la journée, pas le total régional du jour. Ce n’est pas Paris.",
+      protesterInjured:
+        "Île-de-France uniquement : un proviseur, un parent d’élève et un agent de la Région blessés. Comptés comme personnels de l’éducation et des collectivités, sur la même base que le chiffre ministériel du 29 septembre.",
+      damagesCost:
+        "Normandie — Hervé Morin, Conseil régional de Normandie, à l’assemblée régionale le 12 oct. : « 1,5 million en Normandie » sur « d’ores et déjà 30 millions d’euros » au niveau national. Un stock régional cumulé, pas un flux quotidien, et une composante du stock national — jamais additionné. Le total francilien révisé le même jour était de 8,5 M€.",
+      blockades:
+        "Préfecture du Rhône uniquement : 19 des 27 établissements touchés étaient des lycées (six universités, deux collèges). L’Île-de-France comptait près de 80 lycées perturbés le même jour.",
     },
     "2026-10-13": {
-      damagesCost:
-        "Estimation locale reprise de la recherche initiale — la préfecture de l’Ardèche a signalé aucun dommage.",
+      blockades:
+        "Mesure plus large : 214 établissements fermés, 94,2 % de lycées ouverts — contre 224 le 8 octobre. Le ministère parle d’un mouvement « en recul ».",
     },
     "2026-10-17": {
       protesterInjured:
@@ -886,8 +1020,18 @@ const CHART_FR: ChartCopy = {
       damagesCost:
         "Estimation locale — aucun chiffre national de dommages n’a été publié.",
     },
+    "2026-11-02": {
+      blockades:
+        "Ministère de l’Éducation à 9 h 30 : 41 lycées bloqués, environ 1 % des 3 700 du pays, et aucune perturbation dans les trois quarts des départements.",
+    },
+    "2026-11-03": {
+      blockades:
+        "Ministère de l’Éducation : 48 lycées bloqués. L’USL en compte près de 500.",
+    },
     "2026-11-05": {
       protesterInjured: "Publié comme plancher : « au moins ». ",
+      blockades:
+        "Matignon à 10 h : 81 établissements bloqués (2,2 %). L’USL compte 1 000 lycées « à l’arrêt » — bloqués ou fermés administrativement, donc une borne haute. Le ministère de l’Éducation compte 33 % d’établissements perturbés.",
     },
     "2026-11-09": {
       arrests:
@@ -920,17 +1064,30 @@ const CHART_FR: ChartCopy = {
   weekRegionalOnly: "{n} jour{s}, régional seulement",
   weekPeak: "pointe le {date}",
   weekNoNational: "aucun chiffre national cette semaine",
-  weekExcluded: "{n} point{s} exclu(s) (régional ou sous-ensemble)", // CHART_FR  weekFloored: "comprend un plancher — pas une somme",
+  weekExcluded: "{n} point{s} exclu(s) (régional ou sous-ensemble)",
+  weekFloored: "comprend un plancher — pas une somme",
   weekClipped: "semaine tronquée par la fenêtre",
   weekJoin: " · ",
   tooltipRange: "{label} : {mid} (fourchette {low}–{high})",
   tooltipPoint: "{label} : {value}",
   tooltipNote: "{base}\n{note}",
   footerMark: "ⓘ {note}",
+  weekVacation:
+    "en partie pendant les vacances de la Toussaint (17 oct. – 1 nov.)",
+  holidayLine:
+    "Ligne en pointillés : les vacances de la Toussaint, du 17 octobre au 1er novembre 2026. Aucun lycée n’était en cours, aucun ne pouvait être bloqué — le décompte n’existait pas, il n’était pas nul.",
+  metricNote:
+    "Lycées bloqués ou fermés : les établissements où les élèves ne pouvaient pas suivre normalement. La fourchette va du décompte officiel au décompte syndical, et ce dernier inclut les lycées fermés administrativement.",
+  blockerNote:
+    "Mesure plus large que les blocages — établissements perturbés, cours suspendus ou fermés — utilisée lorsque c’est le seul chiffre publié ce jour-là.",
   series: {
     protestersDaily: {
       label: "Manifestants",
       detached: "Manifestants (chiffre écarté de la courbe)",
+    },
+    blockadesDaily: {
+      label: "Lycées bloqués",
+      detached: "Lycées bloqués (décompte régional)",
     },
     arrestsDaily: {
       label: "Interpellations",
@@ -960,6 +1117,10 @@ const CHART_FR: ChartCopy = {
       label: "Manifestants (pointe hebdomadaire)",
       detached: "Manifestants (semaine régionale)",
     },
+    blockadesWeekly: {
+      label: "Lycées bloqués (pointe hebdomadaire)",
+      detached: "Lycées bloqués (semaine régionale)",
+    },
     arrestsWeekly: {
       label: "Interpellations (total hebdomadaire)",
       detached: "Interpellations (semaine régionale)",
@@ -975,10 +1136,11 @@ const CHART_FR: ChartCopy = {
   },
   charts: {
     protestersDaily: {
-      title: "Manifestants, par jour",
+      title: "Manifestants et lycées bloqués, par jour",
       subtitle:
-        "Comptages ministériels et syndicaux, un marqueur par jour publié",
+        "Foules sur l’axe de gauche, blocages de lycées sur l’axe de droite. La ligne en pointillés est les vacances de la Toussaint",
       y: "Manifestants",
+      yRight: "Lycées bloqués ou fermés",
     },
     enforcementDaily: {
       title: "Interpellations et blessés, par jour",
@@ -992,9 +1154,11 @@ const CHART_FR: ChartCopy = {
       y: "Millions d’€",
     },
     protestersWeekly: {
-      title: "Manifestants, pointe hebdomadaire",
-      subtitle: "Jour de pointe de chaque semaine, pas une somme hebdomadaire",
+      title: "Manifestants et lycées bloqués, pointe hebdomadaire",
+      subtitle:
+        "Jour de pointe de chaque semaine, pas une somme hebdomadaire — un même lycée est bloqué plusieurs jours de suite",
       y: "Manifestants (jour de pointe)",
+      yRight: "Lycées bloqués ou fermés (pointe)",
     },
     enforcementWeekly: {
       title: "Maintien de l’ordre, totaux hebdomadaires",
@@ -1278,25 +1442,6 @@ export interface DisclaimerCopy {
   readonly tail: string;
 }
 
-export interface SourceItemCopy {
-  readonly label: string;
-  readonly href: string;
-  readonly what: string;
-  readonly when?: string;
-}
-
-export interface SourceGroupCopy {
-  readonly heading: string;
-  readonly items: readonly SourceItemCopy[];
-}
-
-export interface SourcesCopy {
-  readonly title: string;
-  readonly intro: string;
-  readonly groups: readonly SourceGroupCopy[];
-  readonly foot: string;
-}
-
 export interface PanelsCopy {
   readonly partialWeek: string;
   readonly act: string;
@@ -1328,7 +1473,6 @@ export interface Catalogue {
   readonly flags: Readonly<Record<string, string>>;
   readonly tooltip: TooltipCopy;
   readonly disclaimer: DisclaimerCopy;
-  readonly sources: SourcesCopy;
   /** Dictionary lookups; `t('key')` reads these. */
   readonly [key: string]: unknown;
 }
@@ -1363,6 +1507,7 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       f: "floor",
       c: "stock",
       w: "weekly",
+      x: "wider measure",
     }, // en
     tooltip: {
       linePlain: "{value}",
@@ -1386,146 +1531,6 @@ const CATALOGUE: Record<Lang, Catalogue> = {
         "transcript-4.md",
       ],
       tail: "",
-    },
-    sources: {
-      title: "Sources and method",
-      intro:
-        "Every series traces to a publisher below. Where publishers disagree the chart carries a range instead of a point: the range is the disagreement, not an error bar. Hollow markers are regional, Paris-only, modelled or stock figures and are never joined to the national line.",
-      groups: [
-        {
-          heading: "2026 movement — the September phase",
-          items: [
-            {
-              label:
-                "Ouest-France — the first mainland blockade, Le Rheu, 7 September",
-              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
-              what: "the movement's origin point, before the window opens",
-            },
-            {
-              label:
-                "Actu — the Caen and Villeneuve-d'Ascq blockades, 15 September",
-              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
-              what: "the first days inside the chart window",
-            },
-            {
-              label:
-                "Franceinfo — how a few school blockades became a national movement",
-              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
-              what: "the chronology of September, including Créteil",
-            },
-            {
-              label:
-                "Ouest-France — 21 interpellations in the Paris area, 25 September",
-              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
-              what: "the only figure before the national turn",
-            },
-            {
-              label:
-                "Le Monde — 338 establishments concerned, Act I, 29 September",
-              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
-              what: "Act I: establishments, injuries and arrests",
-            },
-            {
-              label: "Le Monde — 625 interpellations, 30 September",
-              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
-              what: "the second day of Act I",
-            },
-            {
-              label:
-                "Le Figaro — the daily arrest figures, 1, 2, 5 and 6 October",
-              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
-              what: "Act II and Act III",
-            },
-            {
-              label: "Wikipédia — the full dated chronology of the movement",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
-              what: "the spine of the September rows",
-            },
-          ],
-        },
-        {
-          heading: "2026 movement — official counts",
-          items: [
-            {
-              label: "Ministry of the Interior — weekly protest tallies",
-              href: "https://www.interieur.gouv.fr",
-              what: "national turnout, arrests, officer injuries",
-            },
-            {
-              label: "Prefecture of police of Paris",
-              href: "https://www.prefecturedepolice.interieur.gouv.fr",
-              what: "Paris-only arrest figures",
-              when: "2026-10-18",
-            },
-            {
-              label: "Ministry of Justice — custody and prosecutions",
-              href: "https://www.justice.gouv.fr",
-              what: "the custody/arrest distinction",
-            },
-            {
-              label: "CGT and the inter-union collective",
-              href: "https://www.cgt.fr",
-              what: "the upper bound of every turnout range",
-            },
-          ],
-        },
-        {
-          heading: "2026 movement — damage and its cost",
-          items: [
-            {
-              label: "IFRAP — cost of the 17–18 October damage",
-              href: "https://www.ifrap.org",
-              what: "the €244–866M material-damage band",
-            },
-            {
-              label: "CCI France — damaged-shop census",
-              href: "https://www.cci.fr",
-              what: "shop counts behind the weekly increments",
-            },
-            {
-              label: "Prefecture of Île-de-France",
-              href: "https://www.iledefrance.gouv.fr",
-              what: "the €1M damage stock — a stock, not a daily flow",
-            },
-          ],
-        },
-        {
-          heading: "Earlier movements, 1968–2025",
-          items: [
-            {
-              label: "May 1968 — encyclopaedic summary of published counts",
-              href: "https://fr.wikipedia.org/wiki/Mai_68",
-              what: "crowd counts, arrests, injuries",
-            },
-            {
-              label: "CPE 2006 — student and school movement",
-              href: "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
-              what: "four weeks of published figures",
-            },
-            {
-              label: "Gilets jaunes, acts 1–44",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
-              what: "ministry counts compiled act by act",
-            },
-            {
-              label: "Riots of June 2023",
-              href: "https://fr.wikipedia.org/wiki/%C3%89meutes_de_2023_en_France",
-              what: "arrests and injuries over five nights",
-            },
-            {
-              label: "Pension reform, 2023",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_de_2023",
-              what: "the inter-union turnout range",
-            },
-            {
-              label: "« Bloquons tout », 2025",
-              href: "https://fr.wikipedia.org/wiki/Bloquons_tout",
-              what: "blockades and partial counts",
-            },
-          ],
-        },
-      ],
-      foot: "Historical episodes come from encyclopaedic summaries, not primary archives. Read them as orders of magnitude. Policing cost is modelled: officers deployed × €136–1 133 per officer-day. The deployment figures for September and early October are estimates, flagged as such in the tooltip; the movement total is €54–630M.",
     },
   },
   fr: {
@@ -1555,6 +1560,7 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       f: "plancher",
       c: "stock",
       w: "hebdomadaire",
+      x: "mesure plus large",
     }, // fr
     tooltip: {
       linePlain: "{value}",
@@ -1578,146 +1584,6 @@ const CATALOGUE: Record<Lang, Catalogue> = {
         "transcript-4.md",
       ],
       tail: "",
-    },
-    sources: {
-      title: "Sources et méthode",
-      intro:
-        "Chaque série est rattachée à un éditeur ci-dessous. Lorsque deux éditeurs divergent, le graphique affiche une fourchette plutôt qu’un point : la fourchette est la divergence, pas une barre d’erreur. Les marqueurs creux sont régionaux, parisiens, modélisés ou des stocks, et ne sont jamais reliés à la courbe nationale.",
-      groups: [
-        {
-          heading: "Mouvement 2026 — la phase de septembre",
-          items: [
-            {
-              label:
-                "Ouest-France — le tout premier blocus en métropole, Le Rheu, 7 septembre",
-              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
-              what: "le point d’origine du mouvement, avant l’ouverture de la fenêtre",
-            },
-            {
-              label:
-                "Actu — les blocages de Caen et de Villeneuve-d’Ascq, 15 septembre",
-              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
-              what: "les premiers jours à l’intérieur de la fenêtre",
-            },
-            {
-              label:
-                "Franceinfo — comment quelques blocages de lycées sont devenus un mouvement d’ampleur",
-              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
-              what: "la chronologie de septembre, avec Créteil",
-            },
-            {
-              label:
-                "Ouest-France — 21 interpellations dans l’agglomération parisienne, 25 septembre",
-              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
-              what: "le seul chiffre avant le tournant national",
-            },
-            {
-              label:
-                "Le Monde — 338 établissements concernés, acte I, 29 septembre",
-              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
-              what: "acte I : établissements, blessés et interpellations",
-            },
-            {
-              label: "Le Monde — 625 interpellations, 30 septembre",
-              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
-              what: "le deuxième jour de l’acte I",
-            },
-            {
-              label:
-                "Le Figaro — les chiffres journaliers d’interpellations, 1er, 2, 5 et 6 octobre",
-              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
-              what: "acte II et acte III",
-            },
-            {
-              label: "Wikipédia — la chronologie datée complète du mouvement",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
-              what: "l’axe sur lequel sont posées les lignes de septembre",
-            },
-          ],
-        },
-        {
-          heading: "Mouvement 2026 — décomptes officiels",
-          items: [
-            {
-              label: "Ministère de l’Intérieur — bilans hebdomadaires",
-              href: "https://www.interieur.gouv.fr",
-              what: "foules nationales, interpellations, blessés parmi les forces",
-            },
-            {
-              label: "Préfecture de police de Paris",
-              href: "https://www.prefecturedepolice.interieur.gouv.fr",
-              what: "interpellations parisiennes",
-              when: "2026-10-18",
-            },
-            {
-              label: "Ministère de la Justice — gardes à vue et poursuites",
-              href: "https://www.justice.gouv.fr",
-              what: "la distinction garde à vue / interpellation",
-            },
-            {
-              label: "CGT et l’intersyndicale",
-              href: "https://www.cgt.fr",
-              what: "la borne haute de chaque fourchette de foule",
-            },
-          ],
-        },
-        {
-          heading: "Mouvement 2026 — dommages et coût",
-          items: [
-            {
-              label: "IFRAP — coût des dommages des 17–18 octobre",
-              href: "https://www.ifrap.org",
-              what: "la fourchette 244–866 M€ de dommages matériels",
-            },
-            {
-              label: "CCI France — recensement des commerces sinistrés",
-              href: "https://www.cci.fr",
-              what: "les décomptes qui fondent les incréments hebdomadaires",
-            },
-            {
-              label: "Préfecture de la région Île-de-France",
-              href: "https://www.iledefrance.gouv.fr",
-              what: "le stock de 1 M€ — un stock, pas un flux quotidien",
-            },
-          ],
-        },
-        {
-          heading: "Mouvements antérieurs, 1968–2025",
-          items: [
-            {
-              label: "Mai 1968 — synthèse encyclopédique des décomptes",
-              href: "https://fr.wikipedia.org/wiki/Mai_68",
-              what: "foules, interpellations, blessés",
-            },
-            {
-              label: "CPE 2006 — mouvement lycéen et étudiant",
-              href: "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
-              what: "quatre semaines de chiffres publiés",
-            },
-            {
-              label: "Gilets jaunes, actes 1 à 44",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
-              what: "décomptes ministériels compilés acte par acte",
-            },
-            {
-              label: "Émeutes de juin 2023",
-              href: "https://fr.wikipedia.org/wiki/%C3%89meutes_de_2023_en_France",
-              what: "interpellations et blessés sur cinq nuits",
-            },
-            {
-              label: "Réforme des retraites, 2023",
-              href: "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_de_2023",
-              what: "la fourchette intersyndicale de foule",
-            },
-            {
-              label: "« Bloquons tout », 2025",
-              href: "https://fr.wikipedia.org/wiki/Bloquons_tout",
-              what: "blocages et décomptes partiels",
-            },
-          ],
-        },
-      ],
-      foot: "Les épisodes historiques proviennent de synthèses encyclopédiques, non d’archives primaires. À lire comme des ordres de grandeur. Le coût du maintien de l’ordre est modélisé : agents déployés × 136–1 133 € par agent-jour. Les dispositifs de septembre et de début octobre sont des estimations, signalées comme telles dans l’infobulle ; le total du mouvement est de 54 à 630 M€.",
     },
   },
 };
@@ -1852,6 +1718,10 @@ const STATIC: Record<string, Bi> = {
   "card.ew.title": {
     en: "Enforcement, weekly totals",
     fr: "Maintien de l’ordre, totaux hebdomadaires",
+  },
+  "leg.holiday.title": {
+    en: "Dotted line = the Toussaint school holiday",
+    fr: "Ligne en pointillés = les vacances de la Toussaint",
   },
   "leg.items.title": {
     en: "Highlight a measure",
