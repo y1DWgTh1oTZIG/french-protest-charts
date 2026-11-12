@@ -124,7 +124,6 @@ const DEF: Readonly<Record<SeriesId, SeriesDef>> = {
     unit: "eurM",
     radius: 0,
     width: 2,
-    axis: RIGHT,
     bandFill: "rgba(3,105,161,0.12)",
   },
   protestersWeekly: {

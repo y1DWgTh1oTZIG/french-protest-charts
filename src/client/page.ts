@@ -50,7 +50,7 @@ function disclaimer(): void {
     const a = document.createElement("a");
     a.href = href;
     a.rel = "noopener noreferrer";
-    a.textContent = `${d.link}-${index}`;
+    a.textContent = d.links[index];
     a.dataset.index = String(index);
 
     const li = document.createElement("li");

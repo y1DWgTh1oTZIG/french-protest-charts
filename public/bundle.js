@@ -4,17 +4,17 @@ var EN_META = {
   label: "English",
   meta: {
     htmlLang: "en",
-    title: "Protest activity in France \u2014 October\u2013November 2026",
+    title: "Protest activity in France \u2014 September\u2013November 2026",
     description: "Turnout, arrests, injuries and damage in the autumn 2026 movement, set against six earlier French movements."
   },
   sections: {
     a: {
-      title: "A \xB7 Daily counts, 1 October \u2013 11 November 2026",
-      blurb: "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed."
+      title: "A \xB7 Daily counts, 15 September \u2013 11 November 2026",
+      blurb: "One marker per day on which something was published, from the first mainland high-school blockades on 15 September. Days with no figure stay empty rather than interpolated; gaps in a line are dashed."
     },
     b: {
       title: "B \xB7 Weekly aggregates",
-      blurb: "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which."
+      blurb: "Weeks run Monday to Sunday, from the week of 14 September. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which."
     },
     c: {
       title: "C \xB7 One panel per movement",
@@ -33,17 +33,17 @@ var FR_META = {
   label: "Fran\xE7ais",
   meta: {
     htmlLang: "fr",
-    title: "L\u2019activit\xE9 contestataire en France \u2014 octobre\u2013novembre 2026",
+    title: "L\u2019activit\xE9 contestataire en France \u2014 septembre\u2013novembre 2026",
     description: "Foules, interpellations, bless\xE9s et dommages du mouvement de l\u2019automne 2026, compar\xE9s \xE0 six mouvements fran\xE7ais ant\xE9rieurs."
   },
   sections: {
     a: {
-      title: "A \xB7 D\xE9comptes quotidiens, 1er octobre \u2013 11 novembre 2026",
-      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s."
+      title: "A \xB7 D\xE9comptes quotidiens, 15 septembre \u2013 11 novembre 2026",
+      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9, \xE0 partir des premiers blocages de lyc\xE9es en m\xE9tropole le 15 septembre. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s."
     },
     b: {
       title: "B \xB7 Agr\xE9gats hebdomadaires",
-      blurb: "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle."
+      blurb: "Les semaines vont du lundi au dimanche, depuis la semaine du 14 septembre. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle."
     },
     c: {
       title: "C \xB7 Un panneau par mouvement",
@@ -299,39 +299,109 @@ var CHART_EN = {
     e: "modelled",
     f: "lower bound",
     r: "regional",
-    p: "Paris only",
+    p: "partial",
     n: "",
     regional: "regional"
   },
   suffixWrap: " \xB7 {text}",
   dayNotes: {
-    "2026-10-01": "Arrests and injuries published with no turnout figure for the day.",
-    "2026-10-06": "First turnout figure of the movement.",
+    "2026-09-25": "Paris-area figure only: 21 interpellations by midday, announced by the Pr\xE9fecture de Police.",
+    "2026-09-28": "The movement goes national \u2014 actions in Marseille, Lille, the Rh\xF4ne, the Var and the Alpes-Maritimes.",
+    "2026-09-29": "Act I. The crowd figure counts the public-service cort\xE8ge the school actions joined, not a student crowd.",
+    "2026-09-30": "The second day of Act I: 625 interpellations and 83 security forces injured.",
+    "2026-10-01": "Act II, the peak of the first week. Arrests and injuries published with no turnout figure for the day.",
+    "2026-10-02": "735 establishments still perturbed, and urban violence near 158 of them.",
+    "2026-10-03": "No weekend figure was published; the arrests for 3\u20134 October are derived by subtraction.",
+    "2026-10-05": "The first national school day after the break, with the ministry's stock figures.",
+    "2026-10-06": "Act III \u2014 the first full national student demonstration of the movement.",
     "2026-10-13": "Turnout band spans a factor of three: ministry floor, organiser ceiling.",
-    "2026-10-17": "The peak day. The damage band here is the 17\u201318 October total, not a daily flow.",
+    "2026-10-17": "The peak day. The damage band here is the 17\u201318 October IFRAP estimate, not a daily flow.",
     "2026-10-24": "Arrest figures include preventive stops; not all become custody placements.",
     "2026-10-31": "No protester-injury figure was published for this day.",
     "2026-11-05": "Turnout band runs from 575 000 to 1.6 million \u2014 the band is the disagreement, not an error bar."
   },
   obsNotes: {
-    "2026-10-01": {
-      damagesCost: "Stock of reported damage, not a daily increment."
+    "2026-09-25": {
+      arrests: "Paris area only \u2014 Pr\xE9fecture de Police figure, by midday."
     },
-    "2026-10-12": { arrests: "Prefecture of police of Paris figure only." },
-    "2026-10-18": { arrests: "Prefecture of police of Paris figure only." },
-    "2026-10-20": { arrests: "Prefecture of police of Paris figure only." },
+    "2026-09-28": {
+      protesterInjured: "One documented case: a 14-year-old hit by a police projectile. A floor, not a count."
+    },
+    "2026-09-29": {
+      turnout: "Counts the public-service cort\xE8ge the school actions joined (206 000 ministry / 300 000 CGT), not a student crowd.",
+      protesterInjured: "Students and education staff injured that day, counted by the Education ministry."
+    },
+    "2026-09-30": {
+      protesterInjured: "Cumulative since the first blockades \u2014 a stock, not a daily count."
+    },
+    "2026-10-01": {
+      forcesInjured: "Brackets a Wednesday cumulative level with a Thursday daily flow: a derived band, not a published count.",
+      protesterInjured: "Cumulative level reached at the 1 October cut-off (170 students + 65 education staff) \u2014 a stock, not a daily count. Where a week ends on this cell, the level is the week\u2019s figure, never the sum of the week\u2019s flows.",
+      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October."
+    },
+    "2026-10-03": {
+      arrests: "Derived by subtraction: the ministry's 6 059 since 28 September (published 5 October) less the published daily figures. Covers 3 and 4 October together."
+    },
+    "2026-10-05": {
+      arrests: "984 interpellations that day. The ministry's 6 059 since 28 September is the stock that makes the weekend figure checkable."
+    },
+    "2026-10-06": {
+      damagesCost: "Part of the 1\u20138 October \xCEle-de-France increment; the anchor of that run is 8 October."
+    },
+    "2026-10-08": {
+      damagesCost: "Anchor of the 1\u20138 October \xCEle-de-France damage increment. The same \u20AC6M is published for 6 October and is not counted twice."
+    },
+    "2026-10-09": {
+      arrests: "Justice Ministry judicial balance, cut off 8 Oct 17:00: 6,877 people placed in garde \xE0 vue since the start of the movement, 86% minors, 2,376 being prosecuted, 21 in detention. A different scope (since mid-September) and a different statistic (custodial placements, not interpellations) from the Interior Ministry's series \u2014 not reconcilable with it."
+    },
+    "2026-10-10": {
+      damagesCost: "National cumulative stock since mid-September, compiled by CNEWS from regional figures \u2014 no ministry published a national tally. Pannekoucke's parallel \u20AC25\u201330M estimate for Auvergne-Rh\xF4ne-Alpes is NOT included, so this is neither a floor nor additive with the regional figures."
+    },
+    "2026-10-12": {
+      arrests: "13 interpellations reported independently by the Rh\xF4ne prefecture (27 \xE9tablissements touched) and the Bas-Rhin prefecture in Strasbourg. Two prefectures, the same number \u2014 so 13 is a floor for the day, not the day's regional total. Not Paris.",
+      protesterInjured: "\xCEle-de-France only: a proviseur, a parent d'\xE9l\xE8ve and a R\xE9gion employee injured. Counted as education and local-authority staff, on the same basis as the 29 September ministry figure.",
+      damagesCost: `Normandy \u2014 Herv\xE9 Morin, Conseil r\xE9gional de Normandie, at the regional assembly, 12 Oct: "1,5 million en Normandie" out of "d'ores et d\xE9j\xE0 30 millions d'euros" nationally. A cumulative regional stock, not a daily flow, and a component of the national stock \u2014 never added to it. \xCEle-de-France's own revised total the same day was \u20AC8.5M.`
+    },
+    "2026-10-13": {
+      damagesCost: "Local estimate carried from the original research \u2014 the Ard\xE8che prefecture reported no damage, so it comes from elsewhere."
+    },
+    "2026-10-17": {
+      protesterInjured: "Derived band: the floor is the serious-injury register, the ceiling is extrapolated from street-medics treatment counts. No official count exists.",
+      damagesCost: "IFRAP modelled estimate for the 17\u201318 October weekend; excludes lost turnover and order-maintenance costs. The Paris-only estimate published for 18 October is a subset of it and is excluded from the weekly sum."
+    },
+    "2026-10-18": {
+      arrests: "Prefecture of police of Paris figure only \u2014 curfew day.",
+      damagesCost: "Paris-only subset of the 17\u201318 October IFRAP total \u2014 never added to it."
+    },
+    "2026-10-20": {
+      arrests: "Guadeloupe prefecture figures only \u2014 regional."
+    },
+    "2026-10-24": {
+      damagesCost: "CCI France's national tally for 17\u201324 October \u2014 a superset of the 17 October cell, never added to it."
+    },
+    "2026-10-31": {
+      damagesCost: "Local estimate \u2014 no national damage figure was published."
+    },
     "2026-11-05": {
       protesterInjured: 'Published as a floor: "at least this many".'
     },
-    "2026-11-09": { arrests: "Prefecture of police of Paris figure only." }
+    "2026-11-09": {
+      arrests: "Regional prefecture figures only \u2014 Bordeaux, Lyon, Strasbourg."
+    }
   },
   deployNotes: {
+    "2026-09-28": "deployment estimated",
+    "2026-09-29": "deployment estimated",
+    "2026-09-30": "deployment estimated",
     "2026-10-01": "deployment estimated",
+    "2026-10-02": "deployment estimated",
+    "2026-10-05": "deployment estimated",
     "2026-10-06": "deployment estimated",
     "2026-10-08": "deployment estimated",
     "2026-10-12": "estimated, Paris area",
+    "2026-10-13": "deployment estimated",
     "2026-10-17": "deployment published",
-    "2026-10-18": "no deployment published",
+    "2026-10-18": "estimated \u2014 Paris curfew",
     "2026-10-24": "deployment published",
     "2026-10-31": "deployment published",
     "2026-11-05": "deployment published",
@@ -345,8 +415,8 @@ var CHART_EN = {
   weekRegionalOnly: "{n} day{s}, regional only",
   weekPeak: "peak {date}",
   weekNoNational: "no national figure this week",
-  weekExcluded: "{n} regional point{s} excluded",
-  weekFloored: "includes a floor \u2014 not a sum",
+  weekExcluded: "{n} point{s} excluded (regional or subset)",
+  // CHART_EN  weekFloored: "includes a floor — not a sum",
   weekClipped: "week clipped by the window",
   weekJoin: " \xB7 ",
   tooltipRange: "{label}: {mid} (band {low}\u2013{high})",
@@ -409,9 +479,8 @@ var CHART_EN = {
     },
     cost: {
       title: "Damage and the cost of policing",
-      subtitle: "Two different bases of measurement, on two axes",
-      yLeft: "\u20AC millions (damage)",
-      yRight: "\u20AC millions (policing, cumulative)"
+      subtitle: "",
+      y: "\u20AC millions"
     },
     protestersWeekly: {
       title: "Protesters, weekly peak",
@@ -438,47 +507,104 @@ var CHART_FR = {
     e: "mod\xE9lis\xE9",
     f: "borne inf\xE9rieure",
     r: "r\xE9gional",
-    p: "Paris seulement",
+    p: "partiel",
     n: "",
     regional: "r\xE9gional"
   },
   suffixWrap: " \xB7 {text}",
   dayNotes: {
-    "2026-10-01": "Interpellations et bless\xE9s publi\xE9s sans chiffre de foule pour la journ\xE9e.",
-    "2026-10-06": "Premier chiffre de foule du mouvement.",
+    "2026-09-25": "Chiffre de la r\xE9gion parisienne uniquement : 21 interpellations \xE0 midi, annonc\xE9es par la pr\xE9fecture de police.",
+    "2026-09-28": "Le mouvement prend une dimension nationale \u2014 actions \xE0 Marseille, Lille, dans le Rh\xF4ne, le Var et les Alpes-Maritimes.",
+    "2026-09-29": "Acte I. Le chiffre de foule compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e, pas une foule \xE9tudiante.",
+    "2026-09-30": "Deuxi\xE8me jour de l\u2019acte I : 625 interpellations et 83 bless\xE9s des forces de l\u2019ordre.",
+    "2026-10-01": "Acte II, la pointe de la premi\xE8re semaine. Interpellations et bless\xE9s publi\xE9s sans chiffre de foule pour la journ\xE9e.",
+    "2026-10-02": "735 \xE9tablissements encore perturb\xE9s, et des violences urbaines pr\xE8s de 158 d\u2019entre eux.",
+    "2026-10-03": "Aucun chiffre de week-end n\u2019a \xE9t\xE9 publi\xE9 ; les interpellations des 3\u20134 octobre sont d\xE9riv\xE9es par soustraction.",
+    "2026-10-05": "Premi\xE8re journ\xE9e nationale scolaire apr\xE8s les vacances, avec les stocks minist\xE9riels.",
+    "2026-10-06": "Acte III \u2014 premi\xE8re manifestation \xE9tudiante nationale de plein exercice.",
+    "2026-10-07": "The Interior Ministry suspended the use of stun grenades for the student mobilisations, after a lyc\xE9e student was injured at Lens.",
+    "2026-10-09": "Justice Ministry publishes its first judicial balance: 6,877 in garde \xE0 vue since mid-September.",
+    "2026-10-10": "CNEWS compiles a national damage bill of \u20AC30M \u2014 with no ministry tally behind it.",
     "2026-10-13": "La fourchette de foule va du simple au triple : plancher minist\xE9riel, plafond syndical.",
-    "2026-10-17": "La journ\xE9e de pointe. La fourchette de dommages ici est le total des 17\u201318 octobre, non un flux quotidien.",
+    "2026-10-17": "La journ\xE9e de pointe. La fourchette de dommages ici est l\u2019estimation IFRAP des 17\u201318 octobre, non un flux quotidien.",
     "2026-10-24": "Les interpellations incluent les contr\xF4les pr\xE9ventifs ; toutes ne deviennent pas des gardes \xE0 vue.",
     "2026-10-31": "Aucun chiffre de bless\xE9s parmi les manifestants n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0.",
     "2026-11-05": "La fourchette de foule va de 575 000 \xE0 1,6 million \u2014 la fourchette est la divergence, pas une barre d\u2019erreur."
   },
   obsNotes: {
+    "2026-09-25": {
+      arrests: "R\xE9gion parisienne uniquement \u2014 chiffres de la pr\xE9fecture de police, \xE0 midi."
+    },
+    "2026-09-28": {
+      protesterInjured: "Un cas document\xE9 : un gar\xE7on de 14 ans touch\xE9 par un projectile de police. Un plancher, pas un d\xE9compte."
+    },
+    "2026-09-29": {
+      turnout: "Compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e (206 000 minist\xE8re / 300 000 CGT), pas une foule \xE9tudiante.",
+      protesterInjured: "\xC9l\xE8ves et personnels de l\u2019\xE9ducation bless\xE9s ce jour-l\xE0, compt\xE9s par le minist\xE8re de l\u2019\xC9ducation."
+    },
+    "2026-09-30": {
+      protesterInjured: "Cumul depuis les premiers blocages \u2014 un stock, pas un d\xE9compte quotidien."
+    },
     "2026-10-01": {
-      damagesCost: "Stock de dommages d\xE9clar\xE9s, non un incr\xE9ment quotidien."
+      forcesInjured: "Encadre un niveau cumul\xE9 du mercredi et un flux quotidien du jeudi : une fourchette d\xE9riv\xE9e, pas un chiffre publi\xE9.",
+      protesterInjured: "Niveau cumul\xE9 atteint \xE0 l\u2019arr\xEAt du 1er octobre (170 \xE9l\xE8ves + 65 personnels de l\u2019\xE9ducation) \u2014 un stock, pas un d\xE9compte quotidien. Lorsqu\u2019une semaine se termine sur cette cellule, le niveau est le chiffre de la semaine, jamais la somme des flux de la semaine.",
+      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre."
+    },
+    "2026-10-03": {
+      arrests: "D\xE9riv\xE9 par soustraction : les 6 059 interpellations depuis le 28 septembre (publi\xE9s le 5 octobre) moins les chiffres journaliers publi\xE9s. Couvre les 3 et 4 octobre ensemble."
+    },
+    "2026-10-05": {
+      arrests: "984 interpellations ce jour-l\xE0. Le stock minist\xE9riel de 6 059 depuis le 28 septembre est ce qui rend v\xE9rifiable le chiffre du week-end."
+    },
+    "2026-10-06": {
+      damagesCost: "Une part de l\u2019incr\xE9ment francilien du 1er au 8 octobre ; l\u2019ancrage de cette s\xE9rie est le 8 octobre."
+    },
+    "2026-10-08": {
+      damagesCost: "Ancrage de l\u2019incr\xE9ment de dommages francilien du 1er au 8 octobre. Les m\xEAmes 6 M\u20AC sont publi\xE9s au 6 octobre et ne sont pas compt\xE9s deux fois."
     },
     "2026-10-12": {
-      arrests: "Chiffre de la pr\xE9fecture de police de Paris uniquement."
+      arrests: "Chiffre r\xE9gional uniquement \u2014 d\xE9compte de pr\xE9fecture."
+    },
+    "2026-10-13": {
+      damagesCost: "Estimation locale reprise de la recherche initiale \u2014 la pr\xE9fecture de l\u2019Ard\xE8che a signal\xE9 aucun dommage."
+    },
+    "2026-10-17": {
+      protesterInjured: "Fourchette d\xE9riv\xE9e : le plancher est le registre des blessures graves, le plafond est extrapol\xE9 \xE0 partir des soins dispens\xE9s par les street-medics. Aucun d\xE9compte officiel n\u2019existe.",
+      damagesCost: "Estimation mod\xE9lis\xE9e de l\u2019IFRAP pour le week-end des 17\u201318 octobre ; hors chiffre d\u2019affaires perdu et co\xFBts de maintien de l\u2019ordre. L\u2019estimation parisienne publi\xE9e le 18 octobre en est un sous-ensemble, exclue de la somme hebdomadaire."
     },
     "2026-10-18": {
-      arrests: "Chiffre de la pr\xE9fecture de police de Paris uniquement."
+      arrests: "Chiffre de la pr\xE9fecture de police de Paris uniquement \u2014 journ\xE9e de couvre-feu.",
+      damagesCost: "Sous-ensemble parisien du total IFRAP des 17\u201318 octobre \u2014 jamais additionn\xE9."
     },
     "2026-10-20": {
-      arrests: "Chiffre de la pr\xE9fecture de police de Paris uniquement."
+      arrests: "Chiffres des pr\xE9fectures de Guadeloupe uniquement \u2014 r\xE9gional."
+    },
+    "2026-10-24": {
+      damagesCost: "Bilan national de CCI France pour le 17\u201324 octobre \u2014 un surensemble de la cellule du 17 octobre, jamais additionn\xE9."
+    },
+    "2026-10-31": {
+      damagesCost: "Estimation locale \u2014 aucun chiffre national de dommages n\u2019a \xE9t\xE9 publi\xE9."
     },
     "2026-11-05": {
       protesterInjured: "Publi\xE9 comme plancher : \xAB au moins \xBB. "
     },
     "2026-11-09": {
-      arrests: "Chiffre de la pr\xE9fecture de police de Paris uniquement."
+      arrests: "Chiffres de pr\xE9fectures r\xE9gionales uniquement \u2014 Bordeaux, Lyon, Strasbourg."
     }
   },
   deployNotes: {
+    "2026-09-28": "dispositif estim\xE9",
+    "2026-09-29": "dispositif estim\xE9",
+    "2026-09-30": "dispositif estim\xE9",
     "2026-10-01": "dispositif estim\xE9",
+    "2026-10-02": "dispositif estim\xE9",
+    "2026-10-05": "dispositif estim\xE9",
     "2026-10-06": "dispositif estim\xE9",
     "2026-10-08": "dispositif estim\xE9",
-    "2026-10-12": "estim\xE9, r\xE9gion parisienne",
+    "2026-10-12": "estimated \u2014 \xCEle-de-France, Lyon and Strasbourg",
+    "2026-10-13": "dispositif estim\xE9",
     "2026-10-17": "dispositif publi\xE9",
-    "2026-10-18": "aucun dispositif publi\xE9",
+    "2026-10-18": "estim\xE9 \u2014 couvre-feu parisien",
     "2026-10-24": "dispositif publi\xE9",
     "2026-10-31": "dispositif publi\xE9",
     "2026-11-05": "dispositif publi\xE9",
@@ -492,8 +618,8 @@ var CHART_FR = {
   weekRegionalOnly: "{n} jour{s}, r\xE9gional seulement",
   weekPeak: "pointe le {date}",
   weekNoNational: "aucun chiffre national cette semaine",
-  weekExcluded: "{n} point{s} r\xE9gional(aux) exclu(s)",
-  weekFloored: "comprend un plancher \u2014 pas une somme",
+  weekExcluded: "{n} point{s} exclu(s) (r\xE9gional ou sous-ensemble)",
+  // CHART_FR  weekFloored: "comprend un plancher — pas une somme",
   weekClipped: "semaine tronqu\xE9e par la fen\xEAtre",
   weekJoin: " \xB7 ",
   tooltipRange: "{label} : {mid} (fourchette {low}\u2013{high})",
@@ -559,9 +685,8 @@ var CHART_FR = {
     },
     cost: {
       title: "Dommages et co\xFBt du maintien de l\u2019ordre",
-      subtitle: "Deux bases de mesure, deux axes",
-      yLeft: "Millions d\u2019\u20AC (dommages)",
-      yRight: "Millions d\u2019\u20AC (maintien de l\u2019ordre, cumul\xE9)"
+      subtitle: "",
+      y: "Millions d\u2019\u20AC"
     },
     protestersWeekly: {
       title: "Manifestants, pointe hebdomadaire",
@@ -670,19 +795,21 @@ var EPISODES_EN = {
   students26: {
     short: "Autumn 2026",
     strip: "Autumn 2026",
-    banner: "The movement this page was built for. Daily publication, so days with no figure stay empty rather than interpolated.",
+    banner: "The movement this page was built for, traced from the first mainland high-school blockades on 15 September. Daily publication, so days with no figure stay empty rather than interpolated.",
     weeks: [
-      { action: "1 October" },
-      { action: "6 and 8 October" },
-      { action: "17\u201318 October" },
-      { action: "20 and 24 October" },
+      { action: "15 September: the Caen and Villeneuve-d'Ascq blockades" },
+      { action: "25 September: Paris-area blockades" },
+      { action: "Act I on 29 September, Act II on 1 October" },
+      { action: "Act III on 6 October" },
+      { action: "17 October: the peak" },
+      { action: "24 October" },
       { action: "31 October" },
       { action: "5 and 7 November" },
       { action: "9 November \u2014 window ends 11 November" }
     ],
     fallbackNote: {
-      p: "Weekly peak taken from the summary table; the daily series has no national figure this week.",
-      a: "Aggregated from the handoff table because the weekly rebuild arrived empty."
+      p: "Weekly peak taken from the daily series \u2014 the peak day of the week.",
+      a: "Sum of the published daily figures for the week; a cumulative stock is shown as the stock, never added to it."
     }
   }
 };
@@ -783,19 +910,21 @@ var EPISODES_FR = {
   students26: {
     short: "Automne 2026",
     strip: "Automne 2026",
-    banner: "Le mouvement pour lequel cette page a \xE9t\xE9 construite. Publication quotidienne : les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s.",
+    banner: "Le mouvement pour lequel cette page a \xE9t\xE9 construite, suivi depuis les premiers blocages de lyc\xE9es en m\xE9tropole le 15 septembre. Publication quotidienne : les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s.",
     weeks: [
-      { action: "1er octobre" },
-      { action: "6 et 8 octobre" },
-      { action: "17\u201318 octobre" },
-      { action: "20 et 24 octobre" },
+      { action: "15 septembre : blocages de Caen et de Villeneuve-d\u2019Ascq" },
+      { action: "25 septembre : blocages dans l\u2019agglom\xE9ration parisienne" },
+      { action: "Acte I le 29 septembre, acte II le 1er octobre" },
+      { action: "Acte III le 6 octobre" },
+      { action: "17 octobre : la pointe" },
+      { action: "24 octobre" },
       { action: "31 octobre" },
       { action: "5 et 7 novembre" },
       { action: "9 novembre \u2014 fen\xEAtre arr\xEAt\xE9e au 11 novembre" }
     ],
     fallbackNote: {
-      p: "Pointe hebdomadaire issue du tableau de synth\xE8se ; la s\xE9rie quotidienne n\u2019a aucun chiffre national cette semaine-l\xE0.",
-      a: "Agr\xE9g\xE9 depuis le tableau de passation, la reconstruction hebdomadaire \xE9tant arriv\xE9e vide."
+      p: "Pointe hebdomadaire issue de la s\xE9rie quotidienne \u2014 le jour de pointe de la semaine.",
+      a: "Somme des chiffres journaliers publi\xE9s de la semaine ; un stock cumul\xE9 est montr\xE9 comme le stock, jamais additionn\xE9."
     }
   }
 };
@@ -823,12 +952,13 @@ var CATALOGUE = {
     flags: {
       n: "",
       r: "regional",
-      p: "Paris only",
+      p: "partial",
       e: "modelled",
       f: "floor",
       c: "stock",
       w: "weekly"
     },
+    // en
     tooltip: {
       linePlain: "{value}",
       lineWithFlag: "{value} \xB7 {flag}",
@@ -838,14 +968,69 @@ var CATALOGUE = {
     disclaimer: {
       strong: "AI-assisted draft.",
       lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources. The full conversation, including every rejected figure, is in the transcript.",
-      link: "transcript",
-      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
+      links: [
+        "initial development",
+        "adding comparisons and translation",
+        "reviewing code",
+        "reviewing sources"
+      ],
+      hrefs: [
+        "transcript-1.md",
+        "transcript-2.md",
+        "transcript-3.md",
+        "transcript-4.md"
+      ],
       tail: ""
     },
     sources: {
       title: "Sources and method",
       intro: "Every series traces to a publisher below. Where publishers disagree the chart carries a range instead of a point: the range is the disagreement, not an error bar. Hollow markers are regional, Paris-only, modelled or stock figures and are never joined to the national line.",
       groups: [
+        {
+          heading: "2026 movement \u2014 the September phase",
+          items: [
+            {
+              label: "Ouest-France \u2014 the first mainland blockade, Le Rheu, 7 September",
+              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
+              what: "the movement's origin point, before the window opens"
+            },
+            {
+              label: "Actu \u2014 the Caen and Villeneuve-d'Ascq blockades, 15 September",
+              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
+              what: "the first days inside the chart window"
+            },
+            {
+              label: "Franceinfo \u2014 how a few school blockades became a national movement",
+              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
+              what: "the chronology of September, including Cr\xE9teil"
+            },
+            {
+              label: "Ouest-France \u2014 21 interpellations in the Paris area, 25 September",
+              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
+              what: "the only figure before the national turn"
+            },
+            {
+              label: "Le Monde \u2014 338 establishments concerned, Act I, 29 September",
+              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
+              what: "Act I: establishments, injuries and arrests"
+            },
+            {
+              label: "Le Monde \u2014 625 interpellations, 30 September",
+              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
+              what: "the second day of Act I"
+            },
+            {
+              label: "Le Figaro \u2014 the daily arrest figures, 1, 2, 5 and 6 October",
+              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
+              what: "Act II and Act III"
+            },
+            {
+              label: "Wikip\xE9dia \u2014 the full dated chronology of the movement",
+              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
+              what: "the spine of the September rows"
+            }
+          ]
+        },
         {
           heading: "2026 movement \u2014 official counts",
           items: [
@@ -928,7 +1113,7 @@ var CATALOGUE = {
           ]
         }
       ],
-      foot: "Historical episodes come from encyclopaedic summaries, not primary archives. Read them as orders of magnitude. Policing cost is modelled: officers deployed \xD7 \u20AC136\u20131 133 per officer-day."
+      foot: "Historical episodes come from encyclopaedic summaries, not primary archives. Read them as orders of magnitude. Policing cost is modelled: officers deployed \xD7 \u20AC136\u20131 133 per officer-day. The deployment figures for September and early October are estimates, flagged as such in the tooltip; the movement total is \u20AC54\u2013630M."
     }
   },
   fr: {
@@ -953,12 +1138,13 @@ var CATALOGUE = {
     flags: {
       n: "",
       r: "r\xE9gional",
-      p: "Paris seulement",
+      p: "partiel",
       e: "mod\xE9lis\xE9",
       f: "plancher",
       c: "stock",
       w: "hebdomadaire"
     },
+    // fr
     tooltip: {
       linePlain: "{value}",
       lineWithFlag: "{value} \xB7 {flag}",
@@ -968,14 +1154,69 @@ var CATALOGUE = {
     disclaimer: {
       strong: "Brouillon assist\xE9 par IA.",
       lead: " Ces graphiques ont \xE9t\xE9 produits avec un mod\xE8le de langage et n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s de fa\xE7on ind\xE9pendante. Ne les utilisez pas pour une analyse s\xE9rieuse, une publication ou une d\xE9cision sans v\xE9rifier chaque chiffre aupr\xE8s des sources. La conversation compl\xE8te, y compris chaque chiffre \xE9cart\xE9, figure dans la transcription: ",
-      link: "transcript",
-      hrefs: ["transcript-1.md", "transcript-2.md", "transcript-2.md"],
+      links: [
+        "d\xE9veloppement initial",
+        "ajout de comparaisons et de traductions",
+        "revue du code",
+        "examen des sources"
+      ],
+      hrefs: [
+        "transcript-1.md",
+        "transcript-2.md",
+        "transcript-3.md",
+        "transcript-4.md"
+      ],
       tail: ""
     },
     sources: {
       title: "Sources et m\xE9thode",
       intro: "Chaque s\xE9rie est rattach\xE9e \xE0 un \xE9diteur ci-dessous. Lorsque deux \xE9diteurs divergent, le graphique affiche une fourchette plut\xF4t qu\u2019un point : la fourchette est la divergence, pas une barre d\u2019erreur. Les marqueurs creux sont r\xE9gionaux, parisiens, mod\xE9lis\xE9s ou des stocks, et ne sont jamais reli\xE9s \xE0 la courbe nationale.",
       groups: [
+        {
+          heading: "Mouvement 2026 \u2014 la phase de septembre",
+          items: [
+            {
+              label: "Ouest-France \u2014 le tout premier blocus en m\xE9tropole, Le Rheu, 7 septembre",
+              href: "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
+              what: "le point d\u2019origine du mouvement, avant l\u2019ouverture de la fen\xEAtre"
+            },
+            {
+              label: "Actu \u2014 les blocages de Caen et de Villeneuve-d\u2019Ascq, 15 septembre",
+              href: "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
+              what: "les premiers jours \xE0 l\u2019int\xE9rieur de la fen\xEAtre"
+            },
+            {
+              label: "Franceinfo \u2014 comment quelques blocages de lyc\xE9es sont devenus un mouvement d\u2019ampleur",
+              href: "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
+              what: "la chronologie de septembre, avec Cr\xE9teil"
+            },
+            {
+              label: "Ouest-France \u2014 21 interpellations dans l\u2019agglom\xE9ration parisienne, 25 septembre",
+              href: "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
+              what: "le seul chiffre avant le tournant national"
+            },
+            {
+              label: "Le Monde \u2014 338 \xE9tablissements concern\xE9s, acte I, 29 septembre",
+              href: "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
+              what: "acte I : \xE9tablissements, bless\xE9s et interpellations"
+            },
+            {
+              label: "Le Monde \u2014 625 interpellations, 30 septembre",
+              href: "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
+              what: "le deuxi\xE8me jour de l\u2019acte I"
+            },
+            {
+              label: "Le Figaro \u2014 les chiffres journaliers d\u2019interpellations, 1er, 2, 5 et 6 octobre",
+              href: "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
+              what: "acte II et acte III"
+            },
+            {
+              label: "Wikip\xE9dia \u2014 la chronologie dat\xE9e compl\xE8te du mouvement",
+              href: "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
+              what: "l\u2019axe sur lequel sont pos\xE9es les lignes de septembre"
+            }
+          ]
+        },
         {
           heading: "Mouvement 2026 \u2014 d\xE9comptes officiels",
           items: [
@@ -1058,7 +1299,7 @@ var CATALOGUE = {
           ]
         }
       ],
-      foot: "Les \xE9pisodes historiques proviennent de synth\xE8ses encyclop\xE9diques, non d\u2019archives primaires. \xC0 lire comme des ordres de grandeur. Le co\xFBt du maintien de l\u2019ordre est mod\xE9lis\xE9 : agents d\xE9ploy\xE9s \xD7 136\u20131 133 \u20AC par agent-jour."
+      foot: "Les \xE9pisodes historiques proviennent de synth\xE8ses encyclop\xE9diques, non d\u2019archives primaires. \xC0 lire comme des ordres de grandeur. Le co\xFBt du maintien de l\u2019ordre est mod\xE9lis\xE9 : agents d\xE9ploy\xE9s \xD7 136\u20131 133 \u20AC par agent-jour. Les dispositifs de septembre et de d\xE9but octobre sont des estimations, signal\xE9es comme telles dans l\u2019infobulle ; le total du mouvement est de 54 \xE0 630 M\u20AC."
     }
   }
 };
@@ -1125,16 +1366,16 @@ function bi(value) {
 }
 var STATIC = {
   "hdr.kicker": {
-    en: "Working draft \xB7 1 Oct \u2013 11 Nov 2026",
-    fr: "Document de travail \xB7 1er oct. \u2013 11 nov. 2026"
+    en: "Working draft \xB7 15 Sep \u2013 11 Nov 2026",
+    fr: "Document de travail \xB7 15 sept. \u2013 11 nov. 2026"
   },
   "hdr.title": {
     en: "Protest activity in France, autumn 2026",
     fr: "L\u2019activit\xE9 contestataire en France, automne 2026"
   },
   "hdr.lede": {
-    en: "Turnout, arrests, injuries and damage, set against six earlier French movements. Every point is a range where the publishers disagree.",
-    fr: "Foules, interpellations, bless\xE9s et dommages, compar\xE9s \xE0 six mouvements fran\xE7ais ant\xE9rieurs. Chaque point est une fourchette l\xE0 o\xF9 les \xE9diteurs divergent."
+    en: "Turnout, arrests, injuries and damage, set against six earlier French movements. Every point is a range where the publishers disagree. The series starts on 15 September 2026, with the first mainland high-school blockades.",
+    fr: "Foules, interpellations, bless\xE9s et dommages, compar\xE9s \xE0 six mouvements fran\xE7ais ant\xE9rieurs. Chaque point est une fourchette l\xE0 o\xF9 les \xE9diteurs divergent. La s\xE9rie commence le 15 septembre 2026, avec les premiers blocages de lyc\xE9es en m\xE9tropole."
   },
   "ui.lang": { en: "Language", fr: "Langue" },
   "ui.lang.fr": {
@@ -1161,10 +1402,6 @@ var STATIC = {
   "card.cost.title": {
     en: "Damage and the cost of policing",
     fr: "Dommages et co\xFBt du maintien de l\u2019ordre"
-  },
-  "card.cost.sub": {
-    en: "Two different bases of measurement",
-    fr: "Deux bases de mesure diff\xE9rentes"
   },
   "card.pw.title": {
     en: "Protesters, weekly peak",
@@ -12946,7 +13183,7 @@ var midOf = (b) => {
 
 // src/client/data.ts
 var NIL = { v: null, band: null, q: null, note: null, detach: false };
-var START = "2026-10-01";
+var START = "2026-09-15";
 var END = "2026-11-11";
 var utc = (s) => /* @__PURE__ */ new Date(`${s}T00:00:00Z`);
 var iso = (d) => d.toISOString().slice(0, 10);
@@ -12982,69 +13219,325 @@ var WEEKS = (() => {
   });
 })();
 var FACTS = {
+  /* ── The movement's first fortnight ─────────────────────────────────────
+         The wave began after the rentrée: teachers and parents had been on
+         strike in Mayotte since 31 August (lycée Nord d'Acoua, blocked for
+         five weeks); in mainland France the lycée Théodore-Monod at Le Rheu
+         was blocked on 7 September, the lycée Queneau at Villeneuve-d'Ascq on
+         14 September and the lycée Victor-Hugo at Caen on 15 September. The
+         window opens on 15 September at the user's request, so the 7 and 14
+         September blockades fall outside it.
+  
+         NONE of 15–27 September carries a published turnout, arrest, injury or
+         damage figure, so the week of 14–20 September is empty rather than
+         estimated. The one exception is the Paris area on 25 September. */
+  /* Fri 25 Sep — the Île-de-France centre of gravity: ~60 franciliens
+     lycées disrupted over 24–25 Sep, mainly Seine-Saint-Denis and
+     Val-de-Marne (Saint-Denis, Sarcelles, Gonesse, Stains, Saint-Ouen,
+     Rosny-sous-Bois, La Courneuve); the Créteil rectorat counted a
+     "grosse dizaine" of new blockades that day.
+     21 interpellations by noon by the Préfecture de Police, in connection
+     with the Paris-area mobilisations — PARIS ONLY, hence "r". The
+     rectorat noted gatherings, crowd movements and material damage
+     without quantifying them. */
+  "2026-09-25": {
+    arrests: { low: 21, high: 21, q: "r" }
+  },
+  /* Mon 28 Sep — the movement goes national: actions in Marseille, Lille,
+     the Rhône, the Var and the Alpes-Maritimes. Interior Ministry: 180
+     establishments perturbed, 27 of them totally blocked, 164
+     interpellations that day.
+     First serious injury of the movement: a 14-year-old hit in the face
+     by a police projectile at the lycée professionnel Château-d'Epluches,
+     Saint-Ouen-l'Aumône (Val-d'Oise); the IGPN was seized. Flagged "f":
+     one documented casualty is a minimum, not a count. */
+  "2026-09-28": {
+    arrests: { low: 164, high: 164 },
+    protesterInjured: { low: 1, high: 1, q: "f" }
+  },
+  /* Tue 29 Sep — national public-service mobilisation day, which the USL
+     called students to join; it is the movement's Act I.
+     Education ministry, end of day: 416 establishments touched since the
+     morning, 338 still affected, 45 blocked; Le Monde counted actions at
+     nearly 410 establishments; the USL claimed 400 blocked out of ~3,700
+     in France. 440 interpellations, two thirds of them leading to a garde
+     à vue, "essentially for degradations and attacks on officers"
+     (Nuñez, BFM-TV).
+     Turnout: the intersyndicale demonstration drew 206,000 (ministry) /
+     300,000 (CGT) nationwide and 30,000 / 70,000 in Paris, across 170+
+     demonstrations. The students marched with it, so the figure is
+     carried here — but it counts the public-service cortèges, not a
+     student crowd, for which no national count exists. Flagged "p".
+     The Education ministry counted 31 injured students and staff that
+     day. Strike rate: 11.47% weighted (12.74% second degree, 27.39%
+     life-schools staff; 13.71% of teachers). */
+  "2026-09-29": {
+    turnout: { low: 206e3, high: 3e5, q: "p" },
+    arrests: { low: 440, high: 440 },
+    protesterInjured: { low: 31, high: 31, q: "p" }
+  },
+  /* Wed 30 Sep — 356 establishments perturbed; 625 interpellations that
+     day, which with 440 on the 29th makes the two-day total 1,065.
+     83 police and gendarmes injured.
+     The Education ministry's stock since the start of the blockades
+     reaches 119 injured students and staff (85 students, 34 staff) — a
+     cumulative level, hence "c". */
+  "2026-09-30": {
+    arrests: { low: 625, high: 625 },
+    protesterInjured: { low: 119, high: 119, q: "c" }
+  },
+  /* Thu 1 Oct — Acte II. More than 900 actions and blockages; AFP's police
+         returns counted 340 actions in the morning and 169 blockades, ending
+         the day at 900 actions including 400 closures; the Union étudiante
+         claimed 640 lycées and ~30 campuses blocked, a figure the authorities
+         do not confirm. Marseille: 18 high schools totally blocked, 3
+         partially, ~40 in Bouches-du-Rhône; Aix-en-Provence ~600 students;
+         Metz 6; Brest most; Épinal 2; Perpignan 11 interpellations and one
+         student injured. No national turnout figure was published.
+  
+         FIX 5: arrests 1,949 are THAT DAY ("1 949 interpellations ce jeudi"),
+         not a stock; the only stock is 6,059 "depuis le 28 septembre" on
+         5 Oct. The day was the peak of the first week.
+  
+         FIX 7: forces injured are bracketed [83, 300] — 83 is the
+         government level at the Wednesday cut-off (it is the same 83 that
+         appears in the 318-injury total of 1 Oct) and ~300 is Nuñez's
+         Thursday figure ("quelque 300 policiers et gendarmes blessés en
+         intervention jeudi"). The band spans a cumulative level and a daily
+         flow, so it is flagged "e" and the 83 is not counted twice.
+  
+         FIX 6: 235 = 170 students + 65 education staff, cumulative at the
+         1 Oct cut-off; the previous 119–235 band was two vintages of this
+         same series. Flagged "c".
+  
+         Damage: the hall of the lycée Nelson-Mandela in Nantes was destroyed
+         by a fire (several classrooms unusable for weeks), as was the main
+         entrance and a 35-classroom block at the lycée Henri-Moissan in
+         Meaux; the façade of the lycée Lumière in Lyon was burnt; in
+         Seine-Maritime two headteachers were hurt (Petit-Quevilly, Rouen) and
+         the prefecture counted eight injured and several intrusions. The €1M
+         cell is a local estimate from the original research and is a subset
+         of the larger Île-de-France and IFRAP totals, hence "c". */
   "2026-10-01": {
     arrests: { low: 1949, high: 1949 },
-    forcesInjured: { low: 84, high: 305 },
-    protesterInjured: { low: 119, high: 235 },
+    forcesInjured: { low: 83, high: 300, q: "e" },
+    protesterInjured: { low: 235, high: 235, q: "c" },
     damagesCost: { low: 1, high: 1, q: "c" }
   },
+  /* Fri 2 Oct — 1,747 interpellations that day and "more than 5,000 since
+     Monday" (the daily series gives 4,925); 735 establishments perturbed,
+     30% fewer than the day before, with urban violence near 158 of them
+     (projectiles, attacks on officers, teachers, journalists and
+     passers-by). A young police lieutenant was assaulted in Paris's 20th
+     arrondissement. Geffray: 65 education staff injured since the start
+     of the movement, 40 of them headteachers. */
+  "2026-10-02": {
+    arrests: { low: 1747, high: 1747 }
+  },
+  /* Sat 3 Oct — the ministry's stock "6,059 interpellations since
+     28 September" (5 Oct) minus 984 on Monday 5 Oct leaves 5,075 through
+     Sunday 4 Oct; the daily figures for 28 Sep–2 Oct sum to 4,925. The
+     difference, 150, is the weekend of 3–4 October. It is a two-day total
+     derived by subtraction, not a Saturday figure — flagged "e" and
+     carried on the Saturday, with the derivation in this comment. */
+  "2026-10-03": {
+    arrests: { low: 150, high: 150, q: "e" }
+  },
+  /* Mon 5 Oct — 984 interpellations and 65 forces injured that day.
+     Stocks published the same day: 6,059 interpellations since 28 Sep;
+     715 police and gendarmes injured since the start of the movement;
+     Matignon: 215 students and 85 education staff injured since the
+     start, 34 of them headteachers. */
+  "2026-10-05": {
+    arrests: { low: 984, high: 984 },
+    forcesInjured: { low: 65, high: 65 }
+  },
+  /* Tue 6 Oct — "Acte III", first national school/student day.
+     256,000 ministry / 450,000 organisers; Paris 56,000 / 100,000.
+     488 interpellations and 43 forces injured that day; 215 students
+     injured since mid-September. The €6M is the Île-de-France damage
+     increment for the 1–8 Oct run and is therefore a subset, not an
+     increment unique to 6 Oct. Flagged "c"; the anchor of the run is
+     8 Oct. */
   "2026-10-06": {
     turnout: { low: 256e3, high: 45e4 },
-    damagesCost: { low: 6, high: 6, q: "e" }
+    arrests: { low: 488, high: 488 },
+    forcesInjured: { low: 43, high: 43 },
+    damagesCost: { low: 6, high: 6, q: "c" }
   },
+  /* Thu 8 Oct — "Acte IV": 71,500 ministry / 130,000+ CGT; Paris 24,500.
+     Anchor of the 1–8 Oct Île-de-France damage increment (€6M). */
   "2026-10-08": {
     turnout: { low: 71500, high: 13e4 },
     damagesCost: { low: 6, high: 6, q: "e" }
   },
-  "2026-10-12": { arrests: { low: 13, high: 13, q: "r" } },
+  /* Sat 10 Oct — national cumulative damage stock: "déjà estimées à
+     30 millions d'euros en France" since mid-September (CNEWS's own
+     compilation of regional figures — no ministry published a national
+     tally). Pannekoucke's parallel AURA estimate of €25–30M is NOT
+     included, so this is neither a floor nor additive with the regional
+     figures. Flagged "c": a stock, never summed with flows. */
+  "2026-10-10": { damagesCost: { low: 30, high: 30, q: "c" } },
+  /* Mon 12 Oct — three regional prefecture figures, all regional:
+       · Rhône: 27 établissements touchés (19 lycées, 6 universités,
+         2 collèges), 13 interpellations.
+       · Bas-Rhin/Strasbourg: 13 interpellations (préfecture), incl. 4
+         for preparing incendiary devices, 3 for mortar fire.
+     Two prefectures published 13 independently, so 13 is a FLOOR for the
+     day, not the day's regional total. NOT Paris — the old note was
+     wrong.
+     FIX 13 (third pass): the €1.5M moved here from 13 Oct. It is
+     NORMANDY (Hervé Morin, Conseil régional de Normandie, 12 Oct) and
+     it is a CUMULATIVE stock since mid-September — "atteint d'ores et
+     déjà 30 millions d'euros, dont 1,5 million en Normandie" — so the
+     flag moves from "e" to "c". Île-de-France's own revised total the
+     same day was €8.5M (110+ lycées, ~120 portails/sas out of service).
+     Both regional stocks are components of the €30M national stock and
+     must never be added to it.
+     The 3 injured are an Île-de-France figure and count education and
+     local-authority staff, not protesters: 1 proviseur, 1 parent
+     d'élève, 1 agent de la Région. */
+  "2026-10-12": {
+    arrests: { low: 13, high: 13, q: "r" },
+    protesterInjured: { low: 3, high: 3, q: "r" },
+    damagesCost: { low: 1.5, high: 1.5, q: "c" }
+  },
+  /* Tue 13 Oct — "Acte V": 214 high schools closed (94.2% open), 161,500
+     ministry / 480,000 youth intersyndicate (41,500 Paris), 40 police
+     and gendarmes injured.
+     FIX 13 (third pass): the €1.5M cell is GONE from this date — it
+     was Normandy, and it was published on 12 October. */
   "2026-10-13": {
     turnout: { low: 161500, high: 48e4 },
-    forcesInjured: { low: 40, high: 40 },
-    damagesCost: { low: 1.5, high: 1.5, q: "e" }
+    forcesInjured: { low: 40, high: 40 }
   },
+  /* Sat 17 Oct — the peak of the episode.
+         110 → 430 → 441 actions; ~60,000 officers deployed.
+         550,000 ministry / 800,000 organisers; Paris 110,000.
+         Arrests 2,397 initial → 2,628 consolidated (2,513 gardes à vue;
+         108 in Paris). Forces injured 997 initial → 1,144 consolidated,
+         7 serious. One civilian death: Christophe M., 59, Paris.
+  
+         FIX 2 (first pass): no official protester-injury count exists. The
+         low bound is Laurent Thines's serious-injury register (54 seriously
+         injured — 5 eye, 5 cranio-facial, 2 amputations, 42 other — plus the
+         1 death, i.e. 55); the high bound is a reasoned ceiling from
+         Toulouse's 130+ street-medics treatments (~13 treated per serious
+         case) against 54 serious cases nationally. Wikipedia's "400+ civilians"
+         is an uncited infobox line and sits below the partial nine-city sum
+         (~204 across Bordeaux, Clermont-Ferrand, Dijon, Metz, Nancy, Rouen,
+         Strasbourg, Avignon, Toulouse), so it is a floor, not a ceiling.
+         Flagged "e": derived, drawn hollow.
+  
+         Damages: IFRAP conditional estimate for the 17–18 Oct weekend,
+         €244M low / €463M central / €866M high for MATERIAL damage; the
+         €294M–€1.1bn variant includes lost turnover and is a different measure.
+         IFRAP excludes marginal order-maintenance and curfew costs. */
   "2026-10-17": {
     turnout: { low: 55e4, high: 8e5 },
     arrests: { low: 2397, high: 2628 },
     forcesInjured: { low: 997, high: 1144 },
-    damagesCost: { low: 244, high: 866 }
+    protesterInjured: { low: 55, high: 1e3, q: "e" },
+    damagesCost: { low: 244, high: 866, q: "e" }
   },
+  /* Sun 18 Oct — Paris curfew only, 108 interpellations.
+     FIX 3 (first pass): the €1.8–5M damage figure is a subset of the
+     17–18 Oct IFRAP weekend total, so it is flagged "c" and cannot be
+     added to it.
+     FIX 11 (third pass): "r", not "p" — the figure is Paris-only, and
+     "p" now means partial coverage. */
   "2026-10-18": {
-    arrests: { low: 108, high: 108, q: "p" },
-    damagesCost: { low: 1.8, high: 5, q: "e" }
+    arrests: { low: 108, high: 108, q: "r" },
+    damagesCost: { low: 1.8, high: 5, q: "c" }
   },
+  /* Tue 20 Oct — regional only: 13 interpellations overnight in Guadeloupe
+     (Basse-Terre, Saint-François, Goyave, Vieux-Habitants, Gosier). */
   "2026-10-20": { arrests: { low: 13, high: 13, q: "r" } },
+  /* Sat 24 Oct — 289 actions, 70,000 officers, Centaure AFVs, water cannons,
+     14 aerial cameras in Paris. 410,000 ministry / 800,000+ CGT;
+     Paris 110,000 (préfecture) / 250,000 (CGT).
+     Arrests 1,314 initial → 1,435 final (142 Paris, 126 GàV).
+     Forces injured 53 at 7:30 a.m. — the ministry's own communiqué calls
+     this "provisoire" — then 267 on consolidation (Nuñez, 26 Oct), with
+     150 civilians injured, 3 seriously. 75 fire interventions.
+     La Réunion: ~80 Saint-Denis, 300 Saint-Pierre. Mayotte: Tsingoni.
+     FIX 4 (first pass): the national damage cell below replaces the earlier
+     local derivation. CCI France's 27 Oct tally — 2,488 shops hit after the
+     17th plus 50 after the 24th, 1,161 heavily damaged, 643 still shut —
+     puts the cost of the degradations at over €1bn on the IFRAP estimate,
+     for the 17–24 Oct period as a whole. That is a SUPERSET of the 17 Oct
+     cell, so it is flagged "c" and is never added to it. */
   "2026-10-24": {
     turnout: { low: 41e4, high: 8e5 },
     arrests: { low: 1314, high: 1435 },
     forcesInjured: { low: 267, high: 267 },
     protesterInjured: { low: 150, high: 150 },
-    damagesCost: { low: 1, high: 8.4, q: "e" }
+    damagesCost: { low: 1e3, high: 1e3, q: "c" }
   },
+  /* Sat 31 Oct — 291 actions → 227 consolidated.
+     320,000 ministry / ~500,000 youth organisations; Paris 70,000.
+     Arrests 565 at 21h → 779 cumulative (incl. 214 on the Halloween night).
+     Forces injured 116 by 21h + 43 that night = 159.
+     515 fires handled; 36 shops degraded, 3 pillaged — no cost figure. */
   "2026-10-31": {
     turnout: { low: 32e4, high: 5e5 },
     arrests: { low: 565, high: 779 },
     forcesInjured: { low: 116, high: 159 },
     damagesCost: { low: 0.4, high: 3.3, q: "e" }
   },
+  /* Thu 5 Nov — national strike day, 193 actions.
+     575,000 ministry (definitive) / 1.6M CGT; Paris 65,000 / 350,000.
+     Arrests 448 at 18h → 642 updated. Forces injured 53 at 18h → 112.
+     86 fire interventions. Marseille: 17 schools blocked, ~40 interpellations,
+     13 police wounded.
+     Protester injuries = 18, a FLOOR: the 18 who instructed lawyers to sue
+     Nuñez. Not a ministry count. */
   "2026-11-05": {
     turnout: { low: 575e3, high: 16e5 },
     arrests: { low: 448, high: 642 },
     forcesInjured: { low: 53, high: 112 },
     protesterInjured: { low: 18, high: 18, q: "f" }
   },
+  /* Sat 7 Nov — 141 actions; ~70,000 officers, 25 blindés, 15 water-cannon
+     trucks; ~40,000 preventive checks; Caen campus dispersed by 50 CRS.
+     146,000 ministry / 250,000 youth intersyndicate; Paris 46,000 / 75,000.
+     Arrests 232 at 18h → 360+ at 19h.
+     Security-force casualties acknowledged but no number published. */
   "2026-11-07": {
     turnout: { low: 146e3, high: 25e4 },
     arrests: { low: 350, high: 360 }
   },
+  /* Mon 9 Nov — regional only: Bègles 4, Lyon 8, Strasbourg 5 = 17.
+     ~50 Île-de-France schools disrupted with mortar fire; Rennes 2
+     evacuated; Brest rally; Guadeloupe: lycée blocked at Baie-Mahault. */
   "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } }
 };
 var DEPLOYMENT = {
+  /* September deployment is an ASSUMPTION, on the same basis as the early
+     October cells: no official headcount exists for these days. The band
+     spans the marginal cost of one CRS company-day to the Sainte-Soline
+     all-in benchmark. It is an order-of-magnitude placeholder for the
+     policing-cost series, not a measurement. */
+  "2026-09-28": { low: 5e3, high: 2e4, q: "e" },
+  "2026-09-29": { low: 5e3, high: 2e4, q: "e" },
+  "2026-09-30": { low: 5e3, high: 2e4, q: "e" },
   "2026-10-01": { low: 5e3, high: 2e4, q: "e" },
+  "2026-10-02": { low: 1e4, high: 3e4, q: "e" },
+  "2026-10-05": { low: 1e4, high: 3e4, q: "e" },
   "2026-10-06": { low: 5e3, high: 2e4, q: "e" },
   "2026-10-08": { low: 5e3, high: 2e4, q: "e" },
+  /* 12 Oct: three cities at once — Île-de-France (~80 lycées perturbed),
+     Lyon/Rhône (27 établissements), Strasbourg. No headcount published:
+     the only concrete data is "une dizaine de camions de gendarmes
+     mobiles" at the Strasbourg schools and several CRS/police vans at
+     porte Dorée, Paris. */
   "2026-10-12": { low: 2e3, high: 8e3, q: "e" },
   "2026-10-13": { low: 5e3, high: 2e4, q: "e" },
-  "2026-10-17": { low: 6e4, high: 6e4 },
+  "2026-10-17": {
+    low: 6e4,
+    high: 6e4
+  },
+  "2026-10-18": { low: 2e3, high: 8e3, q: "e" },
   "2026-10-24": { low: 7e4, high: 7e4 },
   "2026-10-31": { low: 7e4, high: 7e4 },
   "2026-11-05": { low: 7e4, high: 7e4 },
@@ -13112,49 +13605,72 @@ function projectPolicingCumulative() {
 }
 function aggregate(key, op) {
   return WEEKS.map((week) => {
-    const nat = [];
-    const sub = [];
+    const cells = [];
     for (const d of week.dates) {
       const obs = FACTS[d]?.[key];
       if (!obs) continue;
-      const q = obs.q ?? "n";
-      (q === "r" || q === "p" ? sub : nat).push({ date: d, obs });
+      cells.push({ date: d, obs, q: obs.q ?? "n" });
     }
-    const bucket = nat.length ? nat : sub;
-    if (!bucket.length) return NIL;
-    const regionalOnly = nat.length === 0;
+    if (!cells.length) return NIL;
+    const last = cells[cells.length - 1];
+    const othersHigh = Math.max(
+      ...cells.filter((c) => c !== last).map((c) => c.obs.high),
+      Number.NEGATIVE_INFINITY
+    );
+    if (last.q === "c" && last.obs.high >= othersHigh) {
+      return {
+        v: round2((last.obs.low + last.obs.high) / 2),
+        band: [round2(last.obs.low), round2(last.obs.high)],
+        q: "c",
+        note: { k: "obs", date: last.date, metric: key },
+        detach: isDetached("c")
+      };
+    }
+    const regional = cells.filter((c) => c.q === "r");
+    const subsets = cells.filter((c) => c.q === "c");
+    const flows = cells.filter((c) => c.q !== "c" && c.q !== "r");
+    const regionalOnly = flows.length === 0 && regional.length > 0;
+    let pool = regionalOnly ? regional : flows;
+    if (!pool.length) {
+      if (!subsets.length) return NIL;
+      pool = [
+        subsets.reduce((best, x) => x.obs.high > best.obs.high ? x : best)
+      ];
+    }
     let low;
     let high;
     let value;
     let peak;
     if (op === "sum") {
-      low = bucket.reduce((a, x) => a + x.obs.low, 0);
-      high = bucket.reduce((a, x) => a + x.obs.high, 0);
+      low = pool.reduce((a, x) => a + x.obs.low, 0);
+      high = pool.reduce((a, x) => a + x.obs.high, 0);
       value = (low + high) / 2;
     } else {
-      low = Math.max(...bucket.map((x) => x.obs.low));
-      high = Math.max(...bucket.map((x) => x.obs.high));
-      const top = bucket.reduce(
+      low = Math.max(...pool.map((x) => x.obs.low));
+      high = Math.max(...pool.map((x) => x.obs.high));
+      const top = pool.reduce(
         (best, x) => (x.obs.low + x.obs.high) / 2 > (best.obs.low + best.obs.high) / 2 ? x : best
       );
       value = (top.obs.low + top.obs.high) / 2;
       peak = top.date;
     }
+    const derived = pool.filter((x) => x.q === "e").sort((a, b) => b.obs.high - a.obs.high)[0];
+    const excluded = cells.length - pool.length;
+    const partial = pool.some((x) => x.q === "p");
     const parts = {
-      days: bucket.length,
+      days: new Set(pool.map((x) => x.date)).size,
       kind: regionalOnly ? "regional" : "national",
       peak,
       noNational: regionalOnly || void 0,
-      excluded: nat.length && sub.length ? sub.length : void 0,
-      floored: bucket.some((x) => x.obs.q === "f") || void 0,
+      excluded: excluded > 0 ? excluded : void 0,
+      floored: pool.some((x) => x.q === "f") || void 0,
       clipped: week.touchesEdge || void 0
     };
     return {
       v: round2(value),
       band: [round2(low), round2(high)],
-      // regional-only used to be re-derived in episodes.ts; it is decided here once
-      q: parts.floored ? "f" : regionalOnly ? "r" : "w",
-      note: { k: "week", p: parts },
+      q: regionalOnly ? "r" : parts.floored ? "f" : partial ? "p" : "w",
+      note: derived ? { k: "obs", date: derived.date, metric: key } : { k: "week", p: parts },
       detach: regionalOnly
     };
   });
@@ -13175,8 +13691,11 @@ var WEEKLY = {
   protesterInjured: aggregate("protesterInjured", "sum")
 };
 var WEEK_FLAG_OVERRIDE = {
-  [mondayOf(START)]: { i: "c" }
-  // w0: protester injuries were published as an actions-total
+  // Week of 28 Sep: the injury figure is the cumulative level reached on
+  // 1 Oct (235 students and staff). The cell-level "c" flag produces this
+  // on its own; the override documents the intent and survives any future
+  // re-ordering of the underlying cells.
+  "2026-09-28": { i: "c" }
 };
 var STUDENT_WEEKS = WEEKS.map((week, idx) => {
   const out = {
@@ -13195,7 +13714,7 @@ var STUDENT_WEEKS = WEEKS.map((week, idx) => {
     const pt = WEEKLY[METRIC_OF[m]][idx];
     if (pt.band) out[m] = pt.band;
     const q = override?.[m] ?? pt.q;
-    if (q && q !== "n") out.flags[m] = q;
+    if (pt.band && q && q !== "n") out.flags[m] = q;
     if (pt.note) out.notes[m] = pt.note;
   }
   return out;
@@ -13277,6 +13796,8 @@ function noteText(ref) {
       if (p.clipped) parts.push(m.weekClipped);
       return parts.join(m.weekJoin);
     }
+    default:
+      return "";
   }
 }
 function suffixFor(q, detached) {
@@ -13353,7 +13874,6 @@ var DEF = {
     unit: "eurM",
     radius: 0,
     width: 2,
-    axis: RIGHT,
     bandFill: "rgba(3,105,161,0.12)"
   },
   protestersWeekly: {
@@ -13783,10 +14303,10 @@ function mountCharts() {
 // src/client/episodes.ts
 var DIM = THEME.dim;
 var SERIES = [
-  { key: "p", color: "#0072B2" },
-  { key: "a", color: "#E69F00" },
-  { key: "f", color: "#009E73" },
-  { key: "i", color: "#CC79A7" }
+  { key: "p", color: "#1d4ed8" },
+  { key: "a", color: "#b91c1c" },
+  { key: "f", color: "#047857" },
+  { key: "i", color: "#b45309" }
 ];
 var RAMP = [
   "#D6E6F2",
@@ -13802,8 +14322,14 @@ var MAY68 = {
   start: "1968-04-29",
   end: "1968-06-30",
   weeks: [
+    /* 1 May, République → Bastille: 25,000 (police) vs 100,000 (CGT). */
     { w: 0, from: "1968-04-29", to: "1968-05-05", p: [25e3, 1e5] },
     {
+      /* 6 May: >20,000 to the Sorbonne; 10 May: 20,000 (12,000 police).
+         Night of 10–11 May: 6,255 police, 125 cars damaged / 63 burnt,
+         469 arrests. The 891 high adds 422 early-May arrests.
+         Forces: 300+ on 6 May, 247 on 10–11 May.
+         Protesters injured: ≥100 — no national count was published. */
       w: 1,
       from: "1968-05-06",
       to: "1968-05-12",
@@ -13813,8 +14339,13 @@ var MAY68 = {
       i: 100,
       flag: { i: "f" }
     },
+    /* 13 May, Paris — peak of the episode: prefecture 230,000 · ORTF 171,000
+       · surface-area estimate 500,000 · unions 1,000,000. */
     { w: 2, from: "1968-05-13", to: "1968-05-19", p: [23e4, 1e6] },
     {
+      /* 25 May: 1,000+ arrests (floor), ~9M strikers, ORTF walkout.
+         887 injured — from the English-Wikipedia infobox, attributed to 25 May
+         only. Weak provenance, flagged "e". */
       w: 3,
       from: "1968-05-20",
       to: "1968-05-26",
@@ -13822,10 +14353,16 @@ var MAY68 = {
       i: 887,
       flag: { a: "f", i: "e" }
     },
+    /* 27 May Grenelle protocol · Charléty meeting. */
     { w: 4, from: "1968-05-27", to: "1968-06-02" },
+    /* 4 Jun partial return to work · 7 Jun Renault Flins clashes. */
     { w: 5, from: "1968-06-03", to: "1968-06-09" },
+    /* 10 Jun: Tautin killed · 11 Jun: 2 killed at Sochaux · 12 Jun:
+       demonstrations banned nationwide. */
     { w: 6, from: "1968-06-10", to: "1968-06-16" },
+    /* 23 Jun legislative elections. */
     { w: 7, from: "1968-06-17", to: "1968-06-23" },
+    /* Crisis closes 30 Jun. */
     { w: 8, from: "1968-06-24", to: "1968-06-30" }
   ]
 };
@@ -13834,9 +14371,19 @@ var CPE = {
   start: "2006-02-06",
   end: "2006-04-16",
   weeks: [
+    /* 7 Feb: first national action day, 187 demonstrations. */
     { w: 0, from: "2006-02-06", to: "2006-02-12", p: [2e5, 4e5] },
+    /* 7 Mar: ">1 million" claimed; ~38 universities on strike by 9 Mar. */
     { w: 4, from: "2006-03-06", to: "2006-03-12", p: [4e5, 1e6] },
     {
+      /* 16 Mar: 250,000 (Le Monde) / 447,500 (police) — the ministry's
+         247,500 is the same police count rounded differently.
+         18 Mar: 500,000 ministry / 1.5M organisers; Paris 80,000–350,000.
+         Enforcement, Paris only: 156 (ministry) / 167 (organisers) arrests;
+         34 forces injured.
+         Protesters injured 70 = 18 (16 Mar) + 52 (18 Mar), Paris only —
+         flagged "e" because it is a two-day Paris sum inside a weekly row.
+         14 Mar (same week, second action day): 41,000 (police source). */
       w: 5,
       from: "2006-03-13",
       to: "2006-03-19",
@@ -13847,6 +14394,8 @@ var CPE = {
       flag: { i: "e" }
     },
     {
+      /* 23 Mar: 21 universities fully blocked, 67 striking or blocked.
+         630 arrests, 90 forces injured. */
       w: 6,
       from: "2006-03-20",
       to: "2006-03-26",
@@ -13854,6 +14403,7 @@ var CPE = {
       a: 630,
       f: 90
     },
+    /* 28 Mar: 4th national action day, 600 arrests. */
     {
       w: 7,
       from: "2006-03-27",
@@ -13861,7 +14411,9 @@ var CPE = {
       p: [1055e3, 271e4],
       a: 600
     },
+    /* 4 Apr: peak day of the episode. */
     { w: 8, from: "2006-04-03", to: "2006-04-09", p: [1e6, 31e5] },
+    /* CPE scrapped 10 Apr; the movement splits, Easter follows. */
     { w: 9, from: "2006-04-10", to: "2006-04-16" }
   ]
 };
@@ -13902,10 +14454,10 @@ var GJ_ACTS = [
   [43, "2019-09-07", 7e3]
 ];
 var GJ_EXTRA = {
-  0: { a: [974, 1150], f: 17, i: 109, flag: { f: "e", i: "e" } },
-  1: { a: [307, 339], f: 30, i: 54, flag: { i: "e" } },
-  2: { a: 630, flag: { a: "f" } },
-  3: { a: [1709, 2e3] }
+  0: { a: [117, 73], flag: { a: "f" } },
+  1: { a: [101, 103], f: 5, i: 19, flag: { i: "e" } },
+  2: {},
+  3: { a: 1385 }
 };
 var GILETS = {
   id: "gj",
@@ -13933,9 +14485,10 @@ var NAHEL = {
       w: 0,
       from: "2023-06-26",
       to: "2023-07-02",
-      p: [6200, 2e4],
+      p: [8e3, 5e4],
       a: 3354,
-      f: 722
+      f: 722,
+      flag: { p: "e" }
     },
     { w: 1, from: "2023-07-03", to: "2023-07-09", a: 108, f: 1 }
   ]
@@ -13951,12 +14504,34 @@ var PENSIONS = {
     { w: 4, from: "2023-02-13", to: "2023-02-19", p: [44e4, 13e5] },
     { w: 7, from: "2023-03-06", to: "2023-03-12", p: [128e4, 35e5] },
     { w: 8, from: "2023-03-13", to: "2023-03-19", p: [48e4, 17e5] },
-    { w: 9, from: "2023-03-20", to: "2023-03-26", p: [1089e3, 35e5] },
+    {
+      /* 23 Mar: the flashpoint — 49.3 passed, two failed no-confidence votes.
+         Ministry: up to 1.08M nationwide / 119,000 Paris; CGT 3.5M / 800,000.
+         Darmanin's consolidated day: 457 arrests, 441 security forces injured.
+         An earlier evening statement had given 80+ arrests / 123 police hurt,
+         so 457/441 is the final figure and the only one plotted. */
+      w: 9,
+      from: "2023-03-20",
+      to: "2023-03-26",
+      p: [1089e3, 35e5],
+      a: 457,
+      f: 441
+    },
+    {
+      /* 27 Mar: the eleventh day of mobilisation, after the 5 April talks
+         failed. Expected 600,000–800,000 nationwide (60,000–90,000 Paris).
+         Interior Ministry: 111 arrests, 154 police officers injured. */
+      w: 11,
+      from: "2023-04-03",
+      to: "2023-04-09",
+      p: [57e4, 2e6],
+      a: 111,
+      f: 154
+    },
     { w: 10, from: "2023-03-27", to: "2023-04-02", p: [74e4, 2e6] },
-    { w: 11, from: "2023-04-03", to: "2023-04-09", p: [57e4, 2e6] },
     { w: 12, from: "2023-04-10", to: "2023-04-16", p: [38e4, 15e5] },
     { w: 16, from: "2023-05-01", to: "2023-05-07", p: [782e3, 23e5] },
-    { w: 20, from: "2023-06-05", to: "2023-06-11", p: [281e3, 9e5] }
+    { w: 20, from: "2023-06-05", to: "2023-06-08", p: [281e3, 9e5] }
   ]
 };
 var BLOQUONS = {
@@ -14001,7 +14576,8 @@ function rows2026() {
 var STUDENTS = {
   id: "students26",
   start: STUDENT_WEEKS[0].key,
-  end: STUDENT_WEEKS[STUDENT_WEEKS.length - 1].end,
+  end: END,
+  // the window's last day, not the Sunday of the final week
   weeks: rows2026()
 };
 var EPISODES = [
@@ -14477,7 +15053,7 @@ function disclaimer() {
     const a = document.createElement("a");
     a.href = href;
     a.rel = "noopener noreferrer";
-    a.textContent = `${d.link}-${index}`;
+    a.textContent = d.links[index];
     a.dataset.index = String(index);
     const li = document.createElement("li");
     li.append(a);
@@ -14513,220 +15089,1997 @@ var FOOT = {
   en: "Not a source, but load-bearing: the index in the earlier drafts of Section C divided each series by its own first figure, and the C\u2032 x-axis was set by the longest episode. Both were replaced \u2014 C plots raw counts on a shared log axis, and C\u2032 is capped at week 7. Nothing here has been through external review.",
   fr: "Ce n\u2019est pas une source, mais cela porte la lecture : dans les brouillons ant\xE9rieurs, l\u2019indice de la section C divisait chaque s\xE9rie par son premier chiffre, et l\u2019axe des x de C\u2032 \xE9tait fix\xE9 par l\u2019\xE9pisode le plus long. Les deux ont \xE9t\xE9 remplac\xE9s \u2014 C trace des effectifs bruts sur un axe log partag\xE9, et C\u2032 est plafonn\xE9 \xE0 la semaine 7. Rien ici n\u2019a fait l\u2019objet d\u2019une relecture externe."
 };
+var MENTIONS_TITLE = {
+  en: "Named in the reporting, not linked",
+  fr: "Nomm\xE9s dans les articles, non li\xE9s"
+};
+var MENTIONS_BLURB = {
+  en: "Organisations and authors whose figures this page uses second-hand, through the articles above. List them here rather than invent a URL for them.",
+  fr: "Organisations et auteurs dont les chiffres sont repris de seconde main, via les articles ci-dessus. Les nommer ici plut\xF4t que d\u2019inventer une URL."
+};
+var both = (en, fr) => ({ en, fr });
+function src(id, group, label, url, what, date, dateEnd) {
+  const s = { id, group, label, url, what };
+  if (date) s.date = date;
+  if (dateEnd) s.dateEnd = dateEnd;
+  return s;
+}
 var GROUPS = [
   {
-    id: "g2026",
+    id: "official",
     title: {
-      en: "The 2026 movement \u2014 1 Oct to 11 Nov",
-      fr: "Le mouvement de 2026 \u2014 du 1er oct. au 11 nov."
+      en: "The 2026 movement \u2014 state situation reports",
+      fr: "Le mouvement de 2026 \u2014 points de situation de l\u2019\xC9tat"
     },
     blurb: {
-      en: "Eight reports. Ministry figures originate in press briefings, so every daily value was read out of the reporting below rather than from a dataset.",
-      fr: "Huit sources. Les chiffres minist\xE9riels proviennent de points presse : chaque valeur quotidienne a \xE9t\xE9 relev\xE9e dans les articles ci-dessous, et non dans un jeu de donn\xE9es."
+      en: "Origin of every arrest, custody and officer-injury count and of the ministry turnout figure. Published as press briefings and evening situation reports, not as a downloadable series, so the daily values were collected from the reporting in the next group rather than from a dataset. One pr\xE9fecture bulletin is included: 13 Oct had no national briefing, so the Ard\xE8che report is the only state account of that day.",
+      fr: "Origine de chaque d\xE9compte d\u2019interpellations, de gardes \xE0 vue et de bless\xE9s parmi les forces, ainsi que du chiffre minist\xE9riel de foule. Publi\xE9s en points presse et points de situation du soir, non en s\xE9ries t\xE9l\xE9chargeables : les valeurs quotidiennes ont donc \xE9t\xE9 relev\xE9es dans la presse du groupe suivant, et non dans un jeu de donn\xE9es. Un communiqu\xE9 pr\xE9fectoral est inclus : le 13 oct. n\u2019a donn\xE9 lieu \xE0 aucun point national, le rapport ard\xE9chois est donc le seul compte rendu \xE9tatique de cette journ\xE9e."
     }
   },
   {
-    id: "hist",
-    title: { en: "Historical episodes", fr: "\xC9pisodes historiques" },
+    id: "press",
+    title: {
+      en: "The 2026 movement \u2014 turnout, arrests, injuries",
+      fr: "Le mouvement de 2026 \u2014 foule, interpellations, bless\xE9s"
+    },
     blurb: {
-      en: "Encyclopaedia summaries of the published counts, plus three live-blog reports on the September 2025 movement. No primary archives were consulted.",
-      fr: "Synth\xE8ses encyclop\xE9diques des d\xE9comptes publi\xE9s, plus trois directs de presse sur le mouvement de septembre 2025. Aucune archive primaire n\u2019a \xE9t\xE9 consult\xE9e."
+      en: "Daily press reporting for 1 Oct \u2013 11 Nov 2026, plus the two disputes that shaped the charts: whether the 17 Oct policing operation was actually smaller than its predecessors, and how far the injured-protester total can be trusted.",
+      fr: "La presse quotidienne du 1er oct. au 11 nov. 2026, plus les deux controverses qui ont fa\xE7onn\xE9 les graphiques : le dispositif du 17 oct. \xE9tait-il r\xE9ellement inf\xE9rieur aux pr\xE9c\xE9dents, et jusqu\u2019o\xF9 le total de bless\xE9s parmi les manifestants est-il fiable."
+    }
+  },
+  {
+    id: "cost",
+    title: {
+      en: "The 2026 movement \u2014 damage and cost",
+      fr: "Le mouvement de 2026 \u2014 dommages et co\xFBts"
+    },
+    blurb: {
+      en: "Damage, damage cost and policing cost. None of this exists as a daily series: it is a handful of one-off assessments for 17\u201318 Oct and for the lyc\xE9e blockades, which is why most cells in those columns are empty rather than estimated.",
+      fr: "Dommages, co\xFBt des dommages et co\xFBt du maintien de l\u2019ordre. Rien de tout cela n\u2019existe en s\xE9rie quotidienne : ce sont quelques bilans ponctuels pour les 17\u201318 oct. et pour les blocages de lyc\xE9es, d\u2019o\xF9 des colonnes le plus souvent vides plut\xF4t qu\u2019estim\xE9es."
+    }
+  },
+  {
+    id: "overseas",
+    title: {
+      en: "The 2026 movement \u2014 overseas",
+      fr: "Le mouvement de 2026 \u2014 outre-mer"
+    },
+    blurb: {
+      en: "Outre-mer La 1\xE8re is the only continuous reporting on the Guadeloupe, Martinique, R\xE9union, Guyane and Mayotte half of the protest count; the ministry bilan gives no territorial split.",
+      fr: "Outre-mer La 1\xE8re est le seul suivi continu de la moiti\xE9 guadeloup\xE9enne, martiniquaise, r\xE9unionnaise, guyanaise et mahoraise du d\xE9compte ; le bilan minist\xE9riel ne fournit aucune ventilation territoriale."
+    }
+  },
+  {
+    id: "ref2026",
+    title: {
+      en: "The 2026 movement \u2014 reference pages",
+      fr: "Le mouvement de 2026 \u2014 pages de r\xE9f\xE9rence"
+    },
+    blurb: {
+      en: "Encyclopaedia and aggregator pages used to cross-check the 2026 chronology. Secondary: never used for a figure that a primary report in the groups above carries.",
+      fr: "Pages encyclop\xE9diques et agr\xE9gateurs servant \xE0 recouper la chronologie de 2026. Secondaires : jamais utilis\xE9es pour un chiffre qu\u2019un article primaire des groupes pr\xE9c\xE9dents porte d\xE9j\xE0."
+    }
+  },
+  {
+    id: "mai68",
+    title: { en: "May 1968", fr: "Mai 68" },
+    blurb: {
+      en: "Two counts exist for almost every 1968 day \u2014 prefecture and union \u2014 and they diverge by a factor of four on 13 May. Both are plotted.",
+      fr: "Deux d\xE9comptes existent pour presque chaque journ\xE9e de 1968 \u2014 pr\xE9fecture et syndicats \u2014 et ils divergent d\u2019un facteur quatre le 13 mai. Les deux sont trac\xE9s."
+    }
+  },
+  {
+    id: "cpe",
+    title: { en: "CPE, 2006", fr: "CPE, 2006" },
+    blurb: {
+      en: "The first movement in the comparison with a usable daily series. The 16\u201318 March enforcement counts are Paris-only and are marked as such.",
+      fr: "Le premier mouvement de la comparaison dot\xE9 d\u2019une s\xE9rie quotidienne exploitable. Les d\xE9comptes r\xE9pressifs des 16\u201318 mars sont strictement parisiens et signal\xE9s comme tels."
+    }
+  },
+  {
+    id: "gj",
+    title: { en: "Gilets jaunes, 2018\u201319", fr: "Gilets jaunes, 2018\u20132019" },
+    blurb: {
+      en: "Turnout was published act by act for 44 acts; the custody and injury counts were not, which is why the enforcement lines stop at week 3.",
+      fr: "La foule a \xE9t\xE9 publi\xE9e acte par acte sur 44 actes ; les d\xE9comptes de gardes \xE0 vue et de bless\xE9s non, d\u2019o\xF9 l\u2019arr\xEAt des courbes r\xE9pressives \xE0 la semaine 3."
+    }
+  },
+  {
+    id: "nahel",
+    title: {
+      en: "Nahel Merzouk, June\u2013July 2023",
+      fr: "Nahel Merzouk, juin\u2013juillet 2023"
+    },
+    blurb: {
+      en: "The only episode here with a consolidated official total, via the S\xE9nat inquiry; the four nights themselves are counted day by day from press and encyclopaedia summaries.",
+      fr: "Le seul \xE9pisode disposant d\u2019un total officiel consolid\xE9, via l\u2019enqu\xEAte du S\xE9nat ; les quatre nuits elles-m\xEAmes sont d\xE9compt\xE9es jour par jour \xE0 partir de la presse et des synth\xE8ses encyclop\xE9diques."
+    }
+  },
+  {
+    id: "retraites",
+    title: { en: "Pensions, 2023", fr: "Retraites, 2023" },
+    blurb: {
+      en: "Ministry and union pairs for each national action day, 19 Jan \u2013 6 Jun 2023.",
+      fr: "Les couples minist\xE8re / syndicats de chaque journ\xE9e nationale d\u2019action, du 19 janv. au 6 juin 2023."
+    }
+  },
+  {
+    id: "rn2024",
+    title: {
+      en: "Anti-RN marches, June 2024",
+      fr: "Marches anti-RN, juin 2024"
+    },
+    blurb: {
+      en: "Kept separate because the 15\u201316 June 2024 marches are usually folded into the pensions series; they are a different mobilisation with a different organiser base.",
+      fr: "Groupe distinct car les marches des 15\u201316 juin 2024 sont souvent rattach\xE9es \xE0 la s\xE9rie retraites ; c\u2019est une mobilisation diff\xE9rente, avec une base d\u2019organisateurs diff\xE9rente."
+    }
+  },
+  {
+    id: "bloquons",
+    title: {
+      en: "\xAB Bloquons tout \xBB, September\u2013October 2025",
+      fr: "\xAB Bloquons tout \xBB, septembre\u2013octobre 2025"
+    },
+    blurb: {
+      en: "The closest precedent to 2026 and the reason the 2026 figures are shown as a band: the ministry revised its own 10 Sep count upward during the evening, from 175,000 to 197,000.",
+      fr: "Le pr\xE9c\xE9dent le plus proche de 2026, et la raison pour laquelle les chiffres de 2026 sont trac\xE9s en fourchette : le minist\xE8re a r\xE9vis\xE9 son propre d\xE9compte du 10 sept. en cours de soir\xE9e, de 175 000 \xE0 197 000."
     }
   }
 ];
 var SOURCES = [
-  /* ------------------------------------------------ 2026 — damage and cost */
+  /* ------------------------------------------- 2026 — ministry briefings */
+  src(
+    "interieur",
+    "official",
+    "Minist\xE8re de l\u2019Int\xE9rieur",
+    "https://www.interieur.gouv.fr/",
+    both(
+      "origin of every arrest, custody and officer-injury count and of the ministry turnout figure. Published as press briefings and evening situation reports, not as a downloadable series.",
+      "origine de chaque d\xE9compte d\u2019interpellations, de gardes \xE0 vue et de bless\xE9s parmi les forces, ainsi que du chiffre minist\xE9riel de foule. Publi\xE9s en points presse et points de situation du soir, non en s\xE9ries t\xE9l\xE9chargeables."
+    )
+  ),
+  src(
+    "ardeche-13oct",
+    "official",
+    "Pr\xE9fecture de l\u2019Ard\xE8che \u2014 \xAB Mobilisation en Ard\xE8che \u2013 mardi 13 octobre 2026 \u2013 point de situation \xE0 17 h \xBB",
+    "https://www.ardeche.gouv.fr/Actualites/Actualites-2026/Mobilisation-en-Ardeche-Mardi-13-octobre-2026-Point-de-situation-a-17-h",
+    both(
+      "the departmental control case: peak of 130 in Privas, 120 in Annonay, 60 in Tournon-sur-Rh\xF4ne and 600 in Aubenas (student counts included), no school blocked, no violence and no damage, two procedures for insults against officers, 100+ police mobilised. Read against the national aggregate as evidence that a day can be busy in one department and uneventful in the rest.",
+      "le cas de contr\xF4le d\xE9partemental : pic de 130 \xE0 Privas, 120 \xE0 Annonay, 60 \xE0 Tournon-sur-Rh\xF4ne et 600 \xE0 Aubenas (lyc\xE9ens inclus), aucun \xE9tablissement bloqu\xE9, aucune violence ni d\xE9gradation, deux proc\xE9dures pour outrages, plus de cent policiers mobilis\xE9s. \xC0 lire face \xE0 l\u2019agr\xE9gat national : une journ\xE9e peut \xEAtre charg\xE9e dans un d\xE9partement et calme ailleurs."
+    ),
+    "2026-10-13"
+  ),
+  /* 17 Oct 2026 — the injury series for that day. Read as a stack, not a list:
+     the ministry figure (forces only) at the bottom, encyclopaedic / militant
+     tallies above it, the medical register as the documented floor. */
+  src(
+    "bfmtv-bilan-17oct",
+    "press",
+    "BFMTV \u2014 \xAB Violences du 17 octobre : le minist\xE8re de l\u2019Int\xE9rieur recense 2 397 interpellations, 997 policiers et gendarmes bless\xE9s dont 7 graves \xBB",
+    "https://www.bfmtv.com/police-justice/violences-du-7-octobre-le-ministere-de-l-interieur-recense-2-397-interpellations-997-policiers-et-gendarmes-blesses-dont-7-graves_AD-202610180350.html",
+    both(
+      "the only consolidated state tally for the day: 2,397 arrests and 997 police and gendarmes injured, 7 seriously. It counts forces only \u2014 no protester figure \u2014 which is why the protest-injury series has no official anchor.",
+      "le seul bilan \xE9tatique consolid\xE9 de la journ\xE9e : 2 397 interpellations et 997 policiers et gendarmes bless\xE9s, dont 7 graves. Il ne compte que les forces \u2014 aucun chiffre de manifestants bless\xE9s \u2014 d\u2019o\xF9 l\u2019absence d\u2019ancrage officiel pour la s\xE9rie."
+    ),
+    "2026-10-18"
+  ),
+  src(
+    "mediacites-toulouse-17oct",
+    "press",
+    "M\xE9diacit\xE9s \u2014 \xAB Plus de 130 bless\xE9s parmi les manifestants du 17 octobre \xE0 Toulouse \xBB",
+    "https://www.mediacites.fr/enquete/toulouse/2026/10/23/plus-de-130-blesses-parmi-les-manifestants-du-17-octobre-a-toulouse/",
+    both(
+      "the single largest city count for the day: 130+ people treated in Toulouse, mostly after police injuries, set against the prefecture\u2019s \u201Ca dozen or so\u201D officers hurt and the police\u2019s 70 \u201Cbruised\u201D. The treated-per-serious-case ratio that drives the reasoned ceiling comes from here.",
+      "le plus gros d\xE9compte municipal de la journ\xE9e : plus de 130 personnes prises en charge \xE0 Toulouse, pour la plupart bless\xE9es par les forces de l\u2019ordre, face aux \xAB une dizaine \xBB d\u2019effectifs bless\xE9s de la pr\xE9fecture et aux 70 agents \xAB contusionn\xE9s \xBB de la police. C\u2019est d\u2019ici que vient le ratio pris-en-charge / cas grave qui fonde le plafond raisonn\xE9."
+    ),
+    "2026-10-23"
+  ),
+  src(
+    "wikifr-17oct",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB Manifestations du 17 octobre 2026 en France \xBB",
+    "https://fr.wikipedia.org/wiki/Manifestations_du_17_octobre_2026_en_France",
+    both(
+      "the per-city pr\xE9fecture tallies used for the bottom-up sum: Bordeaux 23 injured (15 forces), Clermont-Ferrand 9 (5 forces), Dijon 3, Metz 6 (2 forces), Nancy 23 (2 seriously), Rouen 17, plus Paris 12 and Lyon 4 among the serious cases. Also the running casualty total of the movement as a whole.",
+      "les bilans pr\xE9fectoraux par ville utilis\xE9s pour la somme ascendante : Bordeaux 23 bless\xE9s (dont 15 forces), Clermont-Ferrand 9 (5 forces), Dijon 3, Metz 6 (2 forces), Nancy 23 (dont 2 graves), Rouen 17, plus Paris 12 et Lyon 4 parmi les cas graves. Aussi le d\xE9compte courant des bless\xE9s du mouvement."
+    )
+  ),
+  src(
+    "wiki-en-17oct-riots",
+    "press",
+    "Wikipedia \u2014 \xAB 17 October riots \xBB",
+    "https://en.wikipedia.org/wiki/17_October_riots",
+    both(
+      "the \u201C400+ civilians\u201D injured figure in the infobox, tagged citation needed \u2014 so it is a published high bound, not a sourced one. Its 1,000+ forces figure sits on the same line and is equally uncited, which is why the ministry number is preferred for that series.",
+      "le chiffre de \xAB 400+ civils \xBB bless\xE9s de l\u2019infobox, marqu\xE9 \xAB citation needed \xBB : une borne haute publi\xE9e, non sourc\xE9e. Le \xAB 1 000+ \xBB de forces figure sur la m\xEAme ligne et n\u2019est pas davantage sourc\xE9, d\u2019o\xF9 la pr\xE9f\xE9rence donn\xE9e au chiffre minist\xE9riel pour cette s\xE9rie."
+    )
+  ),
+  src(
+    "mediaclub-thines",
+    "press",
+    "Le Club de Mediapart (Jonathan Gensburger) \u2014 \xAB Violences d\u2019\xC9tat \xBB",
+    "https://blogs.mediapart.fr/jonathan-gensburger/blog/111126/violences-d-etat",
+    both(
+      "the full Thines register, stopped 5 Nov: 79 victims \u2014 78 seriously injured plus one death \u2014 of whom 55 fall on 17 Oct (54 seriously injured: 5 eyes, 5 cranio-facial, 2 amputations, 42 other serious wounds). Documents the floor; the author states plainly that it is neither an official toll nor a judicial expertise.",
+      "le relev\xE9 Thines complet, arr\xEAt\xE9 au 5 nov. : 79 victimes \u2014 78 bless\xE9s graves et un d\xE9c\xE8s \u2014 dont 55 le 17 oct. (54 bless\xE9s graves : 5 yeux, 5 traumatismes cranio-faciaux, 2 amputations, 42 autres blessures graves). Documente le plancher ; l\u2019auteur pr\xE9cise qu\u2019il ne s\u2019agit ni d\u2019un bilan officiel ni d\u2019une expertise judiciaire."
+    ),
+    "2026-11-11"
+  ),
+  src(
+    "mediapart-blesses-17oct",
+    "press",
+    "Mediapart \u2014 \xAB \u201CJ\u2019ai cru mourir\u201D : enqu\xEAte sur les bless\xE9s du 17 octobre \xBB",
+    "https://www.mediapart.fr/journal/france/231026/j-ai-cru-mourir-enquete-sur-les-blesses-du-17-octobre",
+    both(
+      "the qualitative case file behind the day\u2019s serious injuries \u2014 femoral artery severed by a grenade, dozens gravely hurt while peaceful \u2014 with no total, which is the point: even the paper that documented the day most closely declines to give one.",
+      "le dossier de cas derri\xE8re les blessures graves du jour \u2014 art\xE8re f\xE9morale sectionn\xE9e par une grenade, dizaines de bless\xE9s graves alors qu\u2019ils manifestaient pacifiquement \u2014 sans total, ce qui est pr\xE9cis\xE9ment l\u2019int\xE9r\xEAt : m\xEAme le journal qui a le plus document\xE9 la journ\xE9e s\u2019abstient d\u2019en donner un."
+    ),
+    "2026-10-23"
+  ),
+  src(
+    "canard-mauvais-oeil",
+    "press",
+    "Le Canard encha\xEEn\xE9 \u2014 \xAB Violences polici\xE8res : les manifestants ont le mauvais \u0153il \xBB",
+    "https://www.lecanardenchaine.fr/police-justice/55381-les-manifestants-ont-le-mauvais-oeil",
+    both(
+      "the explicit statement that no official figure for serious injuries has ever been published since the movement began, and the method note: Thines built his register from national and local press plus militant blogs, and 127 IGPN referrals are open.",
+      "la mention explicite qu\u2019aucun chiffre officiel de bless\xE9s graves n\u2019a jamais \xE9t\xE9 publi\xE9 depuis le d\xE9but du mouvement, et la note de m\xE9thode : Thines a b\xE2ti son relev\xE9 dans la presse nationale, locale et les blogs militants, 127 saisines de l\u2019IGPN \xE9tant ouvertes."
+    ),
+    "2026-11-10"
+  ),
+  src(
+    "contre-attaque-20oct",
+    "press",
+    "Contre-Attaque \u2014 \xAB Terrorisme d\u2019\xC9tat : le 17 octobre la police a fait couler le sang \xBB",
+    "https://contre-attaque.net/2026/10/20/terrorisme-detat-le-17-octobre-la-police-a-fait-couler-le-sang/",
+    both(
+      "the earliest case-by-case sweep (Paris, Rennes, Grenoble, Limoges, Caen, Nancy, Marseille) and the phrase \u201Ca repression that touched thousands\u201D \u2014 the source of the upper part of the band. It gives no total, only an invitation for victims to come forward.",
+      "le premier recensement cas par cas (Paris, Rennes, Grenoble, Limoges, Caen, Nancy, Marseille) et la formule d\u2019une r\xE9pression \xAB qui a touch\xE9 des milliers de personnes \xBB \u2014 d\u2019o\xF9 vient le haut de la fourchette. Aucun total, seulement un appel \xE0 t\xE9moins."
+    ),
+    "2026-10-20"
+  ),
+  src(
+    "contre-attaque-23oct",
+    "press",
+    "Contre-Attaque \u2014 \xAB 17 Octobre : un carnage policier sans pr\xE9c\xE9dent, nouveau recensement de la sauvagerie polici\xE8re \xBB",
+    "https://contre-attaque.net/2026/10/23/17-octobre-un-carnage-policier-sans-precedent-nouveau-recensement-de-la-sauvagerie-policiere/",
+    both(
+      "\u201Ctwo cardiac arrests, an unprecedented number of mutilations in a few hours, hundreds of serious injuries\u201D \u2014 the militant figure that sets the top of the band, and the claim of a second death on the day, which no register corroborates and which the chart therefore does not carry.",
+      "\xAB deux arr\xEAts cardiaques, un nombre de mutilations sans pr\xE9c\xE9dent en quelques heures, des centaines de bless\xE9s graves \xBB \u2014 le chiffre militant qui fixe le haut de la fourchette, et la revendication d\u2019un second mort ce jour-l\xE0, que nul relev\xE9 ne corrobore et que le graphique ne retient donc pas."
+    ),
+    "2026-10-23"
+  ),
+  src(
+    "ici-avignon-17oct",
+    "press",
+    "ICI \u2014 \xAB Manifestation du 17 octobre \xE0 Avignon : 21 interpellations, 9 policiers et au moins 5 civils bless\xE9s \xBB",
+    "https://www.ici.fr/provence-alpes-cote-d-azur/vaucluse-84/avignon/manifestation-du-17-octobre-a-avignon-21-interpellations-9-policiers-et-au-moins-5-civils-blesses-8087735",
+    both(
+      "Avignon\u2019s pr\xE9fecture tally, one of the few that separates civilians from forces: 5 civilians hurt for 2,000 demonstrators. Note the publisher revised the officer count downward from 18 to 9 between its first and second version \u2014 a reminder that even same-day figures move.",
+      "le bilan pr\xE9fectoral d\u2019Avignon, l\u2019un des rares \xE0 s\xE9parer civils et forces : 5 civils bless\xE9s pour 2 000 manifestants. \xC0 noter : le journal a r\xE9vis\xE9 \xE0 la baisse le nombre de policiers bless\xE9s, de 18 \xE0 9, entre ses deux versions \u2014 rappel que m\xEAme les chiffres du jour bougent."
+    ),
+    "2026-10-21"
+  ),
+  src(
+    "ici-strasbourg-17oct",
+    "press",
+    "ICI \u2014 \xAB Mobilisation du 17 octobre : 17 bless\xE9s et 27 interpellations \xE0 Strasbourg, le bilan s\u2019alourdit \xBB",
+    "https://www.ici.fr/grand-est/alsace-cea/mobilisation-du-17-octobre-16-interpellations-a-strasbourg-et-11-blesses-selon-un-premier-bilan-5327220",
+    both(
+      "Strasbourg\u2019s revision in action: 11 injured and 16 arrests in the first evening bulletin, 17 and 27 the next day, with one man gravely head-injured near the pont du Corbeau. The URL still carries the original figures, which is why the entry cites the updated headline.",
+      "la r\xE9vision strasbourgeoise en acte : 11 bless\xE9s et 16 interpellations au premier communiqu\xE9 du soir, 17 et 27 le lendemain, dont un homme gri\xE8vement touch\xE9 \xE0 la t\xEAte pr\xE8s du pont du Corbeau. L\u2019URL porte encore les chiffres d\u2019origine, d\u2019o\xF9 le titre mis \xE0 jour."
+    ),
+    "2026-10-17"
+  ),
+  /* ── optional: cross-checks for the severity breakdown and its limits ── */
+  src(
+    "monde-enquete-blessures",
+    "press",
+    "Le Monde \u2014 \xAB Hands torn off, broken bones, blinded eye: Le Monde investigates French protesters\u2019 injuries \xBB",
+    "https://www.lemonde.fr/en/france/article/2026/11/05/hands-torn-off-broken-bones-blinded-eye-le-monde-investigates-french-protesters-injuries_6772405_7.html",
+    both(
+      "independent corroboration of the register\u2019s shape \u2014 three hands torn off, four eyes mutilated \u2014 described by Le Monde itself as \u201Ca preliminary and certainly underestimated count\u201D, with intermediate-force weapons implicated in nearly every case.",
+      "corroboration ind\xE9pendante de la structure du relev\xE9 \u2014 trois mains arrach\xE9es, quatre yeux mutil\xE9s \u2014 que Le Monde qualifie lui-m\xEAme de d\xE9compte \xAB pr\xE9liminaire et certainement sous-estim\xE9 \xBB, les armes de force interm\xE9diaire \xE9tant en cause dans presque tous les cas."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "prodpress-verification",
+    "press",
+    "PRODPRESS \u2014 \xAB Bless\xE9s des manifestations : les enqu\xEAtes documentent les cas, les bilans restent \xE0 consolider \xBB",
+    "https://www.prodpress.eu/manifestations-blesses-bilan-coquerel-verification-2026/",
+    both(
+      "the cautionary counterweight: the same Thines count stood at 61 cases on 30 Oct and 79 on 5 Nov, so any figure is a snapshot; the site declines to validate the extrapolation to a national total, which is why the middle point is labelled an estimate rather than a count.",
+      "le contrepoids m\xE9thodologique : le m\xEAme relev\xE9 Thines affichait 61 cas au 30 oct. et 79 au 5 nov., tout chiffre n\u2019\xE9tant donc qu\u2019une photographie ; le site refuse de valider l\u2019extrapolation \xE0 un total national, d\u2019o\xF9 le point milieu pr\xE9sent\xE9 comme une estimation, non un d\xE9compte."
+    )
+  ),
+  /* ── Outstanding-figure verification, 12 Nov 2026 ───────────────────── */
+  src(
+    "senat-emeutes-2023",
+    "official",
+    "S\xE9nat \u2014 \xAB \xC9meutes de juin 2023 : comprendre, \xE9valuer, r\xE9agir \xBB",
+    "https://www.senat.fr/salle-de-presse/communiques-de-presse/presse/10-04-2024/emeutes-de-juin-2023-comprendre-evaluer-reagir.html",
+    both(
+      "the Senate mission's headline figures for the Nahel riots: 672 communes affected, 45,000 security personnel mobilised, 50,000 \xE9meutiers estimated (Darmanin: 8,000\u201312,000; Brochand: 100,000\u2013200,000), 16,400 claims filed with insurers for \u20AC793 million, 2,500 buildings burnt or degraded including 168 schools and 105 mairies. Also the authority for the episode-level rioter estimates now used in the p band.",
+      "les chiffres cl\xE9s de la mission du S\xE9nat sur les \xE9meutes de Nahel : 672 communes concern\xE9es, 45 000 personnels de s\xE9curit\xE9 mobilis\xE9s, 50 000 \xE9meutiers estim\xE9s (Darmanin : 8 000 \xE0 12 000 ; Brochand : 100 000 \xE0 200 000), 16 400 sinistres pour 793 millions d\u2019euros, 2 500 b\xE2timents incendi\xE9s ou d\xE9grad\xE9s dont 168 \xE9coles et 105 mairies. Tambi\xE9n l\u2019autorit\xE9 des estimations d\u2019\xE9meutiers d\xE9sormais port\xE9es par la bande p."
+    ),
+    "2024-04-10"
+  ),
+  src(
+    "interieur-24oct-bilan",
+    "official",
+    "Minist\xE8re de l\u2019Int\xE9rieur \u2014 \xAB Bilan de la journ\xE9e de mobilisation nationale du 24 octobre 2026 \xBB",
+    "https://www.interieur.gouv.fr/actualites/communiques-de-presse/bilan-de-journee-de-mobilisation-nationale-du-24-octobre-2026",
+    both(
+      "the communiqu\xE9 behind every 2026 core figure: 24 Oct = 289 actions, 410,000 participants (110,000 Paris), provisional 7:30 a.m. bilan of 1,314 arrests and 53 forces injured \u201Cprovisoire \xE0 ce stade\u201D, 75 fire interventions, 24 shops pillaged, against 1,522 shops hit on 17 Oct; and the cross-references to 31 Oct (227 actions, 320,000) and 5 Nov (193 actions, 575,000 incl. 65,000 Paris).",
+      "le communiqu\xE9 qui fonde tous les chiffres centraux de 2026 : 24 oct. = 289 actions, 410 000 participants (110 000 \xE0 Paris), bilan provisoire \xE0 7 h 30 de 1 314 interpellations et 53 bless\xE9s des forces \xAB provisoire \xE0 ce stade \xBB, 75 interventions incendie, 24 commerces pill\xE9s, contre 1 522 commerces touch\xE9s le 17 oct. ; renvois au 31 oct. (227 actions, 320 000) et au 5 nov. (193 actions, 575 000 dont 65 000 \xE0 Paris)."
+    ),
+    "2026-10-25"
+  ),
+  src(
+    "france24-24oct-prov",
+    "press",
+    "France 24 \u2014 \xAB Mobilisation du 24 octobre : plus de 1 300 interpellations, une cinquantaine de policiers bless\xE9s \xBB",
+    "https://www.france24.com/fr/france/20261025-mobilisation-du-24-octobre-plus-de-1-300-interpellations-une-cinquantaine-de-policiers-bless%C3%A9s",
+    both(
+      "the press rendering of the provisional 24 Oct bilan: 1,314 arrests and 53 forces injured. Establishes that the 53 is a first-overnight provisional figure, which is why the table keeps the consolidated 267 rather than widening to a 53\u2013267 band.",
+      "le compte rendu presse du bilan provisoire du 24 oct. : 1 314 interpellations et 53 bless\xE9s des forces. \xC9tablit que le 53 est un chiffre provisoire de la nuit, ce qui justifie de conserver le 267 consolid\xE9 plut\xF4t que d'ouvrir une bande 53\u2013267."
+    ),
+    "2026-10-25"
+  ),
+  src(
+    "franceinfo-24oct-final",
+    "press",
+    "Franceinfo \u2014 \xAB Manifestations du 24 octobre : 267 membres des forces de l\u2019ordre et 150 someplaceants ont \xE9t\xE9 bless\xE9s, dont trois gravement, annonce Laurent Nu\xF1ez \xBB",
+    "https://www.franceinfo.fr/societe/manifestations/manifestations-du-24-octobre-267-membres-des-forces-de-l-ordre-et-150-manifestants-ont-ete-blesses-dont-trois-gravement-annonce-laurent-nunez_8253910.html",
+    both(
+      "the minister's consolidated 24 Oct figures: 267 forces injured, 150 protesters injured including 3 seriously, 1,435 arrests. Source of the two cells now carried for that date.",
+      "les chiffres consolid\xE9s du 24 oct. annonc\xE9s par le ministre : 257... 267 bless\xE9s des forces de l\u2019ordre, 150 manifestants bless\xE9s dont 3 graves, 1 435 interpellations. Source des deux cellules port\xE9es pour cette date."
+    ),
+    "2026-10-26"
+  ),
+  src(
+    "lsa-cci-bilan",
+    "press",
+    "LSA / CCI France \u2014 \xAB Manifestations d\u2019octobre : 1 milliard d\u2019euros de d\xE9g\xE2ts et 2 500 commerces touch\xE9s selon CCI France, les d\xE9tails ville par ville \xBB",
+    "https://www.lsa-conso.fr/distributeurs-alimentaires/manifestations-doctobre-1-milliard-deuros-de-degats-et-2-500-commerces-touches-selon-cci-france-les-details-ville-par-ville.2HTRI7YOSJHP5E52ISPEQEF4KQ.html",
+    both(
+      "CCI France's 27 Oct tally, the basis of the new national damage cell: 2,488 businesses hit after 17 Oct plus 50 after 24 Oct, 1,161 heavily damaged, 643 still closed, cost of the degradations estimated at over \u20AC1bn on IFRAP's estimate. City detail: Marseille 500 (225 heavy), Paris/IDF 480 (240 degraded), Lyon\u2013Saint-\xC9tienne\u2013Roanne 300 (\u20AC20M), Bordeaux 158, Rennes 143, Nantes 59, Toulouse 41, Montpellier 56 (\u20AC1\u20132M). No separate Marseille or Paris damage amount.",
+      "le bilan CCI France du 27 oct., base de la nouvelle cellule nationale de d\xE9g\xE2ts : 2 488 commerces touch\xE9s apr\xE8s le 17 oct. plus 50 apr\xE8s le 24 oct., 1 161 fortement d\xE9grad\xE9s, 643 encore ferm\xE9s, co\xFBt des d\xE9gradations estim\xE9 \xE0 plus d\u20191 milliard d\u2019euros selon l\u2019IFRAP. D\xE9tail par ville : Marseille 500 (225 lourds), Paris/IDF 480 (240 d\xE9grad\xE9s), Lyon\u2013Saint-\xC9tienne\u2013Roanne 300 (20 M\u20AC), Bordeaux 158, Rennes 143, Nantes 59, Toulouse 41, Montpellier 56 (1 \xE0 2 M\u20AC). Aucun montant distinct pour Marseille ni Paris."
+    ),
+    "2026-10-27"
+  ),
+  src(
+    "leprogres-cci-rhone",
+    "press",
+    "Le Progr\xE8s \u2014 \xAB Rh\xF4ne 307 commerces impact\xE9s, 20 millions d\u2019euros de d\xE9g\xE2ts\u2026 Les cons\xE9quences des manifestations depuis le 17 octobre \xBB",
+    "https://www.leprogres.fr/economie/2026/10/27/307-commerces-impactes-20-millions-d-euros-de-degats-les-consequences-des-manifestations-depuis-le-17-octobre",
+    both(
+      "the regional half of the CCI tally: 307 businesses hit in the Rh\xF4ne for \u20AC20M of damage, corroborating the Lyon\u2013Saint-\xC9tienne\u2013Roanne line independently of CCI France.",
+      "la moiti\xE9 r\xE9gionale du bilan CCI : 307 commerces impact\xE9s dans le Rh\xF4ne pour 20 M\u20AC de d\xE9g\xE2ts, corroboration ind\xE9pendante de la ligne Lyon\u2013Saint-\xC9tienne\u2013Roanne."
+    ),
+    "2026-10-27"
+  ),
+  src(
+    "lemonde-en-pensions-23mar",
+    "press",
+    "Le Monde \u2014 \xAB French pension protests: 457 arrested and 441 police injured on Thursday, minister reports \xBB",
+    "https://www.lemonde.fr/en/france/article/2023/03/24/french-pension-protests-457-arrested-and-441-police-injured-on-thursday-minister-reports_6020504_7.html",
+    both(
+      "the consolidated 23 March 2023 enforcement figures \u2014 457 arrests, 441 security forces injured \u2014 which close the pensions episode's enforcement gap. Earlier statements that night had put the figures at 80+ arrests and 123 police injured, so the consolidated numbers are the ones plotted.",
+      "les chiffres dcited de la r\xE9pression du 23 mars 2023 \u2014 457 interpellations, 441 bless\xE9s des forces \u2014 qui comblent le trou de donn\xE9es de r\xE9pression de l\u2019\xE9pisode pensions. Les statements de la soir\xE9e donnaient 80+ interpellations et 123 bless\xE9s, d\u2019o\xF9 le choix des chiffres consolid\xE9s."
+    ),
+    "2023-03-24"
+  ),
+  src(
+    "france24-pensions-23mar",
+    "press",
+    "France 24 \u2014 \xAB At least 457 people arrested, 441 security forces injured in violent French pension protests \xBB",
+    "https://www.france24.com/en/europe/20230324-at-least-457-people-arrested-441-security-forces-injured-in-violent-french-pension-protests",
+    both(
+      "independent confirmation of the 23 March totals, with Darmanin's evening statement of over 80 arrests and 123 police injured noted alongside, which is why the day is plotted at the consolidated figure.",
+      "confirmation ind\xE9pendante des totaux du 23 mars, avec la d\xE9claration de Darmanin en soir\xE9e (plus de 80 interpellations, 123 bless\xE9s) rappel\xE9e en regard \u2014 d\u2019o\xF9 le choix du chiffre consolid\xE9."
+    ),
+    "2023-03-24"
+  ),
+  src(
+    "enwiki-pensions-2023",
+    "press",
+    "Wikipedia \u2014 \xAB 2023 French pension reform strikes \xBB",
+    "https://en.wikipedia.org/wiki/2023_French_pension_reform_strikes",
+    both(
+      "the chronology that fixes the pensions episode's weekly bands: 7 Mar 1.1\u20131.4M over 260+ protests; 11 Mar about 368,000, below the 800,000\u20131,000,000 expected; 15 Mar ministry 480,000 (37,000 Paris) against CGT 1.78M (450,000 Paris) over 200 protests; 19 Mar only hundreds; 23 Mar ministry 1.08M (119,000 Paris) against CGT 3.5M (800,000 Paris); 6 Apr 111 arrests and 154 police injured. It is also the source that shows 14 March was the eve, not the action day.",
+      "la chronologie qui fixe les bandes de l\u2019\xE9pisode pensions : 7 mars 1,1\u20131,4 M sur plus de 260 manifestations ; 11 mars environ 368 000, loin des 800 000 \xE0 1 000 000 attendus ; 15 mars 480 000 minist\xE8re (37 000 Paris) contre 1,78 M CGT (450 000 Paris) sur 200 manifestations ; 19 mars quelques centaines ; 23 mars 1,08 M minist\xE8re (119 000 Paris) contre 3,5 M CGT (800 000 Paris) ; 6 avril 111 interpellations et 154 policiers bless\xE9s. C\u2019est aussi ce qui montre que le 14 mars \xE9tait la veille, pas le jour d\u2019action."
+    ),
+    "2026-10-22"
+  ),
+  src(
+    "enwiki-cpe-2006",
+    "press",
+    "Wikipedia \u2014 \xAB 2006 youth protests in France \xBB",
+    "https://en.wikipedia.org/wiki/2006_youth_protests_in_France",
+    both(
+      "the CPE series that is published at all: 7 Feb 200,000\u2013400,000 over 187 demonstrations; 28 Mar 1.055M (police) against 2.71M (unions) with 600 arrests; 4 Apr 1M (police) against 3.1M (CGT); 18 demonstrators injured on 16 March; and the CAJ totals of 4,500 arrests, 1,950 in garde \xE0 vue and 635 prosecutions. It gives no totals for 15 or 25 February, 4 or 11 March \u2014 the series does not exist, and the episode should say so.",
+      "la seule s\xE9rie CPE qui soit publi\xE9e : 7 f\xE9vr. 200 000\u2013400 000 sur 187 manifestations ; 28 mars 1,055 M (police) contre 2,71 M (syndicats) et 600 interpellations ; 4 avr. 1 M (police) contre 3,1 M (CGT) ; 18 bless\xE9s le 16 mars ; totaux CAJ : 4 500 interpellations, 1 950 gardes \xE0 vue, 635 poursuites. Aucun total pour les 15 ou 25 f\xE9vrier, 4 ou 11 mars : la s\xE9rie n\u2019existe pas, et l\u2019\xE9pisode doit le dire."
+    ),
+    "2026-05-31"
+  ),
+  src(
+    "frwiki-cpe-2006",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB Mouvement contre le contrat premi\xE8re embauche de 2006 \xBB",
+    "https://fr.wikipedia.org/wiki/Mouvement_contre_le_contrat_premi%C3%A8re_embauche_de_2006",
+    both(
+      "the French CPE account: 7 Feb nearly 400,000; 14 March 41,000 (police source); 16 March 447,500 (police) or 500,000\u2013800,000 (organisers); 28 March 1,055,000\u20133,000,000; 4 April 1\u20133 million. The 14 March figure is the one addition this pass makes to the episode.",
+      "le compte rendu fran\xE7ais du CPE : 7 f\xE9vr. pr\xE8s de 400 000 ; 14 mars 41 000 (source police) ; 16 mars 447 500 (police) ou 500 000 \xE0 800 000 (organisateurs) ; 28 mars 1 055 000 \xE0 3 000 000 ; 4 avril 1 \xE0 3 millions. Le chiffre du 14 mars est le seul ajout de cette passe \xE0 l\u2019\xE9pisode."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "enwiki-bloquons-tout",
+    "press",
+    "Wikipedia \u2014 \xAB Bloquons tout \xBB",
+    "https://en.wikipedia.org/wiki/Bloquons_tout",
+    both(
+      "the movement's complete action calendar: 10 September (hundreds of actions, ring roads blocked in Bordeaux, Rennes, Nantes, Caen and Paris; participation 200,000\u2013300,000), 18 September (union strikes more important than the movement's own actions; 500,000 to one million followed), and 2 October as the third wave. It mentions no action on 21 September, which closes that supposed gap.",
+      "le calendrier complet des actions du mouvement : 10 septembre (des centaines d\u2019actions, p\xE9riph\xE9riques bloqu\xE9s \xE0 Bordeaux, Rennes, Nantes, Caen et Paris ; participation de 200 000 \xE0 300 000), 18 septembre (les gr\xE8ves syndicales plus importantes que les actions du mouvement ; 500 000 \xE0 un million de participants) et 2 octobre comme troisi\xE8me vague. Aucune action au 21 septembre n\u2019y figure, ce qui ferme le faux manque."
+    ),
+    "2026-06-25"
+  ),
+  src(
+    "frwiki-nahel-2023",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB \xC9meutes cons\xE9cutives \xE0 la mort de Nahel Merzouk \xBB",
+    "https://fr.wikipedia.org/wiki/%C3%89meutes_cons%C3%A9cutives_%C3%A0_la_mort_de_Nahel_Merzouk",
+    both(
+      "the ministry day table that confirms the episode's weekly sums exactly: arrests 31/207/875/1,311/773/157/72/16/20 = 3,462; police injured 24/174/317/162/42/3/\u2014/\u2014/1 = 723; 5,954 vehicles burnt; 1,092 buildings damaged; 2 deaths. It gives no crowd count for any riot night, and the Place de la R\xE9publique demonstration it mentions was called for 8 July.",
+      "le tableau journalier du minist\xE8re qui confirme exactement les sommes hebdomadaires de l\u2019\xE9pisode : interpellations 31/207/875/1 311/773/157/72/16/20 = 3 462 ; policiers bless\xE9s 24/174/317/162/42/3/\u2014/\u2014/1 = 723 ; 5 954 v\xE9hicules incendi\xE9s ; 1 092 b\xE2timents d\xE9grad\xE9s ; 2 morts. Aucun d\xE9compte de foule pour aucune nuit, et la manifestation place de la R\xE9publique qu\u2019il mentionne \xE9tait pr\xE9vue pour le 8 juillet."
+    ),
+    "2026-10-22"
+  ),
+  src(
+    "frwiki-gj-mouvement",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB Mouvement des Gilets jaunes \xBB",
+    "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
+    both(
+      "the per-act casualty figures behind the revised GJ_EXTRA: Act I 409 injured and 1 death (Lib\xE9ration: 287,710 demonstrators, one death, 409 injured); Act II 24 injured including 5 police with 103 interpellations (Le JDD); Act IV 1,385 interpellations and 974 gardes \xE0 vue (Le Figaro live), with ~89,000 agents mobilised.",
+      "les chiffres de victimes par acte qui fondent le GJ_EXTRA r\xE9vis\xE9 : acte I 409 bless\xE9s et 1 mort (Lib\xE9ration : 287 710 manifestants, un mort, 409 bless\xE9s) ; acte II 24 bless\xE9s dont 5 policiers et 103 interpellations (Le JDD) ; acte IV 1 385 interpellations et 974 gardes \xE0 vue (Le Figaro live), avec environ 89 000 agents mobilis\xE9s."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "frwiki-gj-deroulement",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB D\xE9roulement du mouvement des Gilets jaunes \xBB",
+    "https://fr.wikipedia.org/wiki/D%C3%A9roulement_du_mouvement_des_Gilets_jaunes",
+    both(
+      "the authoritative per-act table: all 33 ministry counts and all seven Le Nombre jaune counts, which confirm GJ_ACTS and GJ_ORGANISER_COUNTS line for line. It also records Act II's first figure of 106,301 revised eight days later to 166,000, and Act I's communiqu\xE9 of 117 interpellations with 73 gardes \xE0 vue and 409 injured.",
+      "le tableau par acte de r\xE9f\xE9rence : les 33 chiffres du minist\xE8re et les sept comptes du Nombre jaune, qui confirment GJ_ACTS et GJ_ORGANISER_COUNTS ligne \xE0 ligne. Y figurent aussi le premier chiffre de l\u2019acte II (106 301) r\xE9vis\xE9 huit jours plus tard \xE0 166 000, et le communiqu\xE9 de l\u2019acte I : 117 interpellations dont 73 gardes \xE0 vue, 409 bless\xE9s."
+    ),
+    "2026-11-07"
+  ),
+  src(
+    "lemonde-bloquons-10sep",
+    "press",
+    "Le Monde \u2014 \xAB Takeaways from France's \u2018Block Everything\u2019 protests: \u2018A lot of anger is building up around issues of social injustice\u2019 \xBB",
+    "https://www.lemonde.fr/en/politics/article/2025/09/12/takeaways-from-france-s-block-everything-protests-a-lot-of-anger-is-building-up-around-issues-of-social-injustice_6745326_5.html",
+    both(
+      "the 10 September action count: 812 actions including 550 rallies and 262 blockades, 540 arrests and 415 people held in custody, 175,000 participants on the ministry's count. Explains why the file's \u201C596 rallies / 253 blockages\u201D is a different counting method, not a contradiction.",
+      "le d\xE9compte des actions du 10 septembre : 812 actions dont 550 manifestations et 262 blocages, 540 interpellations et 415 personnes en garde \xE0 vue, 175 000 participants selon le minist\xE8re. Explique pourquoi les \xAB 596 actions / 253 blocages \xBB du fichier rel\xE8vent d\u2019une autre m\xE9thode de comptage et non d\u2019une contradiction."
+    ),
+    "2025-09-12"
+  ),
+  src(
+    "rfi-bloquons-10sep",
+    "press",
+    "RFI \u2014 \xAB France: retour sur la journ\xE9e \u201CBloquons tout\u201D, qui a rassembl\xE9 200 000 manifestants \xBB",
+    "https://www.rfi.fr/fr/france/20250910-en-direct-mouvement-bloquons-tout-des-nombreuses-arrestations-apr%C3%A8s-les-premi%C3%A8res-actions-partout-en-france",
+    both(
+      "the first-morning estimate for 10 September \u2014 200,000 \u2014 which brackets the ministry's revised 175,000\u2013197,000 and the 200,000\u2013300,000 encyclopaedic range and confirms that the episode's band [175,000, 250,000] is defensible.",
+      "la premi\xE8re estimation du 10 septembre au matin \u2014 200 000 \u2014 qui encadre le chiffre minist\xE9riel r\xE9vis\xE9 de 175 000\u2013197 000 et la fourchette encyclop\xE9dique de 200 000 \xE0 300 000, et confirme que la bande [175 000, 250 000] de l\u2019\xE9pisode est d\xE9fendable."
+    ),
+    "2025-09-10"
+  ),
+  src(
+    "lesechos-18sep",
+    "press",
+    "Les \xC9chos \u2014 \xAB Gr\xE8ve du 18 septembre : retour sur une journ\xE9e de mobilisation \xBB",
+    "https://www.lesechos.fr/economie-france/conjoncture/direct-greve-du-18-septembre-les-fortes-perturbations-se-confirment-2186895",
+    both(
+      "the 18 September totals: more than 500,000 demonstrators per the Interior Ministry, 55,000 of them in Paris \u2014 the authority band already carried for the episode's w1, confirmed here against the union claim of one million.",
+      "les totaux du 18 septembre : plus de 500 000clusousc d\xE9fileants selon le minist\xE8re de l\u2019Int\xE9rieur, dont 55 000 \xE0 Paris \u2014 la bande d\u2019autorit\xE9 d\xE9j\xE0 port\xE9e au w1 de l\u2019\xE9pisode, confirm\xE9e ici face \xE0 la revendication syndicale d\u2019un million."
+    ),
+    "2025-09-18"
+  ),
+  src(
+    "interieur-31oct",
+    "official",
+    "Minist\xE8re de l\u2019Int\xE9rieur \u2014 \xAB Bilan de la journ\xE9e de mobilisation du 31 octobre 2026 et de la soir\xE9e d\u2019Halloween \xBB",
+    "https://www.interieur.gouv.fr/actualites/communiques-de-presse/bilan-de-journee-de-mobilisation-du-31-octobre-2026-et-de-soiree-dhalloween",
+    both(
+      "the week-5 national point, including the Halloween evening, when the damage count collapses.",
+      "le point national de la semaine 5, soir\xE9e d\u2019Halloween incluse, moment o\xF9 le d\xE9compte des dommages s\u2019effondre."
+    ),
+    "2026-10-31"
+  ),
+  src(
+    "interieur-05nov",
+    "official",
+    "Minist\xE8re de l\u2019Int\xE9rieur \u2014 \xAB Bilan de mobilisation lyc\xE9enne et de journ\xE9e nationale d\u2019action du 5 novembre 2026 \xBB",
+    "https://www.interieur.gouv.fr/actualites/communiques-de-presse/bilan-de-mobilisation-lyceenne-et-de-journee-nationale-daction-du-5-novembre-2026",
+    both(
+      "the 575,000 figure for 5 Nov, the peak of the movement, plus arrests and officer injuries.",
+      "le chiffre de 575 000 pour le 5 nov., sommet du mouvement, plus interpellations et bless\xE9s parmi les forces."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "interieur-07nov",
+    "official",
+    "Minist\xE8re de l\u2019Int\xE9rieur \u2014 \xAB Bilan de mobilisation du 7 novembre 2026 : des cort\xE8ges \xE9maill\xE9s de nombreux incidents \xBB",
+    "https://www.interieur.gouv.fr/actualites/actualites-du-ministere/bilan-de-mobilisation-du-7-novembre-2026-des-corteges-emailles-de-nombreux-incidents-dans-grandes",
+    both(
+      "the 146,000 figure, the arrest count and the incident list for 7 Nov, the last national day in the window.",
+      "le chiffre de 146 000, le nombre d\u2019interpellations et la liste des incidents du 7 nov., derni\xE8re journ\xE9e nationale de la fen\xEAtre."
+    ),
+    "2026-11-07"
+  ),
+  /* ── 2026 movement: origins and the September–October bilans ────────── */
+  src(
+    "frwiki-mvt-lyceen-2026",
+    "press",
+    "Wikip\xE9dia \u2014 \xAB Mouvement lyc\xE9e et \xE9tudiant de 2026 en France \xBB",
+    "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
+    both(
+      "the dated chronology of the whole movement: the first blockades (Mayotte 31 Aug, Le Rheu 7 Sep, Villeneuve-d'Ascq 14 Sep, Caen 15 Sep), Cr\xE9teil 18\u201319 Sep, the 23 and 24\u201325 Sep extensions, then the national turn on 28 Sep (180 establishments perturbed, 27 blockades, 164 arrests), Act I on 29 Sep (338 establishments affected, 45 blocked, 440 arrests), 30 Sep (356 establishments, 625 arrests, 83 forces injured) and Acte II on 1 Oct (900 actions, 340 in the morning per AFP, 400 closures, 1,949 arrests, 318 injured = 170 students + 65 staff + 83 forces). Also the named damage of 1 Oct at Nantes, Meaux and Rouen.",
+      "la chronologie dat\xE9e de tout le mouvement : les premiers blocages (Mayotte 31 ao\xFBt, Le Rheu 7 sept., Villeneuve-d\u2019Ascq 14 sept., Caen 15 sept.), Cr\xE9teil 18\u201319 sept., les extensions des 23 et 24\u201325 sept., puis le tournant national du 28 sept. (180 \xE9tablissements perturb\xE9s, 27 blocages, 164 interpellations), l\u2019acte I du 29 sept. (338 \xE9tablissements concern\xE9s, 45 bloqu\xE9s, 440 interpellations), le 30 sept. (356 \xE9tablissements, 625 interpellations, 83 bless\xE9s des forces) et l\u2019acte II du 1er oct. (900 actions, 340 le matin selon l\u2019AFP, 400 fermetures, 1 949 interpellations, 318 bless\xE9s = 170 \xE9l\xE8ves + 65 personnels + 83 forces). Aussi les d\xE9g\xE2ts nomm\xE9s du 1er oct. \xE0 Nantes, Meaux et Rouen."
+    ),
+    "2026-11-11"
+  ),
+  src(
+    "lemonde-29sept-338",
+    "press",
+    "Le Monde \u2014 \xAB Blocages des lyc\xE9es : 338 \xE9tablissements concern\xE9s mardi, dont 45 encore bloqu\xE9s, selon le minist\xE8re de l\u2019\xE9ducation nationale \xBB",
+    "https://www.lemonde.fr/societe/article/2026/09/29/blocages-des-lycees-338-etablissements-concernes-et-dix-blesses-selon-le-ministere-de-l-education-nationale_6785573_3225.html",
+    both(
+      "Act I: the USL claimed 400 blocked establishments out of ~3,700 in France; the Education ministry counted 416 establishments touched since the morning, 338 still affected at day's end with 45 blocked, and 31 injured students and staff; 440 interpellations, two thirds leading to a garde \xE0 vue.",
+      "l\u2019acte I : l\u2019USL revendiquait 400 \xE9tablissements bloqu\xE9s sur ~3 700 en France ; le minist\xE8re de l\u2019\xC9ducation recensait 416 \xE9tablissements touch\xE9s depuis le matin, 338 encore affect\xE9s en fin de journ\xE9e dont 45 bloqu\xE9s, et 31 bless\xE9s parmi \xE9l\xE8ves et personnels ; 440 interpellations, les deux tiers ayant donn\xE9 lieu \xE0 une garde \xE0 vue."
+    ),
+    "2026-09-29"
+  ),
+  src(
+    "lemonde-30sept-625",
+    "press",
+    "Le Monde \u2014 \xAB Blocage des lyc\xE9es : 625 interpellations mercredi, annonce le ministre de l\u2019Int\xE9rieur qui constate une extension du mouvement \xBB",
+    "https://www.lemonde.fr/societe/article/2026/09/30/blocage-des-lycees-625-interpellations-mercredi-annonce-le-ministre-de-l-interieur-qui-constate-une-extension-du-mouvement_6786023_3225.html",
+    both(
+      "30 September: 625 interpellations, actions in \xCEle-de-France, Lyon, Strasbourg and Nice, and the extension of the movement after the 29 Sep national day.",
+      "le 30 septembre : 625 interpellations, des actions en \xCEle-de-France, \xE0 Lyon, Strasbourg et Nice, et l\u2019extension du mouvement apr\xE8s la journ\xE9e nationale du 29 sept."
+    ),
+    "2026-09-30"
+  ),
+  src(
+    "lefigaro-30sept-625",
+    "press",
+    "Le Figaro \u2014 \xAB Blocages des lyc\xE9es : 625 interpellations, 83 policiers et gendarmes bless\xE9s mercredi, annonce le ministre de l\u2019Int\xE9rieur Laurent Nu\xF1ez \xBB",
+    "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-la-colere-ne-justifie-pas-la-violence-cingle-emmanuel-macron-des-tensions-dans-plusieurs-villes-20260930",
+    both(
+      "the 30 September figures: 625 interpellations, 83 police and gendarmes injured, 356 establishments concerned, and the Education ministry's 119 injured students and staff since the start of the blockades.",
+      "les chiffres du 30 septembre : 625 interpellations, 83 policiers et gendarmes bless\xE9s, 356 \xE9tablissements concern\xE9s, et les 119 \xE9l\xE8ves et personnels bless\xE9s depuis le d\xE9but des blocages selon le minist\xE8re de l\u2019\xC9ducation."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "lefigaro-1oct-1949",
+    "press",
+    "Le Figaro \u2014 \xAB Blocages des lyc\xE9es : 1 949 interpellations jeudi, 1 793 gardes \xE0 vue depuis lundi, interdiction de manifester autour des \xE9tablissements ferm\xE9s vendredi \xBB",
+    "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-lyceens-et-etudiants-appellent-ce-jeudi-a-un-acte-deux-de-mobilisation-20261001",
+    both(
+      "the 1 October daily arrest figure of 1,949 \u2014 the basis for correcting that cell from a cumulative stock to a daily flow \u2014 with 1,793 gardes \xE0 vue since Monday and the Wednesday figures of 625 arrests and 83 police injured.",
+      "le chiffre d\u2019interpellations du jeudi 1er octobre, 1 949 \u2014 base de la correction de cette cellule, de stock cumulatif \xE0 flux journalier \u2014 avec 1 793 gardes \xE0 vue depuis lundi et les chiffres du mercredi, 625 interpellations et 83 bless\xE9s."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "lefigaro-2oct-1747",
+    "press",
+    "Le Figaro \u2014 \xAB Blocages des lyc\xE9es : 1 747 interpellations ce vendredi, plus de 5 000 depuis lundi, annonce Nu\xF1ez \xBB",
+    "https://www.lefigaro.fr/actualite-france/en-direct-blocus-des-lycees-les-autorites-espere-l-apaisement-apres-les-violences-d-une-extreme-gravite-400-etablissements-fermes-20261002",
+    both(
+      "2 October: 1,747 arrests that day, more than 5,000 since Monday, 735 establishments perturbed (30% fewer), urban violence near 158 of them, ~300 police and gendarmes injured on Thursday, and 65 education staff injured since the start of the movement including 40 headteachers.",
+      "le 2 octobre : 1 747 interpellations, plus de 5 000 depuis lundi, 735 \xE9tablissements perturb\xE9s (\u221230 %), des violences urbaines pr\xE8s de 158 d\u2019entre eux, ~300 policiers et gendarmes bless\xE9s le jeudi, et 65 personnels de l\u2019\xC9ducation bless\xE9s depuis le d\xE9but du mouvement dont 40 proviseurs."
+    ),
+    "2026-10-02"
+  ),
+  src(
+    "lefigaro-5oct-6059",
+    "press",
+    "Le Figaro \u2014 \xAB Blocages des lyc\xE9es : 984 personnes interpell\xE9es ce lundi, 715 bless\xE9s c\xF4t\xE9 forces de l\u2019ordre depuis le d\xE9but de la mobilisation \xBB",
+    "https://www.lefigaro.fr/actualite-france/en-direct-blocage-des-lycees-des-centaines-de-lycees-seront-a-nouveau-fermes-au-moins-partiellement-lundi-avant-un-acte-iii-mardi-20261005",
+    both(
+      "the 5 October daily figures (984 arrests, 65 forces injured) and the ministry's stocks: 6,059 interpellations since 28 September and 715 police and gendarmes injured since the start of the movement. Matignon: 215 students and 85 education staff injured, 34 of them headteachers. The 6,059 figure is what makes the derived weekend total of 150 arrests checkable.",
+      "les chiffres journaliers du 5 octobre (984 interpellations, 65 bless\xE9s des forces) et les stocks minist\xE9riels : 6 059 interpellations depuis le 28 septembre et 715 policiers ou gendarmes bless\xE9s depuis le d\xE9but du mouvement. Matignon : 215 \xE9l\xE8ves et 85 personnels \xE9ducatifs bless\xE9s, dont 34 chefs d\u2019\xE9tablissement. Le chiffre de 6 059 est ce qui rend v\xE9rifiable le total de 150 interpellations du week-end."
+    ),
+    "2026-10-06"
+  ),
+  src(
+    "lefigaro-6oct-488",
+    "press",
+    "Le Figaro \u2014 \xAB Mobilisation des lyc\xE9ens : 488 interpellations en France, 43 membres des forces de l\u2019ordre bless\xE9s \xBB",
+    "https://www.lefigaro.fr/actualite-france/en-direct-blocage-des-lycees-des-dizaines-de-milliers-de-lyceens-dans-la-rue-pour-un-acte-iii-sous-haute-surveillance-20261006",
+    both(
+      "the 6 October daily figures \u2014 488 interpellations and 43 forces injured \u2014 and the cumulative 215 students injured since mid-September, including a 16-year-old who lost the use of an eye.",
+      "les chiffres journaliers du 6 octobre \u2014 488 interpellations et 53 bless\xE9s des forces \u2014 et le cumul de 215 \xE9l\xE8ves bless\xE9s depuis la mi-septembre, dont un youngster de 16 ans ayant perdu l\u2019usage d\u2019un \u0153il."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "ouestfrance-25sept-21",
+    "press",
+    "Ouest-France \u2014 \xAB Apr\xE8s des blocus dans des lyc\xE9es d\u2019\xCEle-de-France, 21 personnes ont \xE9t\xE9 interpell\xE9es \xBB",
+    "https://www.ouest-france.fr/education/ecole/apres-des-blocus-dans-des-lycees-dile-de-france-21-personnes-ont-ete-interpellees-7d16e80e-b8b0-11f1-8a73-5c5c9f666d13",
+    both(
+      "the only figure before the 28 September national turn: 21 interpellations by noon on Friday 25 September, announced by the Pr\xE9fecture de Police, in connection with the Paris-area lyc\xE9e mobilisations; the Cr\xE9teil rectorat counted a \u201Cgrosse dizaine\u201D of new blockades, mainly in Seine-Saint-Denis and Val-de-Marne.",
+      "le seul chiffre avant le tournant national du 28 septembre : 21 interpellations \xE0 midi le vendredi 25 septembre, annonc\xE9es par la pr\xE9fecture de Police, au titre des mobilisations de lyc\xE9es de l\u2019agglom\xE9ration parisienne ; le rectorat de Cr\xE9teil comptait une \xAB grosse dizaine \xBB de nouveaux blocages, surtout en Seine-Saint-Denis et dans le Val-de-Marne."
+    ),
+    "2026-09-25"
+  ),
+  src(
+    "franceinfo-mvt-ampleur",
+    "press",
+    "Franceinfo \u2014 \xAB Revendications locales, vid\xE9os virales, soutien de LFI\u2026 Comment le blocage de quelques lyc\xE9es s\u2019est transform\xE9 en un mouvement d\u2019ampleur \xBB",
+    "https://www.franceinfo.fr/societe/education/blocage-des-lycees/la-mobilisation-a-pris-une-ampleur-inattendue-comment-le-mouvement-de-blocage-des-lycees-s-est-propage-en-france_8216054.html",
+    both(
+      "the movement's chronology from the rentr\xE9e: first blockades in Brittany, Villeneuve-d'Ascq and Caen on 15 September, Cr\xE9teil on 17 September, the LFI visit on 21 September, a dozen blocked lyc\xE9es in the Cr\xE9teil academy on 25 September, the USL call for 29 September, and the cumulative figures of 119 injured (85 students, 34 staff) and 1,065 arrests over Tuesday and Wednesday.",
+      "la chronologie du mouvement d\xE8s la rentr\xE9e : premiers blocages en Bretagne, puis Villeneuve-d\u2019Ascq et Caen le 15 septembre, Cr\xE9teil le 17 septembre, la visite de LFI le 21 septembre, une dizaine de lyc\xE9es bloqu\xE9s dans l\u2019acad\xE9mie de Cr\xE9teil le 25 septembre, l\u2019appel de l\u2019USL pour le 29 septembre, et les cumulats de 119 bless\xE9s (85 \xE9l\xE8ves, 34 personnels) et 1 065 interpellations sur mardi et mercredi."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "rtbf-blocages-mineurs",
+    "press",
+    "RTBF \u2014 \xAB Blocages, d\xE9gradations, arrestations de mineurs : que se passe-t-il dans les lyc\xE9es en France ? \xBB",
+    "https://www.rtbf.be/article/blocages-degradations-arrestations-de-mineurs-que-se-passe-t-il-dans-les-lycees-en-france-11792600",
+    both(
+      "the enforcement narrative of the first fortnight: 21 arrests in the margins after a few days of blockades, 440 on 29 September mainly minors with two thirds in custody, 625 on 30 September, more than 100 students and staff injured, and the first IGPN referrals after police-firearm injuries.",
+      "le r\xE9cit de la r\xE9pression des premi\xE8res semaines : 21 interpellations en marge apr\xE8s quelques jours de blocages, 440 le 29 septembre principalement des mineurs aux deux tiers en garde \xE0 vue, 625 le 30 septembre, plus d\u2019une centaine d\u2019\xE9l\xE8ves et de personnels bless\xE9s, et les premi\xE8res saisines de l\u2019IGPN apr\xE8s des blessures par armes l\xE9tales."
+    ),
+    "2026-10-12"
+  ),
+  src(
+    "lemonde-29sept-fonction-publique",
+    "press",
+    "Le Monde \u2014 \xAB Gr\xE8ve du 29 septembre : 300 000-maths manifestations ont d\xE9fil\xE9 en France pour demander plus de moyens dans la fonction publique, selon la CGT \xBB",
+    "https://www.lemonde.fr/societe/article/2026/09/29/greve-du-29-septembre-300-000-manifestants-ont-defile-en-france-pour-demander-plus-de-moyens-dans-la-fonction-publique-selon-la-cgt_6785560_3225.html",
+    both(
+      "the 29 September crowd: about 206,000 demonstrators nationwide per the Interior Ministry against the CGT's 300,000, 30,000 in Paris per the police prefecture (including 8,000 firefighters), across more than 170 demonstrations. These are the figures carried in the 29 September turnout cell, flagged \u201Cp\u201D because they count the public-service cort\xE8ge the lyc\xE9e actions joined, not a student crowd.",
+      "la foule du 29 septembre : environ 206 000IRR\xC9S manifestation selon le minist\xE8re de l\u2019Int\xE9rieur contre 300 000 pour la CGT, 30 000 \xE0 Paris selon la pr\xE9fecture de police (dont 8 000 pompiers), pour plus de 170 manifestations. Ce sont les chiffres port\xE9s dans la cellule de participation du 29 septembre, marqu\xE9e \xAB p \xBB car ils d\xE9nombrent le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e et non une foule \xE9tudiante."
+    ),
+    "2026-09-29"
+  ),
+  src(
+    "franceinfo-fonction-publique-29sept",
+    "press",
+    "Franceinfo \u2014 \xAB Mobilisation dans la fonction publique : 206 000 manifestants selon le minist\xE8re de l\u2019Int\xE9rieur, 300 000 pour la CGT \xBB",
+    "https://www.franceinfo.fr/economie/greve/mobilisation-dans-la-fonction-publique-206-000-manifestants-selon-le-ministere-de-l-interieur-300-000-pour-la-cgt_8215472.html",
+    both(
+      "the same 29 September figures with the Paris split (70,000 CGT / 30,000 ministry) and the strike rates: 9.64% of state civil servants, 5.68% territorial, 4.5% hospital, 13.71% of teachers.",
+      "les m\xEAmes chiffres du 29 septembre avec la r\xE9partition parisienne (70 000 CGT / 30 000 minist\xE8re) et les taux de gr\xE8ve : 9,64 % dans la fonction publique d\u2019\xC9tat, 5,68 % territoriale, 4,5 % hospitali\xE8re, 13,71 % des enseignants."
+    ),
+    "2026-09-29"
+  ),
+  src(
+    "ouestfrance-7sept-lerheu",
+    "press",
+    "Ouest-France \u2014 \xAB Cours tardifs ou par correspondance, classes surcharg\xE9es\u2026 ces lyc\xE9ens bloquent leur \xE9tablissement pr\xE8s de Rennes \xBB",
+    "https://www.ouest-france.fr/bretagne/le-rheu-35650/cours-tardifs-ou-par-correspondance-classes-surchargees-ces-lyceens-bloquent-leur-etablissement-pres-de-rennes-5cb2156e-aac0-11f1-9556-770e8387e7e9",
+    both(
+      "the movement's first mainland blockade: the lyc\xE9e Th\xE9odore-Monod at Le Rheu, near Rennes, on Monday 7 September 2026, over late or correspondence classes and overcrowded classes \u2014 the origin point that precedes the 15 September window opening.",
+      "le tout premier blocus en m\xE9tropole : le lyc\xE9e Th\xE9odore-Monod au Rheu, pr\xE8s de Rennes, le lundi 7 septembre 2026, sur les cours tardifs ou par correspondance et les classes surcharg\xE9es \u2014 le point d\u2019origine qui pr\xE9c\xE8de l\u2019ouverture de la fen\xEAtre au 15 septembre."
+    ),
+    "2026-09-07"
+  ),
+  src(
+    "actu-caen-15sept",
+    "press",
+    "Actu \u2014 \xAB Un lyc\xE9e bloqu\xE9 par des \xE9l\xE8ves \xE0 Caen \xBB",
+    "https://actu.fr/normandie/caen_14118/un-lycee-bloque-par-des-eleves-a-caen-ils-denoncent-une-mauvaise-organisation-interne_64794136.html",
+    both(
+      "the 15 September blockade of the lyc\xE9e Victor-Hugo in Caen over internal organisation \u2014 the first date inside the new window.",
+      "le blocage du 15 septembre du lyc\xE9e Victor-Hugo de Caen sur l\u2019organisation interne \u2014 la premi\xE8re date \xE0 l\u2019int\xE9rieur de la nouvelle fen\xEAtre."
+    ),
+    "2026-09-18"
+  ),
+  src(
+    "actu-villeneuve-15sept",
+    "press",
+    "Actu \u2014 \xAB Pourquoi d\xE9j\xE0 un blocage de l\u2019universit\xE9 de Pont de Bois \xE0 Villeneuve-d\u2019Ascq ? \xBB",
+    "https://actu.fr/hauts-de-france/villeneuve-d-ascq_59009/pourquoi-deja-un-blocage-de-luniversite-de-pont-de-bois_64791633.html",
+    both(
+      "the campus Pont de Bois blockade at Villeneuve-d'Ascq on Tuesday 15 September, with the lyc\xE9e Queneau in the same town blocked the day before \u2014 the source of the one-day discrepancy between the two accounts of the Villeneuve-d'Ascq date.",
+      "le blocage du campus Pont de Bois \xE0 Villeneuve-d\u2019Ascq le mardi 15 septembre, le lyc\xE9e Queneau de la m\xEAme ville \xE9tant bloqu\xE9 la veille \u2014 \xE0 l\u2019origine de l\u2019\xE9cart d\u2019un jour entre les deux versions de la date de Villeneuve-d\u2019Ascq."
+    ),
+    "2026-09-15"
+  ),
+  src(
+    "ouestfrance-infographie-2026",
+    "press",
+    "Ouest-France \u2014 \xAB Infographie. Du 29 septembre au 29 octobre, comment la col\xE8re des lyc\xE9ens est devenue une col\xE8re sociale \xBB",
+    "https://www.ouest-france.fr/societe/manifestation/infographie-du-29-septembre-au-29-octobre-comment-la-colere-des-lyceens-est-devenue-une-colere-sociale-0c2ca3ec-d37a-11f1-81f2-0d14b9f9c452",
+    both(
+      "the movement's own calendar, from the first act of manifestations and blockades on 29 September to 29 October \u2014 the spine the September rows are placed on.",
+      "le calendrier du mouvement, du premier acte de manifestations et blocages le 29 septembre au 29 octobre \u2014 l\u2019axe sur lequel sont pos\xE9s les lignes de septembre."
+    ),
+    "2026-10-29"
+  ),
+  src(
+    "investigation-genz",
+    "press",
+    "Investigaction \u2014 \xAB \u201CTasty crousti antifascisti\u201D : Quand la Gen Z tente de faire nation \xBB",
+    "https://investigaction.net/tasty-crousti-antifascisti-quand-la-gen-z-tente-de-faire-nation/",
+    both(
+      "an independent dating of the movement's origin at Cr\xE9teil on 17 September, the 21 September LFI visit, and the activist record of the repression that followed \u2014 mutilations by flashballs and grenades, custody humiliations, and the case of the Trappes killing.",
+      "une datation ind\xE9pendante de l\u2019origine du mouvement \xE0 Cr\xE9teil le 17 septembre, de la visite de LFI le 21 septembre, et le r\xE9cit militant de la r\xE9pression qui a suivi \u2014 mutilations par flashballs et grenades, humiliations en garde \xE0 vue, affaire de l\u2019homicide \xE0 Trappes."
+    ),
+    "2026-11-01"
+  ),
+  /* ------------------------------------- 2026 — turnout, arrests, injuries */
+  src(
+    "europe1-07nov",
+    "press",
+    "Europe 1 \u2014 \xAB Manifestations du 7 novembre : 146 000 personnes ont d\xE9fil\xE9 en France samedi, 360 interpellations \xBB",
+    "https://www.europe1.fr/societe/manifestations-du-7-novembre-146000-personnes-ont-defile-en-france-samedi-360-interpellations-selon-le-ministere-de-linterieur-1216046",
+    both(
+      "146,000 demonstrators and 360 arrests on 7 Nov \u2014 the figure the 7 Nov ministry bilan is read through.",
+      "146 000 manifestants et 360 interpellations le 7 nov. \u2014 la lecture retenue du bilan minist\xE9riel du 7 nov."
+    ),
+    "2026-11-07"
+  ),
+  src(
+    "tf1info-07nov",
+    "press",
+    "TF1 Info \u2014 \xAB Manifestations : 146 000 personnes en France samedi 7 novembre, au moins 360 interpellations \xBB",
+    "https://www.tf1info.fr/societe/manifestations-146-000-personnes-en-france-samedi-7-novembre-au-moins-360-interpellations-2474538.html",
+    both(
+      "independent confirmation of the 7 Nov pair.",
+      "confirmation ind\xE9pendante du couple de valeurs du 7 nov."
+    ),
+    "2026-11-07"
+  ),
+  src(
+    "france24-05nov",
+    "press",
+    "France 24 \u2014 live coverage of the 5 November national day",
+    "https://www.france24.com/en/france/20261105-live-france-nationwide-strikes-living-costs",
+    both(
+      "the ministry\u2019s 575,000 for 5 Nov, quoted in English.",
+      "les 575 000 du minist\xE8re pour le 5 nov., cit\xE9s en anglais."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "france24-06nov",
+    "press",
+    "France 24 \u2014 70 000 policiers et gendarmes \xE0 nouveau mobilis\xE9s samedi",
+    "https://www.france24.com/fr/france/20261106-manifestations-de-samedi-en-france-70-000-policiers-et-gendarmes-%C3%A0-nouveau-mobilis%C3%A9s",
+    both(
+      "the size of the 7 Nov policing operation, the input to the week-6 cost band.",
+      "la taille du dispositif du 7 nov., entr\xE9e de la fourchette de co\xFBt de la semaine 6."
+    ),
+    "2026-11-06"
+  ),
+  src(
+    "franceinfo-05nov",
+    "press",
+    "franceinfo \u2014 direct du 5 novembre : plus de 250 actions annonc\xE9es dans toute la France",
+    "https://www.franceinfo.fr/societe/manifestations/direct-greve-du-5-novembre-plus-de-250-actions-annoncees-dans-toute-la-france-selon-une-carte-de-la-ggt_8268827.html",
+    both(
+      "448 interpellations on 5 Nov, the arrest figure plotted for that day.",
+      "448 interpellations le 5 nov., valeur trac\xE9e pour cette journ\xE9e."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "franceinfo-24oct",
+    "press",
+    "franceinfo \u2014 \xAB Pr\xE8s de 1 000 interpellations, deux bless\xE9s graves \xBB : le bilan du 24 octobre",
+    "https://www.franceinfo.fr/societe/manifestations/mobilisation-en-baisse-pres-de-1-000-interpellations-deux-blesses-graves-ce-qu-il-faut-retenir-de-cette-nouvelle-journee-de-manifestation-contre-la-vie-chere-partout-en-france_8252476.html",
+    both(
+      "24 Oct arrests and the two seriously injured protesters; also the evidence that turnout fell that day.",
+      "les interpellations du 24 oct. et les deux manifestants gri\xE8vement bless\xE9s ; aussi la preuve d\u2019une mobilisation en baisse ce jour-l\xE0."
+    ),
+    "2026-10-24"
+  ),
+  src(
+    "anadolu-05nov",
+    "press",
+    "Anadolu Agency (fran\xE7ais) \u2014 642 interpellations lors de la mobilisation du 5 novembre",
+    "https://www.aa.com.tr/fr/france/france-642-interpellations-lors-de-la-mobilisation-du-5-novembre-une-plainte-annonc%C3%A9e-contre-nu%C3%B1ez/4114506",
+    both(
+      "the 642 figure that competes with 448 for 5 Nov; the higher bound is plotted as partial.",
+      "le chiffre de 642 qui concurrence 448 pour le 5 nov. ; la borne haute est trac\xE9e comme partielle."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "yenisafak-05nov",
+    "press",
+    "Yeni \u015Eafak (fran\xE7ais) \u2014 642 interpellations lors de la mobilisation du 5 novembre",
+    "https://fr.yenisafak.com/actualites/642-interpellations-lors-de-la-mobilisation-du-5-novembre-61558",
+    both(
+      "corroborates Anadolu\u2019s 642, which is why that bound is shown at all.",
+      "corrobore les 642 d\u2019Anadolu, raison pour laquelle cette borne est affich\xE9e."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "tf1info-05nov",
+    "press",
+    "TF1 Info \u2014 direct du 5 novembre : la France se pr\xE9pare \xE0 un \xAB jeudi noir \xBB",
+    "https://www.tf1info.fr/societe/en-direct-mobilisation-du-5-novembre-manifestations-et-greves-paris-marseille-nantes-la-france-se-prepare-a-un-jeudi-noir-2473952.html",
+    both(
+      "the shape of the 5 Nov day \u2014 250+ actions, strikes in Paris, Marseille and Nantes.",
+      "la physionomie du 5 nov. \u2014 plus de 250 actions, gr\xE8ves \xE0 Paris, Marseille et Nantes."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "lefigaro-05nov",
+    "press",
+    "Le Figaro \u2014 \xAB Manifestations du 5 novembre : 70 000 policiers et gendarmes mobilis\xE9s, d\xE9clare Nu\xF1ez \xBB",
+    "https://www.lefigaro.fr/flash-actu/manifestations-du-5-novembre-70-000-policiers-et-gendarmes-mobilises-declare-nunez-20261104",
+    both(
+      "announcement, on 4 Nov, of the 70,000-strong deployment for 5 Nov.",
+      "annonce, le 4 nov., du dispositif de 70 000 agents pour le 5 nov."
+    ),
+    "2026-11-04"
+  ),
+  src(
+    "armees-05nov",
+    "press",
+    "armees.com \u2014 le dispositif de s\xE9curit\xE9 du 5 novembre 2026",
+    "https://armees.com/manifestations-5-novembre-2026-dispositif-securite-70000-policiers-gendarmes/",
+    both(
+      "third confirmation of the 70,000 deployment.",
+      "troisi\xE8me confirmation du dispositif de 70 000 agents."
+    )
+  ),
+  src(
+    "leparisien-24oct-blesses",
+    "press",
+    "Le Parisien \u2014 \xAB 267 membres des forces de l\u2019ordre et 150 manifestants ont \xE9t\xE9 bless\xE9s, annonce Laurent Nu\xF1ez \xBB",
+    "https://www.leparisien.fr/faits-divers/manifestations-du-samedi-24-octobre-267-membres-des-forces-de-lordre-et-150-manifestants-ont-ete-blesses-annonce-laurent-nunez-26-10-2026-MHSP3XA3QBEM7GR4JUZL77Z54I.php",
+    both(
+      "the only day in the window with both sides of the injury count published together.",
+      "la seule journ\xE9e de la fen\xEAtre o\xF9 les deux c\xF4t\xE9s du bilan de bless\xE9s sont publi\xE9s ensemble."
+    ),
+    "2026-10-26"
+  ),
+  src(
+    "ouest-france-angers",
+    "press",
+    "Ouest-France \u2014 manifestation du 7 novembre \xE0 Angers : huit bless\xE9s, onze interpell\xE9s",
+    "https://www.ouest-france.fr/societe/manifestation/manifestation-du-7-novembre-a-angers-huit-blesses-onze-interpelles-un-commerce-et-quatre-banques-vandalises-b7d296cc-dada-11f1-a45f-49114163a350",
+    both(
+      "regional-only marker: 8 injured, 11 arrests, one shop and four banks vandalised \u2014 never extrapolated.",
+      "marqueur r\xE9gional : 8 bless\xE9s, 11 interpellations, un commerce et quatre banques vandalis\xE9s \u2014 jamais extrapol\xE9."
+    ),
+    "2026-11-07"
+  ),
+  src(
+    "bulletindescommunes-07nov",
+    "press",
+    "Bulletin des communes \u2014 la mobilisation du 7 novembre, commune par commune",
+    "https://bulletindescommunes.net/mobilisation-du-7-novembre-communes/",
+    both(
+      "the municipality-level outcome of 7 Nov, used to sanity-check the national total.",
+      "le r\xE9sultat communal du 7 nov., servant \xE0 recouper le total national."
+    ),
+    "2026-11-07"
+  ),
+  src(
+    "figaro-06nov-live",
+    "press",
+    "Le Figaro \u2014 direct du 6 novembre : 41 lyc\xE9es bloqu\xE9s, de nouvelles actions attendues samedi",
+    "https://www.lefigaro.fr/actualite-france/en-direct-colere-sociale-apres-la-forte-mobilisation-de-jeudi-de-nouvelles-actions-attendues-des-samedi-20261106",
+    both(
+      "41 lyc\xE9es still blocked the day after the 5 Nov peak \u2014 the tail of the school movement.",
+      "41 lyc\xE9es encore bloqu\xE9s au lendemain du pic du 5 nov. \u2014 la queue du mouvement lyc\xE9en."
+    ),
+    "2026-11-06"
+  ),
+  src(
+    "actuforces-17oct",
+    "press",
+    "Actu Forces de l\u2019Ordre \u2014 plus de 10 000 policiers et gendarmes mobilis\xE9s \xE0 Paris le 17 octobre",
+    "https://actuforcesdelordre.fr/2026/10/17/10000-policiers-gendarmes-mobilises-paris-manifestations/",
+    both(
+      "the Paris deployment on 17 Oct, the low end of the policing-cost band for that day.",
+      "le dispositif parisien du 17 oct., borne basse de la fourchette de co\xFBt pour cette journ\xE9e."
+    ),
+    "2026-10-17"
+  ),
+  src(
+    "actuforces-beauvau",
+    "press",
+    "Actu Forces de l\u2019Ordre \u2014 Beauvau : 305 bless\xE9s, 1 949 interpellations",
+    "https://actuforcesdelordre.fr/2026/10/01/beauvau-mobilise-forces-mobiles-305-blesses-1949-interpellations-lycees/",
+    both(
+      "the cumulative police-side tally of the lyc\xE9e wave (305 injured, 1,949 arrests).",
+      "le cumul c\xF4t\xE9 forces de l\u2019ordre pour la vague lyc\xE9enne (305 bless\xE9s, 1 949 interpellations)."
+    )
+  ),
+  src(
+    "larep-17oct",
+    "press",
+    "La R\xE9publique du Centre \u2014 la journ\xE9e du 17 octobre est-elle vraiment in\xE9dite ?",
+    "https://www.larep.fr/paris-75000/faits-divers/arrestations-mobilisations-la-journee-du-17-octobre-est-elle-vraiment-inedite_15066265/",
+    both(
+      "the \xAB unprecedented \xBB claim tested against earlier mobilisations; it is why 17 Oct is not called a record.",
+      "le caract\xE8re \xAB in\xE9dit \xBB mis \xE0 l\u2019\xE9preuve des mobilisations ant\xE9rieures ; d\u2019o\xF9 l\u2019absence de record pour le 17 oct."
+    )
+  ),
+  src(
+    "laprovence-17oct",
+    "press",
+    "La Provence \u2014 violences du 17 octobre : le dispositif policier inf\xE9rieur \xE0 celui de mobilisations similaires",
+    "https://www.laprovence.com/article/faits-divers-justice/5795089910157914/violences-du-17-octobre-le-dispositif-policier-inferieur-a-celui-observe-dans-des-mobilisations-similaires",
+    both(
+      "the numerical claim behind the \xAB smaller dispositif \xBB reading.",
+      "l\u2019argument chiffr\xE9 derri\xE8re la lecture d\u2019un dispositif plus faible."
+    )
+  ),
+  src(
+    "franceinfo-dispositif-17oct",
+    "press",
+    "franceinfo \u2014 le dispositif de maintien de l\u2019ordre du 17 octobre \xE9tait-il moins important ?",
+    "https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/le-dispositif-de-maintien-de-l-ordre-deploye-le-17-octobre-etait-il-moins-important-que-lors-des-dernieres-grandes-manifestations_8243998.html",
+    both(
+      "the fact-check that sets the policing-cost comparison against previous movements.",
+      "la v\xE9rification qui situe la comparaison de co\xFBt face aux mouvements pr\xE9c\xE9dents."
+    )
+  ),
+  src(
+    "franceinfo-nunez-moyens",
+    "press",
+    "franceinfo \u2014 Laurent Nu\xF1ez revient sur les moyens policiers d\xE9ploy\xE9s apr\xE8s le 17 octobre",
+    "https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/apres-les-mobilisations-du-17-octobre-laurent-nunez-revient-sur-les-moyens-policiers-deployes_8266529.html",
+    both(
+      "the minister\u2019s own account of the deployment, which contradicts the press reading.",
+      "la version du ministre sur le dispositif, qui contredit la lecture de la presse."
+    )
+  ),
+  src(
+    "reporterre-street-medics",
+    "press",
+    "Reporterre \u2014 les street-medics face \xE0 une r\xE9pression de plus en plus f\xE9roce",
+    "https://reporterre.net/Les-street-medics-face-a-une-repression-de-plus-en-plus-feroce",
+    both(
+      "why no weekly protester-injury series exists: the first-aid volunteers are themselves policed.",
+      "pourquoi aucune s\xE9rie hebdomadaire de bless\xE9s n\u2019existe : les secouristes sont eux-m\xEAmes vis\xE9s."
+    )
+  ),
+  src(
+    "sudouest-street-medics",
+    "press",
+    "Sud Ouest \u2014 \xE0 Bordeaux, les secouristes de rue en premi\xE8re ligne",
+    "https://www.sudouest.fr/gironde/bordeaux/mobilisation-sociale-a-bordeaux-c-est-le-meilleur-moyen-de-militer-au-milieu-des-detonations-et-des-lacrymogenes-les-secouristes-de-rue-en-premiere-ligne-du-secours-31404007.php",
+    both(
+      "local colour on injury recording, and the Bordeaux figure used as a regional check.",
+      "le reportage local sur le relev\xE9 des bless\xE9s, et le chiffre bordelais utilis\xE9 comme contr\xF4le r\xE9gional."
+    )
+  ),
+  src(
+    "prodpress-blesses",
+    "press",
+    "PRODPRESS \u2014 bless\xE9s : des cas document\xE9s, des totaux non consolid\xE9s",
+    "https://www.prodpress.eu/manifestations-blesses-bilan-coquerel-verification-2026/",
+    both(
+      "explicit statement that injury totals were never consolidated \u2014 the method note behind the injury floor.",
+      "constat explicite que les totaux de bless\xE9s n\u2019ont jamais \xE9t\xE9 consolid\xE9s \u2014 la note de m\xE9thode derri\xE8re le plancher."
+    )
+  ),
+  src(
+    "mediapart-violences-detat",
+    "press",
+    "Mediapart (Le Club) \u2014 \xAB Violences d\u2019\xC9tat \xBB (deux versions du billet)",
+    "https://blogs.mediapart.fr/jonathan-gensburger/blog/111126/violences-d-etat",
+    both(
+      "two versions of the same blog post circulate under different slugs; the higher figures come from the later one, so the citation is flagged as a blog, not reporting.",
+      "deux versions du m\xEAme billet circulent sous des slugs diff\xE9rents ; les chiffres hauts viennent de la seconde, d\u2019o\xF9 le signalement en tant que blog et non reportage."
+    ),
+    "2026-11-11"
+  ),
+  src(
+    "mutins-pangee",
+    "press",
+    "Les Mutins de Pang\xE9e (Facebook) \u2014 \xAB 10 \xE9borgn\xE9s, 7 amput\xE9s, 52 autres bless\xE9s graves \xBB",
+    "https://www.facebook.com/LesMutinsDePangee/posts/-le-terrible-bilan-de-la-r%C3%A9pression10-%C3%A9borgn%C3%A9s-7-amput%C3%A9s-52-autres-bless%C3%A9s-grave/1566486208856655/",
+    both(
+      "the 79-victim figure before Le Canard encha\xEEn\xE9 attributed it to Thines; social-media origin, treated as a floor only.",
+      "les 79 victimes avant que Le Canard ne l\u2019attribue \xE0 Thines ; origine r\xE9seaux sociaux, trait\xE9e comme plancher seulement."
+    )
+  ),
+  src(
+    "contre-attaque",
+    "press",
+    "Contre-Attaque \u2014 17 octobre, un carnage policier sans pr\xE9c\xE9dent : nouveau recensement",
+    "https://contre-attaque.net/2026/10/23/17-octobre-un-carnage-policier-sans-precedent-nouveau-recensement-de-la-sauvagerie-policiere/",
+    both(
+      "the militant recount of 17 Oct injuries; the highest bound considered, never plotted alone.",
+      "le recensement militant des bless\xE9s du 17 oct. ; borne la plus haute examin\xE9e, jamais trac\xE9e seule."
+    )
+  ),
+  src(
+    "canard-eyes-2026",
+    "press",
+    "Le Canard encha\xEEn\xE9 \u2014 \xAB Les manifestants ont le mauvais \u0153il \xBB",
+    "https://www.lecanardenchaine.fr/police-justice/55381-les-manifestants-ont-le-mauvais-oeil",
+    both(
+      "Prof. Laurent Thines\u2019 (CHU de Besan\xE7on) press-and-blog register: 79 serious injuries in three weeks \u2014 10 blinded, 9 cranio-facial, 7 amputations, 1 death. The source of the protester-injury floor, and the reason no weekly protester-injury series exists.",
+      "le registre presse et blog du Pr Laurent Thines (CHU de Besan\xE7on) : 79 bless\xE9s graves en trois semaines \u2014 10 \xE9borgn\xE9s, 9 traumatismes cr\xE2nio-faciaux, 7 amputations, 1 mort. Source du plancher de bless\xE9s parmi les manifestants, et raison pour laquelle aucune s\xE9rie hebdomadaire de bless\xE9s manifestants n\u2019existe."
+    ),
+    "2026-11-10"
+  ),
+  /* ------------------------------------------ 2026 — damage and cost */
+  src(
+    "ifrap-2026",
+    "cost",
+    "Fondation IFRAP \u2014 \xAB Violences des 17 et 18 octobre 2026 : une facture qui approche le milliard d\u2019euros \xBB",
+    "https://www.ifrap.org/etat-et-collectivites/violences-des-17-et-18-octobre-2026-une-facture-qui-approche-le-milliard-deuros",
+    both(
+      "the \u20AC247M\u2013872M damage range for 17\u201318 Oct: ~\u20AC910M material damage and ~\u20AC190M lost turnover in the high estimate, \u20AC666M of it retail.",
+      "la fourchette de 247 \xE0 872 M\u20AC de dommages pour les 17\u201318 oct. : ~910 M\u20AC de dommages mat\xE9riels et ~190 M\u20AC de chiffre d\u2019affaires perdu dans l\u2019hypoth\xE8se haute, dont 666 M\u20AC pour le commerce de d\xE9tail."
+    ),
+    "2026-10-21"
+  ),
+  src(
+    "monde-cci-2026",
+    "cost",
+    "Le Monde \u2014 \xAB Plus de 2 500 commerces d\xE9grad\xE9s \xBB, d\u2019apr\xE8s CCI France",
+    "https://www.lemonde.fr/economie/article/2026/10/27/plus-de-2-500-commerces-degrades-en-marge-des-recentes-mobilisations-selon-cci-france-qui-demande-une-interdiction-des-manifestations-jusqu-aux-fetes-de-fin-d-annee_6801314_3234.html",
+    both(
+      "CCI France\u2019s shop counts: 2,488 hit on 17 Oct, of which 1,161 pillaged, sacked or burnt.",
+      "les d\xE9comptes de commerces de CCI France : 2 488 touch\xE9s le 17 oct., dont 1 161 pill\xE9s, saccag\xE9s ou incendi\xE9s."
+    ),
+    "2026-10-27"
+  ),
+  src(
+    "franceinfo-cci-2026",
+    "cost",
+    "franceinfo \u2014 \xAB Plus de 2 500 magasins touch\xE9s \xBB",
+    "https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/plus-de-2-500-magasins-touches-par-les-violences-en-marge-des-manifestations-des-17-et-24-octobre-selon-les-chambres-de-commerce_8256049.html",
+    both(
+      "the 24 Oct increment (50 shops, total 2,538) and the 80% centre-town turnover drop.",
+      "l\u2019incr\xE9ment du 24 oct. (50 commerces, 2 538 au total) et la chute de 80 % du chiffre d\u2019affaires en centre-ville."
+    ),
+    "2026-10-27"
+  ),
+  src(
+    "bfmtv-cci-2026",
+    "cost",
+    "BFMTV \u2014 CCI France, 20 commerces vandalis\xE9s le 31 octobre",
+    "https://www.bfmtv.com/economie/entreprises/20-commerces-vandalises-samedi-contre-2-488-le-17-octobre-cci-france-constate-une-nette-baisse-des-degradations-en-marge-des-manifestations-mais-s-inquiete-d-une-forte-chute-du-chiffre-d-affaires-des-magasins-pouvant-atteindre-80_AD-202611010225.html",
+    both(
+      "why week 6 carries no damage figure: the count collapses after 24 Oct.",
+      "pourquoi la semaine 6 ne porte aucun chiffre de dommages : le d\xE9compte s\u2019effondre apr\xE8s le 24 oct."
+    ),
+    "2026-11-01"
+  ),
+  src(
+    "ladepeche-cci-31oct",
+    "cost",
+    "La D\xE9p\xEAche \u2014 20 commerces d\xE9grad\xE9s ce samedi, contre 2 488 il y a deux semaines",
+    "https://www.ladepeche.fr/2026/11/01/manifestations-du-31-octobre-20-commerces-degrades-ce-samedi-selon-cci-france-il-y-en-avait-2-488-il-y-a-deux-semaines-13630867.html",
+    both(
+      "the 31 Oct figure set against 17 Oct, the cleanest evidence of the movement\u2019s tapering.",
+      "le chiffre du 31 oct. face au 17 oct., preuve la plus nette de l\u2019essoufflement."
+    ),
+    "2026-11-01"
+  ),
+  src(
+    "lsa-cci-2026",
+    "cost",
+    "LSA / CCI France \u2014 1 milliard d\u2019euros de d\xE9g\xE2ts, 2 500 commerces touch\xE9s, ville par ville",
+    "https://www.lsa-conso.fr/distributeurs-alimentaires/manifestations-doctobre-1-milliard-deuros-de-degats-et-2-500-commerces-touches-selon-cci-france-les-details-ville-par-ville.2HTRI7YOSJHP5E52ISPEQEF4KQ.html",
+    both(
+      "the city-by-city breakdown of the \u20AC1bn retail estimate.",
+      "la ventilation par ville de l\u2019estimation de 1 Md\u20AC pour le commerce."
+    )
+  ),
+  src(
+    "figaro-cost-weekend",
+    "cost",
+    "Le Figaro \u2014 \xAB Le co\xFBt exorbitant d\u2019un week-end d\u2019\xE9meutes pour les commerces et les collectivit\xE9s \xBB",
+    "https://www.lefigaro.fr/societes/violences-urbaines-le-cout-exorbitant-d-un-week-end-d-emeutes-pour-les-commerces-et-les-collectivites-20261020",
+    both(
+      "cross-check on the damage order of magnitude.",
+      "contre-v\xE9rification de l\u2019ordre de grandeur des dommages."
+    ),
+    "2026-10-20"
+  ),
+  src(
+    "figaro-damage-2500",
+    "cost",
+    "Le Figaro \u2014 plus de 2 500 commerces d\xE9grad\xE9s en France",
+    "https://www.lefigaro.fr/actualite-france/violences-urbaines-plus-de-2-500-commerces-degrades-en-france-20261027",
+    both(
+      "second, non-CCI route to the 2,500-shop figure and the \u20AC1bn headline.",
+      "seconde voie, hors CCI, vers les 2 500 commerces et le titre du milliard."
+    ),
+    "2026-10-27"
+  ),
+  src(
+    "leparisien-idf-1m",
+    "cost",
+    "Le Parisien \u2014 1 million d\u2019euros de d\xE9g\xE2ts, 200 lyc\xE9es perturb\xE9s : le bilan des blocages en \xCEle-de-France",
+    "https://www.leparisien.fr/societe/1-million-deuros-de-degats-200-lycees-perturbes-le-bilan-des-blocus-de-lycees-en-ile-de-france-01-10-2026-YACA325BUBAD5K7L5B6DWBDODY.php",
+    both(
+      "the 1 Oct lyc\xE9e-blockade baseline: \u20AC1M and 200 establishments in \xCEle-de-France.",
+      "la base du 1er oct. pour les blocages de lyc\xE9es : 1 M\u20AC et 200 \xE9tablissements en \xCEle-de-France."
+    ),
+    "2026-10-01"
+  ),
+  src(
+    "leparisien-millions",
+    "cost",
+    "Le Parisien \u2014 blocages des lyc\xE9es : plusieurs millions d\u2019euros de d\xE9g\xE2ts d\xE9j\xE0 estim\xE9s en France",
+    "https://www.leparisien.fr/societe/blocages-des-lycees-plusieurs-millions-deuros-de-degats-materiels-deja-estimes-en-france-02-10-2026-ICDKIV5SEFEA7NXURY45JLAZRA.php",
+    both(
+      "the first national order of magnitude for the school movement, before 17 Oct.",
+      "le premier ordre de grandeur national pour le mouvement lyc\xE9en, avant le 17 oct."
+    ),
+    "2026-10-02"
+  ),
+  src(
+    "leparisien-1500shops",
+    "cost",
+    "Le Parisien \u2014 violences du 17 octobre : 1 500 magasins touch\xE9s, plusieurs centaines de millions d\u2019euros de d\xE9g\xE2ts",
+    "https://www.leparisien.fr/economie/violences-du-17-octobre-1-500-magasins-touches-en-france-plusieurs-centaines-de-millions-deuros-de-degats-18-10-2026-PAAKNFW6ZVCCJMLJ7LTOAWLKOI.php",
+    both(
+      "the 1,500-shop figure published the day after, later revised upward to 2,488.",
+      "les 1 500 commerces publi\xE9s au lendemain, r\xE9vis\xE9s ensuite \xE0 2 488."
+    ),
+    "2026-10-18"
+  ),
+  src(
+    "leparisien-looting",
+    "cost",
+    "Le Parisien \u2014 Paris : des heurts et des magasins pill\xE9s dans la nuit de dimanche \xE0 lundi",
+    "https://www.leparisien.fr/paris-75/paris-des-heurts-et-des-magasins-pilles-encore-tard-dans-la-nuit-de-dimanche-a-lundi-19-10-2026-OUUITGPFNRD47NWIU5VVWP2IKY.php",
+    both(
+      "the 18\u201319 Oct looting, which is why the 17\u201318 Oct damage window closes on the Monday night.",
+      "les pillages des 18\u201319 oct., d\u2019o\xF9 la cl\xF4ture de la fen\xEAtre de dommages le lundi soir."
+    ),
+    "2026-10-19"
+  ),
+  src(
+    "leparisien-451-shops",
+    "cost",
+    "Le Parisien \u2014 451 commerces vandalises : la carte des \xE9tablissements parisiens pill\xE9s et d\xE9grad\xE9s",
+    "https://www.leparisien.fr/paris-75/451-commerces-vandalises-la-carte-des-etablissements-parisiens-pilles-et-degrades-les-17-et-18-octobre-22-10-2026-SBWJHPIKZ5DMZFSEWE4IYYCAIY.php",
+    both(
+      "the Paris-only shop count (451), marked regional in the table.",
+      "le d\xE9compte strictement parisien (451), marqu\xE9 r\xE9gional dans le tableau."
+    ),
+    "2026-10-22"
+  ),
+  src(
+    "mesinfos-idf",
+    "cost",
+    "mesinfos.fr \u2014 blocages de lyc\xE9es : 8,5 millions d\u2019euros de d\xE9g\xE2ts en \xCEle-de-France",
+    "https://mesinfos.fr/ile-de-france/blocus-lyceens-85-millions-d-euros-de-degats-en-ile-de-france-341003.html",
+    both(
+      "the highest \xCEle-de-France figure for the lyc\xE9e blockades \u2014 the upper bound in the table.",
+      "le chiffre francilien le plus \xE9lev\xE9 pour les blocages de lyc\xE9es \u2014 borne haute du tableau."
+    )
+  ),
+  src(
+    "ici-lille",
+    "cost",
+    "ici.fr (Nord) \u2014 mobilisation du 17 octobre : premi\xE8res tensions \xE0 Lille",
+    "https://www.ici.fr/hauts-de-france/nord-59/lille/mobilisation-du-17-octobre-des-premieres-tensions-a-lille-entre-forces-de-l-ordre-et-manifestants-7548967",
+    both(
+      "the Lille McDonald\u2019s fire, one of the few individually costed damage items.",
+      "l\u2019incendie du McDonald\u2019s \xE0 Lille, l\u2019un des rares dommages chiffr\xE9s individuellement."
+    )
+  ),
+  src(
+    "cnews-14oct",
+    "cost",
+    "CNEWS \u2014 blocus des lyc\xE9es : agence immobili\xE8re attaqu\xE9e, feux de poubelle, le bilan",
+    "https://www.cnews.fr/videos/france/2026-10-14/blocus-des-lycees-agence-immobiliere-attaquee-feux-de-poubelle-le-bilan",
+    both(
+      "the 14 Oct incidents, the first damage report of the school movement.",
+      "les incidents du 14 oct., premier bilan de dommages du mouvement lyc\xE9en."
+    ),
+    "2026-10-14"
+  ),
+  src(
+    "actu-450-shops",
+    "cost",
+    "actu.fr \u2014 pillages et d\xE9gradations en marge du 17 octobre : 450 commerces sinistr\xE9s \xE0 Paris",
+    "https://actu.fr/ile-de-france/paris_75056/pillages-et-degradations-en-marge-du-17-octobre-450-commerces-sinistres-a-paris-quels-sont-les-plus-touches_64960656.html",
+    both(
+      "the 450/451 Paris shops with the sector breakdown.",
+      "les 450/451 commerces parisiens avec la ventilation par secteur."
+    )
+  ),
+  src(
+    "of-facture",
+    "cost",
+    "Ouest-France \u2014 violences du 17 octobre : des d\xE9g\xE2ts estim\xE9s \xE0 des centaines de millions d\u2019euros, qui va payer ?",
+    "https://www.ouest-france.fr/societe/manifestation/violences-du-17-octobre-des-degats-estimes-a-des-centaines-de-millions-deuros-qui-va-payer-la-facture-5e077b82-cbb5-11f1-b8bc-a46147b584ed",
+    both(
+      "who bears the cost \u2014 communes, insurers, the state \u2014 the basis for the footnote on the damage columns.",
+      "qui supporte le co\xFBt \u2014 communes, assureurs, \xC9tat \u2014 base de la note de bas de page des colonnes dommages."
+    )
+  ),
+  src(
+    "of-assurance",
+    "cost",
+    "Ouest-France \u2014 17 octobre : le chiffrage pr\xE9cis des d\xE9g\xE2ts attendra la fin du d\xE9lai de 30 jours accord\xE9 par les assureurs",
+    "https://www.ouest-france.fr/economie/assurance/17-octobre-le-chiffrage-precis-des-degats-devra-attendre-la-fin-du-delai-de-30-jours-accorde-par-les-assureurs-0da74e46-cdff-11f1-bf87-17eca79cb13c",
+    both(
+      "why every damage figure here is provisional: the insurers\u2019 30-day claim window had not closed at the time of writing.",
+      "pourquoi tout chiffre de dommages est provisoire : le d\xE9lai de 30 jours des assureurs n\u2019\xE9tait pas \xE9coul\xE9 \xE0 la r\xE9daction."
+    )
+  ),
+  src(
+    "decryptargent",
+    "cost",
+    "D\xE9cryptargent \u2014 17 octobre : le premier bilan \xE9conomique",
+    "https://decryptargent.fr/finances-personnelles/17-octobre-bilan-economique-premiers-chiffres/",
+    both(
+      "the first, earliest economic assessment of 17 Oct, superseded by IFRAP and CCI France.",
+      "la premi\xE8re estimation \xE9conomique du 17 oct., supplant\xE9e par l\u2019IFRAP et CCI France."
+    )
+  ),
+  src(
+    "capital-policing",
+    "cost",
+    "Capital.fr \u2014 \xAB Combien ont co\xFBt\xE9 les 70 000 policiers de samedi \xBB",
+    "https://www.capital.fr/economie-politique/combien-ont-coute-les-70-000-policiers-de-samedi-letat-ne-le-dit-pas-mais-certains-chiffres-existent-1531269",
+    both(
+      "the \u20AC15,000\u201330,000 per CRS company per day and \u20AC3.4M per 3,000 gendarmes benchmarks behind the policing-cost band; also the 1,435 arrests and 53 officers injured on 24 Oct.",
+      "les r\xE9f\xE9rences de 15 000\u201330 000 \u20AC par compagnie de CRS et par jour, et de 3,4 M\u20AC pour 3 000 gendarmes, derri\xE8re la fourchette de co\xFBt du maintien de l\u2019ordre ; aussi les 1 435 interpellations et 53 policiers bless\xE9s du 24 oct."
+    ),
+    "2026-10-28"
+  ),
+  /* ------------------------------------------------------- 2026 — overseas */
+  src(
+    "la1ere-lyceens",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 ce que l\u2019on sait du mouvement des lyc\xE9ens, de la R\xE9union \xE0 la Guyane",
+    "https://la1ere.franceinfo.fr/ce-que-l-on-sait-du-mouvement-des-lyceens-de-la-reunion-a-la-guyane-en-passant-par-la-guyane-mayotte-et-la-martinique-1744191.html",
+    both(
+      "the geography of the lyc\xE9en movement across R\xE9union, Guyane, Mayotte and Martinique \u2014 the overseas half of the protest count.",
+      "la g\xE9ographie du mouvement lyc\xE9en \xE0 la R\xE9union, en Guyane, \xE0 Mayotte et en Martinique \u2014 la moiti\xE9 ultramarine du d\xE9compte."
+    )
+  ),
+  src(
+    "la1ere-territoires",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 la Guadeloupe, la Martinique et la R\xE9union, territoires les plus mobilis\xE9s depuis d\xE9but octobre",
+    "https://la1ere.franceinfo.fr/colere-dans-les-lycees-et-contre-la-vie-chere-la-guadeloupe-la-martinique-et-la-reunion-les-territoires-les-plus-mobilises-dans-les-outre-mer-depuis-debut-octobre-1751730.html",
+    both(
+      "which three territories carry almost all overseas activity, and the ranking used in the split.",
+      "les trois territoires qui portent presque toute l\u2019activit\xE9 ultramarine, et le classement retenu pour la ventilation."
+    )
+  ),
+  src(
+    "la1ere-gign",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 intervention du GIGN, manifestations et premi\xE8res condamnations : le climat social reste tendu",
+    "https://la1ere.franceinfo.fr/intervention-du-gign-manifestations-et-premieres-condamnations-outre-mer-le-climat-social-reste-tendu-1750008.html",
+    both(
+      "the enforcement side overseas, which the ministry bilan never covers.",
+      "le volet r\xE9pressif ultramarin, que le bilan minist\xE9riel ne couvre jamais."
+    )
+  ),
+  src(
+    "la1ere-martinique-hot",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 Martinique et Cara\xEFbe : les sujets chauds",
+    "https://la1ere.franceinfo.fr/martinique/hot-topics-from-martinique-and-the-caribbean-1742126.html",
+    both(
+      "the Martinique strand, where the cost-of-living movement overlaps a pre-existing mobilisation.",
+      "le volet martiniquais, o\xF9 le mouvement contre la vie ch\xE8re recouvre une mobilisation ant\xE9rieure."
+    )
+  ),
+  src(
+    "la1ere-reunion-saintpierre",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 une centaine de manifestants \xE0 Saint-Pierre et un barrage filtrant dans le nord",
+    "https://la1ere.franceinfo.fr/reunion/mobilisation-sociale-une-centaine-de-manifestants-a-saint-pierre-et-un-barrage-filtrant-dans-le-nord-on-fait-le-point-1753413.html",
+    both(
+      "a R\xE9union day detail: ~100 at Saint-Pierre plus a filtering roadblock \u2014 regional-only, never extrapolated.",
+      "un d\xE9tail journalier r\xE9unionnais : ~100 \xE0 Saint-Pierre et un barrage filtrant \u2014 r\xE9gional seulement, jamais extrapol\xE9."
+    )
+  ),
+  src(
+    "la1ere-archives-03nov",
+    "overseas",
+    "Outre-mer La 1\xE8re \u2014 archives du 3 novembre 2026",
+    "https://la1ere.franceinfo.fr/archives/2026/03-novembre-2026/",
+    both(
+      "the day-archive route used where no standalone article existed (Guyane intersyndicale call).",
+      "la voie des archives quotidiennes l\xE0 o\xF9 aucun article autonome n\u2019existait (appel de l\u2019intersyndicale guyanaise)."
+    ),
+    "2026-11-03"
+  ),
+  /* --------------------------------------------------- 2026 — reference */
+  src(
+    "wiki-lyceen-2026",
+    "ref2026",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 Mouvement lyc\xE9en et \xE9tudiant de 2026 en France",
+    "https://fr.wikipedia.org/wiki/Mouvement_lyc%C3%A9en_et_%C3%A9tudiant_de_2026_en_France",
+    both(
+      "the 1 Oct \u2013 16 Oct chronology of the school movement, which no ministry series covers.",
+      "la chronologie du 1er au 16 oct. du mouvement lyc\xE9en, qu\u2019aucune s\xE9rie minist\xE9rielle ne couvre."
+    )
+  ),
+  src(
+    "wiki-17oct-2026",
+    "ref2026",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 Manifestations du 17 octobre 2026 en France",
+    "https://fr.wikipedia.org/wiki/Manifestations_du_17_octobre_2026_en_France",
+    both(
+      "the 17 Oct day page, used to cross-check the arrest and injury counts.",
+      "la page du 17 oct., servant \xE0 recouper interpellations et bless\xE9s."
+    )
+  ),
+  src(
+    "wiki-automne-2026",
+    "ref2026",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 Mouvement social d\u2019automne 2026 en France",
+    "https://fr.wikipedia.org/wiki/Mouvement_social_d%27automne_2026_en_France",
+    both(
+      "the overall movement chronology and the list of national call days.",
+      "la chronologie d\u2019ensemble du mouvement et la liste des journ\xE9es d\u2019appel nationales."
+    )
+  ),
+  src(
+    "wiki-civil-unrest-en",
+    "ref2026",
+    "Wikipedia (English) \u2014 2026 French civil unrest",
+    "https://en.wikipedia.org/wiki/2026_French_civil_unrest",
+    both(
+      "the English-language summary, checked against the French pages for divergences in the injury counts.",
+      "la synth\xE8se anglophone, recoup\xE9e avec les pages fran\xE7aises pour les \xE9carts de bless\xE9s."
+    )
+  ),
+  src(
+    "mavigilance-manifestation",
+    "ref2026",
+    "Ma vigilance \u2014 manifestation lyc\xE9enne : rassemblements et cort\xE8ges",
+    "https://mavigilance.fr/themes/manifestation",
+    both(
+      "protest-level aggregation by theme, used for the count of actions rather than of participants.",
+      "agr\xE9gation par th\xE8me, utilis\xE9e pour le nombre d\u2019actions plut\xF4t que de participants."
+    )
+  ),
+  src(
+    "mavigilance-lyceens",
+    "ref2026",
+    "Ma vigilance \u2014 mouvement lyc\xE9en : dates et appels",
+    "https://mavigilance.fr/mouvements/lyceens",
+    both(
+      "the call calendar behind the \xAB protest taking place \xBB column on the school-movement days.",
+      "le calendrier des appels derri\xE8re la colonne \xAB manifestations \xBB des journ\xE9es lyc\xE9ennes."
+    )
+  ),
+  /* -------------------------------------------------------------- May 1968 */
+  src(
+    "wiki-mai68-fr",
+    "mai68",
+    "Mai 68",
+    "https://fr.wikipedia.org/wiki/Mai_68",
+    both(
+      "1 May (25,000 prefecture / 100,000 CGT) and 13 May (230,000 prefecture / 171,000 ORTF / 1,000,000 unions) turnouts; the 469 arrests of 10\u201311 May and the 1,000+ of 25 May.",
+      "les foules du 1er mai (25 000 pr\xE9fecture / 100 000 CGT) et du 13 mai (230 000 pr\xE9fecture / 171 000 ORTF / 1 000 000 syndicats) ; les 469 interpellations des 10\u201311 mai et les 1 000 et plus du 25 mai."
+    )
+  ),
+  src(
+    "wiki-mai68-en",
+    "mai68",
+    "May 68 (English Wikipedia)",
+    "https://en.wikipedia.org/wiki/May_68",
+    both(
+      "the 887 injured figure, which appears only in this article\u2019s infobox and is flagged accordingly \u2014 no French count was published.",
+      "le chiffre de 887 bless\xE9s, pr\xE9sent uniquement dans l\u2019infobox de cet article et signal\xE9 comme tel \u2014 aucun d\xE9compte fran\xE7ais n\u2019a \xE9t\xE9 publi\xE9."
+    )
+  ),
+  src(
+    "nouvelobs-1mai-68",
+    "mai68",
+    "Le Nouvel Obs (Le Quotidien de 1968) \u2014 \xAB Cent mille personnes de R\xE9publique \xE0 Bastille \xBB",
+    "https://www.nouvelobs.com/societe/le-quotidien-de-1968/20080424.OBS1184/cent-mille-personnes-de-republique-a-bastille.html",
+    both(
+      "the 1 May 1968 cort\xE8ge described day-of, the origin of the 100,000 union figure.",
+      "le cort\xE8ge du 1er mai 1968 racont\xE9 le jour m\xEAme, origine du chiffre syndical de 100 000."
+    )
+  ),
+  src(
+    "publicsenat-1mai",
+    "mai68",
+    "Public S\xE9nat \u2014 \xAB Des 1er mai souvent tr\xE8s politiques \xBB",
+    "https://www.publicsenat.fr/actualites/politique/des-1er-mai-souvent-tres-politiques-59701",
+    both(
+      "context for reading 1 May turnouts across episodes, including the 1968 and 2023 comparison.",
+      "le contexte de lecture des foules du 1er mai entre \xE9pisodes, dont la comparaison 1968 / 2023."
+    )
+  ),
+  src(
+    "wiki-chrono-68",
+    "mai68",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 Chronologie des \xE9v\xE9nements de mai-juin 1968",
+    "https://fr.wikipedia.org/wiki/Chronologie_des_%C3%A9v%C3%A9nements_de_mai_-_juin_1968",
+    both(
+      "the day-by-day sequence that fixes which days enter the C\u2032 weekly series.",
+      "la s\xE9quence jour par jour qui d\xE9termine les journ\xE9es retenues dans la s\xE9rie hebdomadaire de C\u2032."
+    )
+  ),
+  src(
+    "wiki-rassemblements",
+    "mai68",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 Liste des rassemblements les plus importants en France",
+    "https://fr.wikipedia.org/wiki/Liste_des_rassemblements_les_plus_importants_en_France",
+    both(
+      "the cross-episode leaderboard used to decide which movements belong in the comparison at all.",
+      "le classement inter-\xE9pisodes servant \xE0 d\xE9cider quels mouvements entrent dans la comparaison."
+    )
+  ),
+  /* ------------------------------------------------------------------- CPE */
+  src(
+    "wiki-cpe",
+    "cpe",
+    "Contrat premi\xE8re embauche",
+    "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
+    both(
+      "the CPE turnout series (7 Feb, 7 Mar, 18 Mar, 23 Mar, 28 Mar, 4 Apr) and the Paris-only enforcement counts of 16\u201318 Mar.",
+      "la s\xE9rie de foules du CPE (7 f\xE9vr., 7 mars, 18 mars, 23 mars, 28 mars, 4 avr.) et les d\xE9comptes r\xE9pressifs strictement parisiens des 16\u201318 mars."
+    )
+  ),
+  src(
+    "wiki-cpe-en",
+    "cpe",
+    "2006 youth protests in France (English Wikipedia)",
+    "https://en.wikipedia.org/wiki/2006_youth_protests_in_France",
+    both(
+      "the English summary, used for the participation estimates that the French page leaves out.",
+      "la synth\xE8se anglophone, utilis\xE9e pour les estimations de participation absentes de la page fran\xE7aise."
+    )
+  ),
+  src(
+    "nouvelobs-cpe-chrono",
+    "cpe",
+    "Le Nouvel Obs \u2014 \xAB Crise du CPE : chronologie \xBB",
+    "https://www.nouvelobs.com/societe/social/20060326.OBS1858/crise-du-cpe-chronologie.html",
+    both(
+      "the full chronology, including the 10 Apr withdrawal that ends the series.",
+      "la chronologie compl\xE8te, dont le retrait du 10 avr. qui cl\xF4t la s\xE9rie."
+    )
+  ),
+  src(
+    "nouvelobs-cpe-mars",
+    "cpe",
+    "Le Nouvel Obs \u2014 \xAB CPE : les \xE9v\xE9nements du 16 au 18 mars \xBB",
+    "https://www.nouvelobs.com/societe/social/20060321.OBS1191/cpe-les-evenements-du-16-au-18-mars.html",
+    both(
+      "the three peak days described day-of, used to date the enforcement counts.",
+      "les trois journ\xE9es de pointe racont\xE9es au jour le jour, servant \xE0 dater les d\xE9comptes r\xE9pressifs."
+    )
+  ),
+  src(
+    "lemonde-16mars-2006",
+    "cpe",
+    "Le Monde \u2014 \xAB Des centaines de milliers de jeunes ont d\xE9fil\xE9 \xBB (16 mars 2006)",
+    "https://www.lemonde.fr/international/article/2006/03/16/des-centaines-de-milliers-de-jeunes-ont-defile_751311_3210.html",
+    both(
+      "the 16 Mar turnout, the first day of the peak.",
+      "la foule du 16 mars, premi\xE8re journ\xE9e du pic."
+    ),
+    "2006-03-16"
+  ),
+  src(
+    "lemonde-17mars-2006",
+    "cpe",
+    "Le Monde \u2014 \xAB Des lyc\xE9ens en nombre dans les d\xE9fil\xE9s anti-CPE \xBB (17 mars 2006)",
+    "https://www.lemonde.fr/la-crise-au-proche-orient/article/2006/03/17/des-lyceens-en-nombre-dans-les-defiles-anti-cpe_751768_734511.html",
+    both(
+      "17 Mar, the day the lyc\xE9ens rather than the students carry the movement.",
+      "le 17 mars, jour o\xF9 les lyc\xE9ens plut\xF4t que les \xE9tudiants portent le mouvement."
+    ),
+    "2006-03-17"
+  ),
+  src(
+    "lemonde-18mars-2006",
+    "cpe",
+    "Le Monde \u2014 \xAB Des d\xE9fil\xE9s dans toutes les villes \xBB (18 mars 2006)",
+    "https://www.lemonde.fr/international/article/2006/03/18/des-defiles-dans-toutes-les-villes_752040_3210.html",
+    both(
+      "18 Mar and the nationwide spread, which is why the CPE week is not Paris-weighted.",
+      "le 18 mars et la diffusion nationale, d\u2019o\xF9 une semaine CPE non pond\xE9r\xE9e par Paris."
+    ),
+    "2006-03-18"
+  ),
+  src(
+    "aljazeera-19mars-2006",
+    "cpe",
+    "Al Jazeera \u2014 \xAB French protesters issue job ultimatum \xBB (19 March 2006)",
+    "https://www.aljazeera.com/news/2006/3/19/french-protesters-issue-job-ultimatum",
+    both(
+      "the English-language account of the 18\u201319 Mar ultimatum, used to confirm the sequencing.",
+      "le r\xE9cit anglophone de l\u2019ultimatum des 18\u201319 mars, servant \xE0 confirmer l\u2019encha\xEEnement."
+    ),
+    "2006-03-19"
+  ),
+  /* --------------------------------------------------------- Gilets jaunes */
+  src(
+    "wiki-gj",
+    "gj",
+    "Mouvement des Gilets jaunes",
+    "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
+    both(
+      "the Act I\u201344 ministry turnout series and the Act I\u2013IV custody/interpellation counts. Later acts were never published as a series, which is why the enforcement lines stop at week 3.",
+      "la s\xE9rie minist\xE9rielle de foules des actes I \xE0 XLIV et les d\xE9comptes de gardes \xE0 vue / interpellations des actes I \xE0 IV. Les actes suivants n\u2019ont jamais \xE9t\xE9 publi\xE9s en s\xE9rie, d\u2019o\xF9 l\u2019arr\xEAt des courbes r\xE9pressives \xE0 la semaine 3."
+    )
+  ),
+  src(
+    "wiki-gj-deroulement",
+    "gj",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 D\xE9roulement du mouvement des Gilets jaunes",
+    "https://fr.wikipedia.org/wiki/D%C3%A9roulement_du_mouvement_des_Gilets_jaunes",
+    both(
+      "the act-by-act narrative that dates each turnout point.",
+      "le r\xE9cit acte par acte qui date chaque point de foule."
+    )
+  ),
+  src(
+    "wikinews-8dec2018",
+    "gj",
+    "Wikinews (fran\xE7ais) \u2014 Gilets jaunes : samedi 8 d\xE9cembre 2018",
+    "https://fr.wikinews.org/wiki/Gilets_jaunes_:_samedi_8_d%C3%A9cembre_2018",
+    both(
+      "Act IV day-of reporting: the 8 Dec turnout and the 1,700+ arrests.",
+      "le compte rendu de l\u2019acte IV : foule du 8 d\xE9c. et plus de 1 700 interpellations."
+    ),
+    "2018-12-08"
+  ),
+  src(
+    "of-gj-chiffres",
+    "gj",
+    "Ouest-France \u2014 \xAB Gilets jaunes : comment \xE9volue la mobilisation ? Tous les chiffres \xBB",
+    "https://www.ouest-france.fr/societe/gilets-jaunes/gilets-jaunes-comment-evolue-la-mobilisation-tous-les-chiffres-6147118",
+    both(
+      "the running ministry-vs-union turnout table, used as the primary series and cross-checked against the Wikipedia acts.",
+      "le tableau courant minist\xE8re / syndicats, utilis\xE9 comme s\xE9rie principale et recoup\xE9 avec les actes de Wikip\xE9dia."
+    )
+  ),
+  src(
+    "bbc-gj",
+    "gj",
+    "BBC News \u2014 yellow-vest protests",
+    "https://www.bbc.com/news/world-europe-46577598",
+    both(
+      "the English narrative and the casualty figures quoted at the time.",
+      "le r\xE9cit anglophone et les chiffres de bless\xE9s cit\xE9s \xE0 l\u2019\xE9poque."
+    )
+  ),
+  src(
+    "monde-diplo-gj",
+    "gj",
+    "Le Monde diplomatique \u2014 chronologie du mouvement des Gilets jaunes",
+    "https://www.monde-diplomatique.fr/mav/168/PIRONET/61011",
+    both(
+      "an independent chronology, used to check the act numbering (the press and the state do not agree on it).",
+      "une chronologie ind\xE9pendante, servant \xE0 v\xE9rifier la num\xE9rotation des actes (presse et \xC9tat ne s\u2019accordent pas)."
+    )
+  ),
+  src(
+    "rfi-gj",
+    "gj",
+    "RFI \u2014 Gilets jaunes : retour sur neuf actes de contestation",
+    "https://www.rfi.fr/fr/france/20190118-gilets-jaunes-retour-neuf-actes-contestation-rue-interpellations",
+    both(
+      "the first nine acts condensed, with arrest figures \u2014 the only compact source for acts I\u2013IX enforcement.",
+      "les neuf premiers actes en r\xE9sum\xE9, avec interpellations \u2014 seule source compacte pour la r\xE9pression des actes I \xE0 IX."
+    )
+  ),
+  /* -------------------------------------------------- Nahel Merzouk, 2023 */
+  src(
+    "wiki-nahel",
+    "nahel",
+    "Mort de Nahel Merzouk",
+    "https://fr.wikipedia.org/wiki/Mort_de_Nahel_Merzouk",
+    both(
+      "the 3,354 arrests and 722 officers injured of 27 Jun \u2013 2 Jul 2023, and the 108 of the following week.",
+      "les 3 354 interpellations et 722 policiers bless\xE9s du 27 juin au 2 juill. 2023, et les 108 de la semaine suivante."
+    )
+  ),
+  src(
+    "wiki-nahel-emeutes",
+    "nahel",
+    "Wikip\xE9dia (fran\xE7ais) \u2014 \xC9meutes cons\xE9cutives \xE0 la mort de Nahel Merzouk",
+    "https://fr.wikipedia.org/wiki/%C3%89meutes_cons%C3%A9cutives_%C3%A0_la_mort_de_Nahel_Merzouk",
+    both(
+      "the night-by-night breakdown of the four riot nights, which the casualty total does not carry.",
+      "la ventilation nuit par nuit des quatre nuits d\u2019\xE9meute, absente du total de victimes."
+    )
+  ),
+  src(
+    "wiki-nahel-en",
+    "nahel",
+    "Nahel Merzouk riots (English Wikipedia)",
+    "https://en.wikipedia.org/wiki/Nahel_Merzouk_riots",
+    both(
+      "the English summary and its damage estimate, used only as a cross-check.",
+      "la synth\xE8se anglophone et son estimation de dommages, utilis\xE9es seulement en recoupement."
+    )
+  ),
+  src(
+    "mediapart-marche-blanche",
+    "nahel",
+    "Mediapart \u2014 \xAB La marche blanche pour Nahel, un cri de r\xE9volte plut\xF4t qu\u2019une minute de silence \xBB",
+    "https://www.mediapart.fr/journal/france/290623/la-marche-blanche-pour-nahel-un-cri-de-revolte-plutot-qu-une-minute-de-silence",
+    both(
+      "the 29 Jun 2023 silent march, the only 2023 day with a participant count from a non-police source.",
+      "la marche blanche du 29 juin 2023, seule journ\xE9e de 2023 dot\xE9e d\u2019un d\xE9compte non policier."
+    ),
+    "2023-06-29"
+  ),
+  src(
+    "rfi-29juin-2023",
+    "nahel",
+    "RFI \u2014 le point sur la mort de Nahel (29 juin 2023)",
+    "https://www.rfi.fr/fr/france/20230629-le-point-sur-la-mort-de-nahel-le-procureur-requiert-le-placement-en-d%C3%A9tention-provisoire-du-policier",
+    both(
+      "the legal chronology of 29 Jun, used to date the start of the riot series.",
+      "la chronologie judiciaire du 29 juin, servant \xE0 dater le d\xE9but de la s\xE9rie d\u2019\xE9meutes."
+    ),
+    "2023-06-29"
+  ),
+  src(
+    "of-4e-nuit",
+    "nahel",
+    "Ouest-France \u2014 mort de Nahel : une quatri\xE8me nuit d\u2019\xE9meutes, d\u2019une intensit\xE9 moindre",
+    "https://www.ouest-france.fr/faits-divers/emeutes-urbaines/mort-de-nahel-une-quatrieme-nuit-demeutes-mais-des-violences-dune-intensite-moindre-5f28377d-edb2-4189-b320-5fa379186858",
+    both(
+      "the tapering after the third night, which is why the 2023 curve is drawn as an abrupt decay.",
+      "la d\xE9crue apr\xE8s la troisi\xE8me nuit, d\u2019o\xF9 une courbe 2023 trac\xE9e en chute brutale."
+    )
+  ),
+  src(
+    "franceinfo-1an-marche",
+    "nahel",
+    "franceinfo \u2014 un an apr\xE8s, une marche silencieuse r\xE9unit plusieurs centaines de personnes",
+    "https://www.franceinfo.fr/faits-divers/adolescent-tue-par-un-policier-a-nanterre/mort-de-nahel-a-nanterre-un-an-apres-une-marche-silencieuse-reunit-plusieurs-centaines-de-personnes_6633804.html",
+    both(
+      "the 29 Jun 2024 anniversary march, the 2024 point in the series.",
+      "la marche anniversaire du 29 juin 2024, point 2024 de la s\xE9rie."
+    ),
+    "2024-06-29"
+  ),
+  src(
+    "leparisien-marche-2024",
+    "nahel",
+    "Le Parisien \u2014 plusieurs centaines de personnes au d\xE9part de la marche silencieuse pour Nahel",
+    "https://www.leparisien.fr/hauts-de-seine-92/nanterre-plusieurs-centaines-de-personnes-au-depart-de-la-marche-silencieuse-pour-nahel-29-06-2024-237YPUQKQZFQLHGTSHBOCKWVW4.php",
+    both(
+      "second count for the 2024 march, confirming it is an order of magnitude below 2023.",
+      "second d\xE9compte de la marche 2024, confirmant un ordre de grandeur inf\xE9rieur \xE0 2023."
+    ),
+    "2024-06-29"
+  ),
+  /* --------------------------------------------------------- Pensions, 2023 */
+  src(
+    "wiki-retraites",
+    "retraites",
+    "Mouvement social contre la r\xE9forme des retraites de 2023",
+    "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_en_2023",
+    both(
+      "the ministry and union turnout pairs for each national action day, 19 Jan \u2013 6 Jun 2023.",
+      "les couples minist\xE8re / syndicats de chaque journ\xE9e nationale d\u2019action, du 19 janv. au 6 juin 2023."
+    )
+  ),
+  src(
+    "lemonde-en-7mars-2023",
+    "retraites",
+    "Le Monde (English) \u2014 \xAB March 7 protests among largest since 1995 \xBB",
+    "https://www.lemonde.fr/en/les-decodeurs/article/2023/03/09/french-pension-reform-march-7-protests-among-largest-since-1995_6018714_8.html",
+    both(
+      "the 7 Mar peak placed against 1995 \u2014 the comparison the chart\u2019s annotation relies on.",
+      "le pic du 7 mars situ\xE9 face \xE0 1995 \u2014 comparaison sur laquelle repose l\u2019annotation du graphique."
+    ),
+    "2023-03-09"
+  ),
+  src(
+    "of-6juin-2023",
+    "retraites",
+    "Ouest-France \u2014 direct du 6 juin 2023 : les manifestations contre la r\xE9forme des retraites",
+    "https://www.ouest-france.fr/economie/retraites/direct-greve-du-6-juin-suivez-les-manifestations-contre-la-reforme-des-retraites-en-france-e282f866-0393-11ee-bfa0-5e45e3198685",
+    both(
+      "the last national day, 6 Jun, which closes the series.",
+      "la derni\xE8re journ\xE9e nationale, le 6 juin, qui cl\xF4t la s\xE9rie."
+    ),
+    "2023-06-06"
+  ),
+  /* --------------------------------------------------- Anti-RN, June 2024 */
+  src(
+    "lemonde-en-16juin-2024",
+    "rn2024",
+    "Le Monde (English) \u2014 French protesters turn out in droves against far right",
+    "https://www.lemonde.fr/en/politics/article/2024/06/16/french-protesters-turn-out-in-droves-against-far-right-caught-between-despair-and-the-will-to-fight_6674931_5.html",
+    both(
+      "the 15\u201316 Jun 2024 marches against the Rassemblement national.",
+      "les marches des 15\u201316 juin 2024 contre le Rassemblement national."
+    ),
+    "2024-06-16"
+  ),
+  src(
+    "leparisien-15juin-2024",
+    "rn2024",
+    "Le Parisien \u2014 plus de 600 000 manifestants selon la CGT, 250 000 d\u2019apr\xE8s la police",
+    "https://www.leparisien.fr/elections/legislatives/manifestations-anti-rn-plus-de-600-000-manifestants-selon-la-cgt-250-000-dapres-la-police-15-06-2024-4TWAL2AAQFG2DGMZ5AYYFJNQ3I.php",
+    both(
+      "the widest police/union gap in the entire comparison \u2014 a factor of 2.4, which is why the band is drawn explicitly.",
+      "l\u2019\xE9cart police / syndicats le plus large de toute la comparaison \u2014 un facteur 2,4, d\u2019o\xF9 la fourchette explicite."
+    ),
+    "2024-06-15"
+  ),
+  /* -------------------------------------------------------- Bloquons tout */
+  src(
+    "wiki-bloquons",
+    "bloquons",
+    "Bloquons tout (English Wikipedia)",
+    "https://en.wikipedia.org/wiki/Bloquons_tout",
+    both(
+      "the movement\u2019s chronology and its 10 Sep / 18 Sep / 2 Oct structure.",
+      "la chronologie du mouvement et sa structure des 10 sept., 18 sept. et 2 oct."
+    )
+  ),
+  src(
+    "france24-bloquons",
+    "bloquons",
+    "France 24 \u2014 direct du 10 septembre 2025",
+    "https://www.france24.com/fr/france/20250910-en-direct-france-bloquons-tout-colere-sociale-emmanuel-macron",
+    both(
+      "197,000 participants, 596 rallies, 253 blockades, 540 arrests (211 in Paris) \u2014 the final ministry point of the evening, superseding the 175,000 of 17:45.",
+      "197 000 participants, 596 rassemblements, 253 blocages, 540 interpellations (dont 211 \xE0 Paris) \u2014 le point minist\xE9riel final de la soir\xE9e, qui supplante les 175 000 de 17 h 45."
+    ),
+    "2025-09-10"
+  ),
+  src(
+    "bfmtv-bloquons",
+    "bloquons",
+    "BFMTV \u2014 direct du 10 septembre",
+    "https://www.bfmtv.com/societe/manifestations/direct-10-septembre-blocages-transports-manifestations-suivez-le-mouvement-bloquons-tout-a-paris-lyon-marseille_LN-202509100070.html",
+    both(
+      "the intra-day revision of the count (175,000 \u2192 197,000), which is why the chart shows a band rather than a point.",
+      "la r\xE9vision du d\xE9compte en cours de journ\xE9e (175 000 \u2192 197 000), d\u2019o\xF9 une fourchette plut\xF4t qu\u2019un point sur le graphique."
+    ),
+    "2025-09-10"
+  ),
+  src(
+    "franceinfo-bloquons-cgt",
+    "bloquons",
+    "franceinfo \u2014 pr\xE8s de 250 000 personnes mobilis\xE9es selon la CGT, 197 000 selon l\u2019Int\xE9rieur",
+    "https://www.franceinfo.fr/societe/bloquons-tout-mouvement-du-10-septembre/bloquons-tout-pres-de-250-000-personnes-mobilisees-dans-tout-le-pays-selon-la-cgt-175-000-selon-le-ministere-de-l-interieur_7484704.html",
+    both(
+      "the union side of the 10 Sep pair (~250,000), which completes the band.",
+      "le c\xF4t\xE9 syndical du couple du 10 sept. (~250 000), qui compl\xE8te la fourchette."
+    ),
+    "2025-09-10"
+  ),
+  src(
+    "liberation-10sept",
+    "bloquons",
+    "Lib\xE9ration \u2014 direct du 10 septembre : la mobilisation \xAB Bloquons tout \xBB",
+    "https://www.liberation.fr/societe/en-direct-bloquons-tout-suivez-la-mobilisation-ce-mercredi-10-septembre-au-lendemain-de-la-nomination-de-sebastien-lecornu-a-matignon-20250910_7UGUHFIOUNGDJP67XSMTH5FKVA/",
+    both(
+      "the 175,000 ministry figure as first published, before the evening revision.",
+      "les 175 000 du minist\xE8re tels que publi\xE9s d\u2019abord, avant la r\xE9vision du soir."
+    ),
+    "2025-09-10"
+  ),
+  src(
+    "of-bloquons-infographies",
+    "bloquons",
+    "Ouest-France \u2014 \xAB 200 000 participants \xE0 Bloquons tout : est-ce mieux que les autres mobilisations ? \xBB",
+    "https://www.ouest-france.fr/societe/manifestation/infographies-200-000-participants-a-bloquons-tout-est-ce-mieux-que-les-autres-mobilisations-0f322c98-8ef1-11f0-b582-5820cfc46140",
+    both(
+      "the 200,000 working figure and the pre-computed comparison with earlier movements, which the chart re-derives.",
+      "le chiffre de travail de 200 000 et la comparaison d\xE9j\xE0 calcul\xE9e avec les mouvements ant\xE9rieurs, que le graphique recalcule."
+    )
+  ),
+  src(
+    "franceinfo-18sept-gav",
+    "bloquons",
+    "franceinfo \u2014 malgr\xE9 89 gardes \xE0 vue \xE0 Paris, Laurent Nu\xF1ez reconna\xEEt que la journ\xE9e s\u2019est \xAB plut\xF4t bien pass\xE9e \xBB",
+    "https://www.franceinfo.fr/economie/greve/greve/greve-du-18-septembre-malgre-89-gardes-a-vue-a-paris-laurent-nunez-reconnait-que-la-journee-s-est-plutot-bien-passee_7501129.html",
+    both(
+      "the 18 Sep arrests (103 in Paris, 89 custodies) \u2014 a markedly lower repressive profile than 2026.",
+      "les interpellations du 18 sept. (103 \xE0 Paris, 89 gardes \xE0 vue) \u2014 profil r\xE9pressif nettement plus bas qu\u2019en 2026."
+    ),
+    "2025-09-18"
+  ),
+  src(
+    "franceinfo-18sept-direct",
+    "bloquons",
+    "franceinfo \u2014 direct du 18 septembre : jusqu\u2019\xE0 900 000 manifestants attendus",
+    "https://www.franceinfo.fr/economie/greve/greve/direct-mobilisation-du-18-septembre-jusqu-a-900-000-manifestants-attendus-des-transports-perturbes-et-une-greve-qui-s-annonce-tres-suivie-dans-les-pharmacies-et-les-ecoles_7498174.html",
+    both(
+      "the pre-day expectation (900,000), kept to show how far the realised count fell short.",
+      "l\u2019attente d\u2019avant-journ\xE9e (900 000), conserv\xE9e pour mesurer l\u2019\xE9cart avec le d\xE9compte r\xE9alis\xE9."
+    ),
+    "2025-09-18"
+  ),
+  src(
+    "franceinfo-18sept-comparaison",
+    "bloquons",
+    "franceinfo \u2014 la mobilisation du 18 septembre a-t-elle \xE9t\xE9 plus ou moins forte que les pr\xE9c\xE9dents grands mouvements ?",
+    "https://www.franceinfo.fr/economie/greve/greve/greve-du-18-septembre-la-mobilisation-a-t-elle-ete-plus-ou-moins-forte-que-lors-des-derniers-grands-mouvements-sociaux_7499668.html",
+    both(
+      "the explicit cross-movement comparison the C section reproduces.",
+      "la comparaison inter-mouvements explicite que la section C reproduit."
+    ),
+    "2025-09-18"
+  ),
+  src(
+    "franceinfo-2oct",
+    "bloquons",
+    "franceinfo \u2014 environ 195 000 personnes ont manifest\xE9 selon l\u2019Int\xE9rieur, pr\xE8s de 600 000 d\u2019apr\xE8s la CGT",
+    "https://www.franceinfo.fr/economie/greve/greve-du-2-octobre-environ-195-000-personnes-ont-manifeste-en-france-selon-le-ministere-de-l-interieur-pres-de-600-000-d-apres-la-cgt_7528024.html",
+    both(
+      "the 2 Oct third wave: 195,000 ministry / ~600,000 CGT.",
+      "la troisi\xE8me vague du 2 oct. : 195 000 minist\xE8re / ~600 000 CGT."
+    ),
+    "2025-10-02"
+  ),
+  src(
+    "lefigaro-2oct",
+    "bloquons",
+    "Le Figaro \u2014 100 000 participants attendus : \xAB est-ce un chiffre assez bas comme le dit Bayrou ? \xBB",
+    "https://www.lefigaro.fr/social/mouvement-du-10-septembre-100-000-participants-attendus-est-ce-un-chiffre-assez-bas-comme-le-dit-bayrou-20250905",
+    both(
+      "the political framing of the turnout numbers, which is why both bounds are kept rather than averaged.",
+      "la mise en politique des chiffres de foule, d\u2019o\xF9 la conservation des deux bornes plut\xF4t qu\u2019une moyenne."
+    ),
+    "2025-09-05"
+  ),
+  src(
+    "liberation-2oct",
+    "bloquons",
+    "Lib\xE9ration \u2014 direct du 2 octobre : journ\xE9es d\u2019actions et de gr\xE8ves",
+    "https://www.liberation.fr/economie/social/en-direct-mobilisation-du-2-octobre-suivez-la-journee-dactions-et-de-greves-de-ce-jeudi-20251002_GFUGFS2GS5GPHAU5TVAGAZMGBI/",
+    both(
+      "second source for the 2 Oct pair.",
+      "seconde source pour le couple du 2 oct."
+    ),
+    "2025-10-02"
+  ),
+  src(
+    "of-bloquons-44a",
+    "bloquons",
+    "Ouest-France \u2014 \xAB Bloquons tout \xBB : une mobilisation en demi-teinte en Loire-Atlantique",
+    "https://www.ouest-france.fr/societe/manifestation/bloquons-tout-une-mobilisation-en-demi-teinte-en-loire-atlantique-90dd52ae-c22c-11f0-a316-aa52a6afd2bb",
+    both(
+      "regional-only marker: the gap between the national headline and local reality.",
+      "marqueur r\xE9gional : l\u2019\xE9cart entre le titre national et la r\xE9alit\xE9 locale."
+    )
+  ),
+  src(
+    "of-bloquons-44b",
+    "bloquons",
+    "Ouest-France \u2014 une soixantaine de personnes manifestent \xE0 Nantes ce samedi",
+    "https://www.ouest-france.fr/societe/manifestation/bloquons-tout-une-soixantaine-de-personnes-manifestent-a-nantes-ce-samedi-766d30c0-c226-11f0-8509-2c0807403e46",
+    both(
+      "~60 in Nantes on the Saturday \u2014 the smallest unit cited anywhere in the comparison.",
+      "~60 \xE0 Nantes le samedi \u2014 la plus petite unit\xE9 cit\xE9e dans toute la comparaison."
+    )
+  ),
+  src(
+    "of-bloquons-44c",
+    "bloquons",
+    "Ouest-France (Manche) \u2014 le collectif \xAB Indignons-nous \xBB tente de faire perdurer le mouvement",
+    "https://www.ouest-france.fr/societe/manifestation/dans-la-manche-le-collectif-indignons-nous-tente-de-faire-perdurer-le-mouvement-apres-le-10-septembre-3828460e-c20f-11f0-8509-2c0807403e46",
+    both(
+      "how a local collective tried to sustain the movement after 10 Sep \u2014 context for the 18 Sep and 2 Oct tail.",
+      "comment un collectif local a tent\xE9 de prolonger le mouvement apr\xE8s le 10 sept. \u2014 contexte de la queue des 18 sept. et 2 oct."
+    )
+  ),
+  src(
+    "figaro-bloquons",
+    "bloquons",
+    "Le Figaro \u2014 direct \xAB Bloquons tout \xBB des 10 et 11 septembre",
+    "https://www.lefigaro.fr/social/direct-bloquons-tout-10-septembre-mouvement-greves-manifestations-perturbations-transports-ecole-20250910",
+    both(
+      "the 18 Sep intersyndicale day and the 2 Oct third wave.",
+      "la journ\xE9e intersyndicale du 18 sept. et la troisi\xE8me vague du 2 oct."
+    ),
+    "2025-09-10",
+    "2025-09-11"
+  )
+];
+var MENTIONS = [
   {
-    id: "ifrap-2026",
-    group: "g2026",
-    label: "Fondation IFRAP \u2014 \xAB Violences des 17 et 18 octobre 2026 : une facture qui approche le milliard d\u2019euros \xBB",
-    url: "https://www.ifrap.org/etat-et-collectivites/violences-des-17-et-18-octobre-2026-une-facture-qui-approche-le-milliard-deuros",
-    date: "2026-10-21",
-    what: {
-      en: "the \u20AC247M\u2013872M damage range for 17\u201318 Oct: ~\u20AC910M material damage and ~\u20AC190M lost turnover in the high estimate, \u20AC666M of it retail.",
-      fr: "la fourchette de 247 \xE0 872 M\u20AC de dommages pour les 17\u201318 oct. : ~910 M\u20AC de dommages mat\xE9riels et ~190 M\u20AC de chiffre d\u2019affaires perdu dans l\u2019hypoth\xE8se haute, dont 666 M\u20AC pour le commerce de d\xE9tail."
-    }
+    name: "data.gouv.fr \u2014 base des mobilisations",
+    note: both(
+      "intended source for the metropolitan/overseas split; never actually retrieved.",
+      "source pr\xE9vue pour la ventilation m\xE9tropole / outre-mer ; jamais effectivement consult\xE9e."
+    )
   },
   {
-    id: "monde-cci-2026",
-    group: "g2026",
-    label: "Le Monde \u2014 \xAB Plus de 2 500 commerces d\xE9grad\xE9s \xBB, d\u2019apr\xE8s CCI France",
-    url: "https://www.lemonde.fr/economie/article/2026/10/27/plus-de-2-500-commerces-degrades-en-marge-des-recentes-mobilisations-selon-cci-france-qui-demande-une-interdiction-des-manifestations-jusqu-aux-fetes-de-fin-d-annee_6801314_3234.html",
-    date: "2026-10-27",
-    what: {
-      en: "CCI France\u2019s shop counts: 2,488 hit on 17 Oct, of which 1,161 pillaged, sacked or burnt.",
-      fr: "les d\xE9comptes de commerces de CCI France : 2 488 touch\xE9s le 17 oct., dont 1 161 pill\xE9s, saccag\xE9s ou incendi\xE9s."
-    }
+    name: "CCI France",
+    note: both(
+      "author of the 2,488 / 2,538 shop counts, reached through Le Monde, franceinfo, BFMTV, LSA and La D\xE9p\xEAche.",
+      "auteur des d\xE9comptes de 2 488 / 2 538 commerces, atteint via Le Monde, franceinfo, BFMTV, LSA et La D\xE9p\xEAche."
+    )
   },
   {
-    id: "franceinfo-cci-2026",
-    group: "g2026",
-    label: "franceinfo \u2014 \xAB Plus de 2 500 magasins touch\xE9s \xBB",
-    url: "https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/plus-de-2-500-magasins-touches-par-les-violences-en-marge-des-manifestations-des-17-et-24-octobre-selon-les-chambres-de-commerce_8256049.html",
-    date: "2026-10-27",
-    what: {
-      en: "the 24 Oct increment (50 shops, total 2,538) and the 80% centre-town turnover drop.",
-      fr: "l\u2019incr\xE9ment du 24 oct. (50 commerces, 2 538 au total) et la chute de 80 % du chiffre d\u2019affaires en centre-ville."
-    }
+    name: "Pr Laurent Thines (CHU de Besan\xE7on)",
+    note: both(
+      "author of the 79-serious-injury register attributed by Le Canard encha\xEEn\xE9; also cited directly as the injury floor.",
+      "auteur du registre de 79 bless\xE9s graves attribu\xE9 par Le Canard encha\xEEn\xE9 ; \xE9galement cit\xE9 directement comme plancher."
+    )
   },
   {
-    id: "bfmtv-cci-2026",
-    group: "g2026",
-    label: "BFMTV \u2014 CCI France, 20 shops vandalised on 31 Oct",
-    url: "https://www.bfmtv.com/economie/entreprises/20-commerces-vandalises-samedi-contre-2-488-le-17-octobre-cci-france-constate-une-nette-baisse-des-degradations-en-marge-des-manifestations-mais-s-inquiete-d-une-forte-chute-du-chiffre-d-affaires-des-magasins-pouvant-atteindre-80_AD-202611010225.html",
-    date: "2026-11-01",
-    what: {
-      en: "why week 6 carries no damage figure: the count collapses after 24 Oct.",
-      fr: "pourquoi la semaine 6 ne porte aucun chiffre de dommages : le d\xE9compte s\u2019effondre apr\xE8s le 24 oct."
-    }
+    name: "S\xE9nat \u2014 commission d\u2019enqu\xEAte de juin 2023",
+    note: both(
+      "the ~50,000 rioters and consolidated damage estimate, reached through the Senate press release above.",
+      "les ~50 000 \xE9meutiers et l\u2019estimation consolid\xE9e des dommages, atteints via le communiqu\xE9 du S\xE9nat ci-dessus."
+    )
   },
   {
-    id: "capital-policing-2026",
-    group: "g2026",
-    label: "Capital.fr \u2014 \xAB Combien ont co\xFBt\xE9 les 70 000 policiers de samedi \xBB",
-    url: "https://www.capital.fr/economie-politique/combien-ont-coute-les-70-000-policiers-de-samedi-letat-ne-le-dit-pas-mais-certains-chiffres-existent-1531269",
-    date: "2026-10-28",
-    what: {
-      en: "the \u20AC15,000\u201330,000 per CRS company per day and \u20AC3.4M per 3,000 gendarmes benchmarks behind the policing-cost band; also the 1,435 arrests and 53 officers injured on 24 Oct.",
-      fr: "les r\xE9f\xE9rences de 15 000\u201330 000 \u20AC par compagnie de CRS et par jour, et de 3,4 M\u20AC pour 3 000 gendarmes, derri\xE8re la fourchette de co\xFBt du maintien de l\u2019ordre ; aussi les 1 435 interpellations et 53 policiers bless\xE9s du 24 oct."
-    }
+    name: "France Police",
+    note: both(
+      "police union; publisher of the 750,000 counter-count for the Act II of the Gilets jaunes.",
+      "syndicat policier ; auteur du contre-d\xE9compte de 750 000 pour l\u2019acte II des Gilets jaunes."
+    )
   },
   {
-    id: "figaro-cost-2026",
-    group: "g2026",
-    label: "Le Figaro \u2014 \xAB Le co\xFBt exorbitant d\u2019un week-end d\u2019\xE9meutes \xBB",
-    url: "https://www.lefigaro.fr/societes/violences-urbaines-le-cout-exorbitant-d-un-week-end-d-emeutes-pour-les-commerces-et-les-collectivites-20261020",
-    date: "2026-10-20",
-    what: {
-      en: "cross-check on the damage order of magnitude.",
-      fr: "contre-v\xE9rification de l\u2019ordre de grandeur des dommages."
-    }
+    name: "Collectif \xAB Nombre jaune \xBB",
+    note: both(
+      "the independent crowd-counting group behind the alternative Gilets jaunes figures.",
+      "le collectif ind\xE9pendant de comptage derri\xE8re les chiffres alternatifs des Gilets jaunes."
+    )
   },
   {
-    id: "canard-eyes-2026",
-    group: "g2026",
-    label: "Le Canard encha\xEEn\xE9 \u2014 \xAB Les manifestants ont le mauvais \u0153il \xBB",
-    url: "https://www.lecanardenchaine.fr/police-justice/55381-les-manifestants-ont-le-mauvais-oeil",
-    date: "2026-11-10",
-    what: {
-      en: "Prof. Laurent Thines\u2019 (CHU de Besan\xE7on) press-and-blog register: 79 serious injuries in three weeks \u2014 10 blinded, 9 cranio-facial, 7 amputations, 1 death. The source of the protester-injury floor, and the reason no weekly protester-injury series exists.",
-      fr: "le registre presse et blog du Pr Laurent Thines (CHU de Besan\xE7on) : 79 bless\xE9s graves en trois semaines \u2014 10 \xE9borgn\xE9s, 9 traumatismes cr\xE2nio-faciaux, 7 amputations, 1 mort. Source du plancher de bless\xE9s parmi les manifestants, et raison pour laquelle aucune s\xE9rie hebdomadaire de bless\xE9s manifestants n\u2019existe."
-    }
+    name: "Occurrence",
+    note: both(
+      "Paris crowd counts quoted in Part II but never linked to a page.",
+      "comptages parisiens cit\xE9s dans la partie II, jamais li\xE9s \xE0 une page."
+    )
   },
   {
-    id: "interieur",
-    group: "g2026",
-    label: "Minist\xE8re de l\u2019Int\xE9rieur",
-    url: "https://www.interieur.gouv.fr/",
-    what: {
-      en: "origin of every arrest, custody and officer-injury count and of the ministry turnout figure. Published as press briefings and evening situation reports, not as a downloadable series, so the daily values were collected from the reporting above rather than from a dataset.",
-      fr: "origine de chaque d\xE9compte d\u2019interpellations, de gardes \xE0 vue et de bless\xE9s parmi les forces, ainsi que du chiffre minist\xE9riel de foule. Publi\xE9s en points presse et points de situation du soir, non en s\xE9ries t\xE9l\xE9chargeables : les valeurs quotidiennes ont donc \xE9t\xE9 relev\xE9es dans la presse ci-dessus, et non dans un jeu de donn\xE9es."
-    }
-  },
-  /* ------------------------------------------------------ historical episodes */
-  {
-    id: "wiki-mai68-fr",
-    group: "hist",
-    label: "Mai 68",
-    url: "https://fr.wikipedia.org/wiki/Mai_68",
-    what: {
-      en: "1 May (25,000 prefecture / 100,000 CGT) and 13 May (230,000 prefecture / 171,000 ORTF / 1,000,000 unions) turnouts; the 469 arrests of 10\u201311 May and the 1,000+ of 25 May.",
-      fr: "les foules du 1er mai (25 000 pr\xE9fecture / 100 000 CGT) et du 13 mai (230 000 pr\xE9fecture / 171 000 ORTF / 1 000 000 syndicats) ; les 469 interpellations des 10\u201311 mai et les 1 000 et plus du 25 mai."
-    }
+    name: "CGT",
+    note: both(
+      "every union turnout figure here is the CGT\u2019s, relayed by the press.",
+      "chaque chiffre syndical de foule est celui de la CGT, relay\xE9 par la presse."
+    )
   },
   {
-    id: "wiki-mai68-en",
-    group: "hist",
-    label: "May 68 (English Wikipedia)",
-    url: "https://en.wikipedia.org/wiki/May_68",
-    what: {
-      en: "the 887 injured figure, which appears only in this article\u2019s infobox and is flagged accordingly \u2014 no French count was published.",
-      fr: "le chiffre de 887 bless\xE9s, pr\xE9sent uniquement dans l\u2019infobox de cet article et signal\xE9 comme tel \u2014 aucun d\xE9compte fran\xE7ais n\u2019a \xE9t\xE9 publi\xE9."
-    }
+    name: "Union \xE9tudiante",
+    note: both(
+      "organiser of the student days; no count of its own was retrieved.",
+      "organisatrice des journ\xE9es \xE9tudiantes ; aucun d\xE9compte propre n\u2019a \xE9t\xE9 retrouv\xE9."
+    )
   },
   {
-    id: "wiki-cpe",
-    group: "hist",
-    label: "Contrat premi\xE8re embauche",
-    url: "https://fr.wikipedia.org/wiki/Contrat_premi%C3%A8re_embauche",
-    what: {
-      en: "the CPE turnout series (7 Feb, 7 Mar, 18 Mar, 23 Mar, 28 Mar, 4 Apr) and the Paris-only enforcement counts of 16\u201318 Mar.",
-      fr: "la s\xE9rie de foules du CPE (7 f\xE9vr., 7 mars, 18 mars, 23 mars, 28 mars, 4 avr.) et les d\xE9comptes r\xE9pressifs strictement parisiens des 16\u201318 mars."
-    }
+    name: "USL (intersyndicale lyc\xE9enne)",
+    note: both(
+      "the lyc\xE9en intersyndicate whose call calendar drives the school-movement rows.",
+      "l\u2019intersyndicale lyc\xE9enne dont le calendrier d\u2019appels porte les lignes du mouvement scolaire."
+    )
   },
   {
-    id: "wiki-gj",
-    group: "hist",
-    label: "Mouvement des Gilets jaunes",
-    url: "https://fr.wikipedia.org/wiki/Mouvement_des_Gilets_jaunes",
-    what: {
-      en: "the Act I\u201344 ministry turnout series and the Act I\u2013IV custody/interpellation counts. Later acts were never published as a series, which is why the enforcement lines stop at week 3.",
-      fr: "la s\xE9rie minist\xE9rielle de foules des actes I \xE0 XLIV et les d\xE9comptes de gardes \xE0 vue / interpellations des actes I \xE0 IV. Les actes suivants n\u2019ont jamais \xE9t\xE9 publi\xE9s en s\xE9rie, d\u2019o\xF9 l\u2019arr\xEAt des courbes r\xE9pressives \xE0 la semaine 3."
-    }
-  },
-  {
-    id: "wiki-nahel",
-    group: "hist",
-    label: "Mort de Nahel Merzouk",
-    url: "https://fr.wikipedia.org/wiki/Mort_de_Nahel_Merzouk",
-    what: {
-      en: "the 3,354 arrests and 722 officers injured of 27 Jun \u2013 2 Jul 2023, and the 108 of the following week.",
-      fr: "les 3 354 interpellations et 722 policiers bless\xE9s du 27 juin au 2 juill. 2023, et les 108 de la semaine suivante."
-    }
-  },
-  {
-    id: "wiki-retraites",
-    group: "hist",
-    label: "Mouvement social contre la r\xE9forme des retraites de 2023",
-    url: "https://fr.wikipedia.org/wiki/Mouvement_social_contre_la_r%C3%A9forme_des_retraites_en_France_en_2023",
-    what: {
-      en: "the ministry and union turnout pairs for each national action day, 19 Jan \u2013 6 Jun 2023.",
-      fr: "les couples minist\xE8re / syndicats de chaque journ\xE9e nationale d\u2019action, du 19 janv. au 6 juin 2023."
-    }
-  },
-  {
-    id: "france24-bloquons",
-    group: "hist",
-    label: "France 24 \u2014 \xAB Bloquons tout \xBB, direct du 10 septembre 2025",
-    url: "https://www.france24.com/fr/france/20250910-en-direct-france-bloquons-tout-colere-sociale-emmanuel-macron",
-    date: "2025-09-10",
-    what: {
-      en: "197,000 participants, 596 rallies, 253 blockades, 540 arrests (211 in Paris) \u2014 the final ministry point of the evening, superseding the 175,000 of 17:45.",
-      fr: "197 000 participants, 596 rassemblements, 253 blocages, 540 interpellations (dont 211 \xE0 Paris) \u2014 le point minist\xE9riel final de la soir\xE9e, qui supplante les 175 000 de 17 h 45."
-    }
-  },
-  {
-    id: "bfmtv-bloquons",
-    group: "hist",
-    label: "BFMTV \u2014 direct du 10 septembre",
-    url: "https://www.bfmtv.com/societe/manifestations/direct-10-septembre-blocages-transports-manifestations-suivez-le-mouvement-bloquons-tout-a-paris-lyon-marseille_LN-202509100070.html",
-    date: "2025-09-10",
-    what: {
-      en: "the intra-day revision of the count (175,000 \u2192 197,000), which is why the chart shows a band rather than a point.",
-      fr: "la r\xE9vision du d\xE9compte en cours de journ\xE9e (175 000 \u2192 197 000), d\u2019o\xF9 une fourchette plut\xF4t qu\u2019un point sur le graphique."
-    }
-  },
-  {
-    id: "figaro-bloquons",
-    group: "hist",
-    label: "Le Figaro \u2014 direct du 10 septembre",
-    url: "https://www.lefigaro.fr/social/direct-bloquons-tout-10-septembre-mouvement-greves-manifestations-perturbations-transports-ecole-20250910",
-    date: "2025-09-10",
-    dateEnd: "2025-09-11",
-    what: {
-      en: "the 18 Sep intersyndicale day and the 2 Oct third wave.",
-      fr: "la journ\xE9e intersyndicale du 18 sept. et la troisi\xE8me vague du 2 oct."
-    }
-  },
-  {
-    id: "wiki-bloquons",
-    group: "hist",
-    label: "Bloquons tout (English Wikipedia)",
-    url: "https://en.wikipedia.org/wiki/Bloquons_tout",
-    what: {
-      en: "the movement\u2019s chronology and its 10 Sep / 18 Sep / 2 Oct structure.",
-      fr: "la chronologie du mouvement et sa structure des 10 sept., 18 sept. et 2 oct."
-    }
+    name: "Pr\xE9fecture de police de Paris",
+    note: both(
+      "Paris-only counts (17 Oct, 7 Nov) are prefecture figures relayed by the press, never a national series.",
+      "les chiffres strictement parisiens (17 oct., 7 nov.) sont des donn\xE9es pr\xE9fectorales relay\xE9es par la presse, jamais une s\xE9rie nationale."
+    )
   }
 ];
 var MARKER_KEY = [
@@ -14773,6 +17126,14 @@ var MARKER_KEY = [
     }
   }
 ];
+{
+  const seen = /* @__PURE__ */ new Set();
+  for (const s of SOURCES) {
+    if (seen.has(s.id))
+      throw new Error(`sources.ts: duplicate source id "${s.id}"`);
+    seen.add(s.id);
+  }
+}
 function dateLabel(s) {
   if (!s.date) return null;
   return s.dateEnd ? `${fmtDayMonth(s.date)}\u2013${fmtDate(s.dateEnd)}` : fmtDate(s.date);
@@ -14804,17 +17165,32 @@ function renderSources(host = document.getElementById("sources")) {
   const box = el("div", "sources-box");
   box.append(el("p", "intro", bi(INTRO)));
   for (const group of GROUPS) {
+    const items = SOURCES.filter((s) => s.group === group.id);
+    if (items.length === 0) continue;
+    const h = el("h3", void 0, bi(group.title));
+    h.append(" ", el("span", "count", String(items.length)));
+    const list = el("ul");
+    for (const s of items) list.append(sourceItem(s));
     const section = el("section", "source-group");
     section.append(
-      el("h3", void 0, bi(group.title)),
-      el("p", "blurb", bi(group.blurb))
+      el("section", "source-group"),
+      h,
+      el("p", "blurb", bi(group.blurb)),
+      list
     );
-    const list = el("ul");
-    for (const s of SOURCES)
-      if (s.group === group.id) list.append(sourceItem(s));
-    section.append(list);
     box.append(section);
   }
+  const mentions = el("section", "source-group");
+  mentions.append(
+    el("h3", void 0, bi(MENTIONS_TITLE)),
+    el("p", "blurb", bi(MENTIONS_BLURB))
+  );
+  const dl = el("dl", "mention-list");
+  for (const { name, note: note2 } of MENTIONS) {
+    dl.append(el("dt", void 0, name), el("dd", void 0, bi(note2)));
+  }
+  mentions.append(dl);
+  box.append(mentions);
   const key = el("dl", "marker-list");
   for (const { key: marker, text } of MARKER_KEY) {
     key.append(el("dt", void 0, marker), el("dd", void 0, bi(text)));

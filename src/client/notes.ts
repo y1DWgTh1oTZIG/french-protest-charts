@@ -1,5 +1,22 @@
 /* Note and marker copy. Lives apart from chart.ts because section C renders the
-   same NoteRefs: that import was what pulled STUDENT_WEEKS into the wrong module. */
+   same NoteRefs: that import was what pulled STUDENT_WEEKS into the wrong module.
+
+   ── Third pass, 12 Nov 2026 ───────────────────────────────────────────────
+   Two kinds of note now share the same table:
+
+   1. DAILY points carry { k: "obs", date, metric }. The text lives in
+      i18n.ts under obsNotes[date][metric].
+   2. WEEKLY points normally carry { k: "week", p }, rendered from the
+      generic week copy ("N days counted", "includes a floor", "N points
+      excluded"). But when a week is a cumulative stock, or when it contains a
+      derived component that makes the figure uncertain, the weekly point
+      borrows the OBSERVATION note of the cell that explains it — a stock is
+      a level, not a sum, and "6 days counted" would be the wrong caption for
+      it. The obsNotes entry therefore has to read correctly in both a daily
+      and a weekly tooltip.
+
+   Nothing here needs to know which context it is in: both resolve through
+   the same { k: "obs" } branch. */
 
 import { fill, fmtDayMonth, nf, t } from "./i18n.ts";
 import { RATE } from "./data.ts";
@@ -47,6 +64,9 @@ export function noteText(ref: NoteRef | null | undefined): string {
       if (p.clipped) parts.push(m.weekClipped);
       return parts.join(m.weekJoin);
     }
+
+    default:
+      return "";
   }
 }
 

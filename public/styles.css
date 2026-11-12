@@ -542,3 +542,8 @@ section > header p {
   color: #6b7280;
   max-width: 110ch;
 }
+
+#sources .count {
+  font-size: 0.75em;
+  color: #6b7280;
+}

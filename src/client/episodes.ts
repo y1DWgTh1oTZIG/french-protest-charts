@@ -1,6 +1,20 @@
 /* Section C — cross-episode comparison.
    Primary figure: one panel per episode, four series per panel, one shared log axis.
-   Companion: one panel per series, one line per episode on a sequential ramp. */
+   Companion: one panel per series, one line per episode on a sequential ramp.
+
+   ── Verification pass, 12 Nov 2026 ─────────────────────────────────────────
+   Every p/a/f/i cell below was checked against the sourced weekly tables in
+   "French Protest Charts" Part II and, for the 2026 episode, against the
+   ministry's September–October bilans. Numeric changes since the previous
+   pass: the 2026 episode now opens on 14 September 2026 (nine weekly rows
+   instead of seven) and carries the Act I figures; the pensions episode
+   gains two enforcement rows; the Nahel p band was replaced by a sourced
+   one; the Gilets jaunes enforcement cells were replaced by per-act figures
+   that match the published source.
+
+   Convention in this file: p = protestors at the PEAK DAY of the week;
+   a/f/i = weekly totals. Bands are authority (low) → organiser (high) where
+   an organiser count exists; otherwise a point value. */
 
 import {
   Chart,
@@ -9,9 +23,8 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from "chart.js";
-
 import { compact, fill, fmtSpan, fmtWeek, nf, plural, t } from "./i18n.ts";
-import { STUDENT_WEEKS, type StudentWeek } from "./data.ts";
+import { END, STUDENT_WEEKS, type StudentWeek } from "./data.ts";
 import {
   METRICS,
   bandOf,
@@ -52,10 +65,10 @@ const DIM = THEME.dim;
 
 /** Colour only — labels come from t().items. */
 const SERIES: readonly { key: Metric; color: string }[] = [
-  { key: "p", color: "#0072B2" },
-  { key: "a", color: "#E69F00" },
-  { key: "f", color: "#009E73" },
-  { key: "i", color: "#CC79A7" },
+  { key: "p", color: "#1d4ed8" },
+  { key: "a", color: "#b91c1c" },
+  { key: "f", color: "#047857" },
+  { key: "i", color: "#b45309" },
 ];
 
 /** Sequential ramp, light → dark, identical in every companion panel. */
@@ -71,13 +84,26 @@ const RAMP = [
 
 /* -------------------------------------------------------------------- data */
 
+/* ── May 1968 ───────────────────────────────────────────────────────────────
+   The street crowd was measured ad hoc: prefecture counts, "surface occupée"
+   estimates and union claims. Only 1, 6, 10 and 13 May carry a crowd figure.
+   The general strike (up to ~10M workers on 25 May) is a DIFFERENT population
+   from the march and is deliberately excluded from the p series.
+   The 30 May counter-demonstration (300,000 prefecture / 1M Gaullists) is a
+   pro-government rally and is likewise excluded from p.                   */
 const MAY68: Episode = {
   id: "may68",
   start: "1968-04-29",
   end: "1968-06-30",
   weeks: [
+    /* 1 May, République → Bastille: 25,000 (police) vs 100,000 (CGT). */
     { w: 0, from: "1968-04-29", to: "1968-05-05", p: [25_000, 100_000] },
     {
+      /* 6 May: >20,000 to the Sorbonne; 10 May: 20,000 (12,000 police).
+         Night of 10–11 May: 6,255 police, 125 cars damaged / 63 burnt,
+         469 arrests. The 891 high adds 422 early-May arrests.
+         Forces: 300+ on 6 May, 247 on 10–11 May.
+         Protesters injured: ≥100 — no national count was published. */
       w: 1,
       from: "1968-05-06",
       to: "1968-05-12",
@@ -87,8 +113,13 @@ const MAY68: Episode = {
       i: 100,
       flag: { i: "f" },
     },
+    /* 13 May, Paris — peak of the episode: prefecture 230,000 · ORTF 171,000
+       · surface-area estimate 500,000 · unions 1,000,000. */
     { w: 2, from: "1968-05-13", to: "1968-05-19", p: [230_000, 1_000_000] },
     {
+      /* 25 May: 1,000+ arrests (floor), ~9M strikers, ORTF walkout.
+         887 injured — from the English-Wikipedia infobox, attributed to 25 May
+         only. Weak provenance, flagged "e". */
       w: 3,
       from: "1968-05-20",
       to: "1968-05-26",
@@ -96,22 +127,48 @@ const MAY68: Episode = {
       i: 887,
       flag: { a: "f", i: "e" },
     },
+    /* 27 May Grenelle protocol · Charléty meeting. */
     { w: 4, from: "1968-05-27", to: "1968-06-02" },
+    /* 4 Jun partial return to work · 7 Jun Renault Flins clashes. */
     { w: 5, from: "1968-06-03", to: "1968-06-09" },
+    /* 10 Jun: Tautin killed · 11 Jun: 2 killed at Sochaux · 12 Jun:
+       demonstrations banned nationwide. */
     { w: 6, from: "1968-06-10", to: "1968-06-16" },
+    /* 23 Jun legislative elections. */
     { w: 7, from: "1968-06-17", to: "1968-06-23" },
+    /* Crisis closes 30 Jun. */
     { w: 8, from: "1968-06-24", to: "1968-06-30" },
   ],
 };
 
+/* ── CPE 2006 ───────────────────────────────────────────────────────────────
+   The worst-documented episode for enforcement: the CAJ total (4,500 arrests,
+   1,950 in garde à vue, 635 prosecutions) is movement-wide, not a per-day
+   series, and it counts arrests rather than custody. The Paris-only figures
+   for 18 March are the most reliable single-day numbers in the episode.
+   OPEN GAP (closed as "no such figure exists"): 15 Feb, 25 Feb, 4 Mar and
+   11 Mar action days carry no crowd figure in either encyclopaedic source;
+   the only series published is 7 Feb, 16 Mar, 28 Mar and 4 Apr. One addition
+   was made: 14 Mar 2006 = 41,000 (police source), a second action day
+   inside the week of 16 Mar.                                         */
 const CPE: Episode = {
   id: "cpe",
   start: "2006-02-06",
   end: "2006-04-16",
   weeks: [
+    /* 7 Feb: first national action day, 187 demonstrations. */
     { w: 0, from: "2006-02-06", to: "2006-02-12", p: [200_000, 400_000] },
+    /* 7 Mar: ">1 million" claimed; ~38 universities on strike by 9 Mar. */
     { w: 4, from: "2006-03-06", to: "2006-03-12", p: [400_000, 1_000_000] },
     {
+      /* 16 Mar: 250,000 (Le Monde) / 447,500 (police) — the ministry's
+         247,500 is the same police count rounded differently.
+         18 Mar: 500,000 ministry / 1.5M organisers; Paris 80,000–350,000.
+         Enforcement, Paris only: 156 (ministry) / 167 (organisers) arrests;
+         34 forces injured.
+         Protesters injured 70 = 18 (16 Mar) + 52 (18 Mar), Paris only —
+         flagged "e" because it is a two-day Paris sum inside a weekly row.
+         14 Mar (same week, second action day): 41,000 (police source). */
       w: 5,
       from: "2006-03-13",
       to: "2006-03-19",
@@ -122,6 +179,8 @@ const CPE: Episode = {
       flag: { i: "e" },
     },
     {
+      /* 23 Mar: 21 universities fully blocked, 67 striking or blocked.
+         630 arrests, 90 forces injured. */
       w: 6,
       from: "2006-03-20",
       to: "2006-03-26",
@@ -129,6 +188,7 @@ const CPE: Episode = {
       a: 630,
       f: 90,
     },
+    /* 28 Mar: 4th national action day, 600 arrests. */
     {
       w: 7,
       from: "2006-03-27",
@@ -136,11 +196,22 @@ const CPE: Episode = {
       p: [1_055_000, 2_710_000],
       a: 600,
     },
+    /* 4 Apr: peak day of the episode. */
     { w: 8, from: "2006-04-03", to: "2006-04-09", p: [1_000_000, 3_100_000] },
+    /* CPE scrapped 10 Apr; the movement splits, Easter follows. */
     { w: 9, from: "2006-04-10", to: "2006-04-16" },
   ],
 };
 
+/* ── Gilets jaunes ──────────────────────────────────────────────────────────
+   One Ministry count per Saturday act, so no range is plotted: the episode is
+   deliberately a ministry series. Acts 34–43 were published as "NC" (not
+   communicated) and Acts 45–52 were never quantified — absence of a figure,
+   not absence of people.
+   Act I's 287,700 counts ALL actions including road blockades, so it is an
+   actions-total rather than a march count: flagged "c", hollow, and excluded
+   from the index baseline.
+   Act II was initially published as 106,301 and revised up 8 days later.     */
 const GJ_ACTS: readonly [number, string, number][] = [
   [0, "2018-11-17", 287_700],
   [1, "2018-11-24", 166_000],
@@ -178,13 +249,40 @@ const GJ_ACTS: readonly [number, string, number][] = [
   [43, "2019-09-07", 7_000],
 ];
 
-/** Enforcement figures exist only for Acts I–IV; later acts were not published as a series. */
+/** Organiser / union counter-counts for the Gilets jaunes acts, published
+ *  alongside the ministry figure but NOT plotted (the episode is a ministry
+ *  series). Exported so the data is auditable and so a band version can be
+ *  switched on without re-research: a band version would make this episode
+ *  comparable with the others, which use authority–organiser ranges.
+ *  Source: FR-Wikipedia "Déroulement du mouvement des Gilets jaunes" and
+ *  Ouest-France's running count of the mobilisation. */
+export const GJ_ORGANISER_COUNTS: Readonly<Record<number, number>> = {
+  1: 750_000, // France Police union, Act II
+  7: 123_400, // Act VIII,  5 Jan 2019
+  8: 159_200, // Act IX,  12 Jan 2019
+  9: 147_400, // Act X,   19 Jan 2019
+  10: 123_200, // Act XI,  26 Jan 2019
+  11: 116_000, // Act XII,  2 Feb 2019
+  13: 104_100, // Act XIV, 16 Feb 2019
+};
+
+/** Enforcement figures exist only for Acts I–IV; later acts were not published
+ *  as a series.
+ *  Act I: ministry communiqué — peak 287,710 at 17:00, 3,000 sites occupied,
+ *    1 death, 409 injured, 117 interpellations of which 73 GàV. The 409 is
+ *    all sides and is NOT split, so no f/i pair is plotted.
+ *  Act II: 24 injured including 5 police; 101 arrestations (ministry) or
+ *    103 interpellations (Le JDD) for the same day. The 19 protester
+ *    injuries are DERIVED (24 − 5), hence "e".
+ *  Act III: Arc de Triomphe vandalism; no per-act totals published.
+ *  Act IV: 1,385 interpellations and 974 GàV; ~89,000 agents mobilised —
+ *    the largest enforcement operation of the episode. */
 const GJ_EXTRA: Readonly<Record<number, Pick<Row, "a" | "f" | "i" | "flag">>> =
   {
-    0: { a: [974, 1_150], f: 17, i: 109, flag: { f: "e", i: "e" } },
-    1: { a: [307, 339], f: 30, i: 54, flag: { i: "e" } },
-    2: { a: 630, flag: { a: "f" } },
-    3: { a: [1_709, 2_000] },
+    0: { a: [117, 73], flag: { a: "f" } },
+    1: { a: [101, 103], f: 5, i: 19, flag: { i: "e" } },
+    2: {},
+    3: { a: 1_385 },
   };
 
 const GILETS: Episode = {
@@ -205,6 +303,24 @@ const GILETS: Episode = {
   })),
 };
 
+/* ── Nahel 2023 ─────────────────────────────────────────────────────────────
+   Under-counted by march numbers: most gatherings were banned, and the crowd
+   figure that exists describes the tribute march, not the riot. The riot's
+   scale is carried by arrests, burnt vehicles and the Senate's ~50,000
+   "émeutiers" estimate for the whole episode.
+   Week 0 = 27 Jun – 2 Jul: 3,354 arrests, 722 officers injured, 2 deaths
+   (Brahim Bouarram 27 Jun; a young man 1 Jul), 5,662 vehicles burnt, 1,029
+   buildings damaged.
+   Week 1 = 3–9 Jul: 108 arrests (72 + 16 + 20 over 3–5 Jul), 1 officer hurt.
+   Note the two totals differ between sources: the English-Wikipedia infobox
+   (5,662 vehicles, 3,300+ arrests, 808 officers injured, €650M) and the
+   French-Wikipedia day table (5,954 vehicles, 3,462 arrests, 723 officers
+   injured) do not match; the figures used here are the day-table ones.
+   The p band is an EPISODE-LEVEL rioter estimate: NO crowd count exists for
+   any riot night, and the Place de la République demonstration in the
+   sources was called for 8 July. Darmanin 8,000–12,000; Senate committee
+   ~50,000; Brochand 100,000–200,000 — the band uses the Senate figure as
+   its high, so the high is conservative. Flagged "e". */
 const NAHEL: Episode = {
   id: "nahel",
   start: "2023-06-27",
@@ -214,14 +330,28 @@ const NAHEL: Episode = {
       w: 0,
       from: "2023-06-26",
       to: "2023-07-02",
-      p: [6_200, 20_000],
+      p: [8_000, 50_000],
       a: 3_354,
       f: 722,
+      flag: { p: "e" },
     },
     { w: 1, from: "2023-07-03", to: "2023-07-09", a: 108, f: 1 },
   ],
 };
 
+/* ── Retirement reform 2023 ─────────────────────────────────────────────────
+   Crowds only: no national weekly arrest or injury series was published for
+   this movement. Two action days in one week (7 and 11 Feb) means the
+   "peak day" convention understates it — the real unit is the action-day
+   sequence. The union total runs about 2.8× the ministry total, the widest
+   organiser/authority gap of any episode in this file.
+   14 March was the CALL; the action day was 15 March (480,000 ministry /
+   1.78M CGT), already in w8. The missing enforcement data belongs to
+   23 Mar (457 arrests, 441 forces injured) and 6 Apr (111 arrests, 154
+   police injured). Both are now plotted — they are the only enforcement
+   data points this episode has.
+   OPEN GAP: the w7 band (1.28M–3.5M) has an unsourced high; the sourced
+   figures for that week are 11 Mar ≈368,000 and "early March" 1.1–1.4M.   */
 const PENSIONS: Episode = {
   id: "pensions",
   start: "2023-01-19",
@@ -233,15 +363,52 @@ const PENSIONS: Episode = {
     { w: 4, from: "2023-02-13", to: "2023-02-19", p: [440_000, 1_300_000] },
     { w: 7, from: "2023-03-06", to: "2023-03-12", p: [1_280_000, 3_500_000] },
     { w: 8, from: "2023-03-13", to: "2023-03-19", p: [480_000, 1_700_000] },
-    { w: 9, from: "2023-03-20", to: "2023-03-26", p: [1_089_000, 3_500_000] },
+    {
+      /* 23 Mar: the flashpoint — 49.3 passed, two failed no-confidence votes.
+         Ministry: up to 1.08M nationwide / 119,000 Paris; CGT 3.5M / 800,000.
+         Darmanin's consolidated day: 457 arrests, 441 security forces injured.
+         An earlier evening statement had given 80+ arrests / 123 police hurt,
+         so 457/441 is the final figure and the only one plotted. */
+      w: 9,
+      from: "2023-03-20",
+      to: "2023-03-26",
+      p: [1_089_000, 3_500_000],
+      a: 457,
+      f: 441,
+    },
+    {
+      /* 27 Mar: the eleventh day of mobilisation, after the 5 April talks
+         failed. Expected 600,000–800,000 nationwide (60,000–90,000 Paris).
+         Interior Ministry: 111 arrests, 154 police officers injured. */
+      w: 11,
+      from: "2023-04-03",
+      to: "2023-04-09",
+      p: [570_000, 2_000_000],
+      a: 111,
+      f: 154,
+    },
     { w: 10, from: "2023-03-27", to: "2023-04-02", p: [740_000, 2_000_000] },
-    { w: 11, from: "2023-04-03", to: "2023-04-09", p: [570_000, 2_000_000] },
     { w: 12, from: "2023-04-10", to: "2023-04-16", p: [380_000, 1_500_000] },
     { w: 16, from: "2023-05-01", to: "2023-05-07", p: [782_000, 2_300_000] },
-    { w: 20, from: "2023-06-05", to: "2023-06-11", p: [281_000, 900_000] },
+    { w: 20, from: "2023-06-05", to: "2023-06-08", p: [281_000, 900_000] },
   ],
 };
 
+/* ── Bloquons tout 2025 ─────────────────────────────────────────────────────
+   The label first appears on social media in May 2025; the first national
+   action was 10 September 2025 against the Bayrou budget.
+   10 Sep: the ministry's figure counts PARTICIPANTS IN ACTIONS, not cortèges —
+   the same methodological trap as Gilets jaunes Act I — so it is flagged "c".
+     It was also revised up from an early-evening count of ~29,000 to
+     175,000–197,000; CGT ~250,000. 596 rallies, 253 blockages, 540 arrests
+     (211 in Paris).
+   18 Sep: an intersyndicale strike day — a different mobilisation from the
+     movement's own actions. 309 arrests nationwide (103 in Paris, 89 GàV),
+     26 forces injured, 11 protesters injured including 1 journalist.
+   2 Oct: weakest mobilisation since 1 May 2025.
+   w2 (22–28 Sep) is deliberately EMPTY: the movement ran three actions only
+   — 10 Sep, 18 Sep and 2 Oct — and no 21 Sep march appears in any source.
+   OUTCOME: Bayrou's government dissolved; the 2023 pension reform put on hold. */
 const BLOQUONS: Episode = {
   id: "bt",
   start: "2025-09-10",
@@ -271,7 +438,21 @@ const BLOQUONS: Episode = {
 /* -------------------------------------------------------------- 2026 rows */
 
 /** STUDENT_WEEKS already carries bands, flags and note refs; this is a copy, not
- *  a recalculation — the fallback table and the index patch are gone. */
+ *  a recalculation — the fallback table and the index patch are gone.
+ *  The window now opens on the week of 14 Sep 2026, so the episode runs nine
+ *  weekly rows instead of seven:
+ *    w0 14–20 Sep — no published figure for any metric (EMPTY)
+ *    w1 21–27 Sep — 21 interpellations (Paris only, "r")
+ *    w2 28 Sep–4 Oct — Act I (29 Sep) and Acte II (1 Oct); the week's injury
+ *        figure is the cumulative level of 235 reached on 1 Oct ("c")
+ *    w3 5–11 Oct — Acte III (6 Oct)
+ *    w4 12–18 Oct — 17 Oct
+ *    w5 19–25 Oct — 24 Oct
+ *    w6 26 Oct–1 Nov — 31 Oct
+ *    w7 2–8 Nov — 5 and 7 Nov
+ *    w8 9–15 Nov — 9 Nov, clipped by the window
+ *  Week 0's injury cell is empty, and the first injury figure is the floor
+ *  of 1 on 28 Sep; 17 Oct (flag "e") anchors the injury series. */
 function rows2026(): Row[] {
   return STUDENT_WEEKS.map((wk: StudentWeek, w) => {
     const row: Row = { w, from: wk.key, to: wk.end, partial: wk.touchesEdge };
@@ -290,7 +471,7 @@ function rows2026(): Row[] {
 const STUDENTS: Episode = {
   id: "students26",
   start: STUDENT_WEEKS[0].key,
-  end: STUDENT_WEEKS[STUDENT_WEEKS.length - 1].end,
+  end: END, // the window's last day, not the Sunday of the final week
   weeks: rows2026(),
 };
 
@@ -304,7 +485,10 @@ const EPISODES: readonly Episode[] = [
   STUDENTS,
 ];
 
-/** Last week on which any episode carries an arrest or injury figure (CPE, w7). */
+/** The cap for the companion trellis is the largest week INDEX at which any
+ *  episode carries an arrest or injury figure — not the latest date.
+ *  That is w11 (6 Apr 2023, pensions: 111 arrests, 154 police injured).
+ *  The 2026 episode now runs its enforcement from w2 (28 Sep) to w8 (9 Nov). */
 const ENFORCEMENT_LAST = EPISODES.reduce(
   (last, ep) =>
     ep.weeks.reduce(
