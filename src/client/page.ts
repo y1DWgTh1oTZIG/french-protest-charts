@@ -6,6 +6,7 @@
  * not here. One writer per attribute.
  */
 
+import { renderAbout } from "./about.ts";
 import { localeMeta, onLocaleChange, t, type SectionCopy } from "./i18n.ts";
 
 const $ = (id: string): HTMLElement | null => document.getElementById(id);
@@ -90,6 +91,7 @@ export function renderChrome(): void {
 
   repoLink();
   disclaimer();
+  renderAbout();
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
   header("hdr-c", m.sections.c);

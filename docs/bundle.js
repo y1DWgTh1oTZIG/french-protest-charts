@@ -15136,6 +15136,492 @@ function mountLangSwitch(host = document.querySelector(
   };
 }
 
+// src/client/about.ts
+var OPEN_ID = "project";
+var SECTION_LABEL = {
+  en: "Notes on this project",
+  fr: "Notes sur le projet"
+};
+var BLOG = "https://www.lemonde.fr/societe/article/2026/11/09/a-brest-la-police-saisit-les-trombinoscopes-de-plusieurs-lycees-eleves-et-parents-denoncent-un-fichage_6808694_3224.html";
+var RN_VOTE = "https://www.humanite.fr/politique/rassemblement-national/entre-les-67-de-vote-rn-dans-ses-rangs-et-lambiance-securitaire-en-vigueur-la-police-deja-prete-a-servir-lextreme-droite";
+var HELICOPTER = "https://www.lavoixdunord.fr/506027/article/2018-12-13/un-helicoptere-etait-pret-samedi-au-cas-ou-pour-emmener-emmanuel-macron";
+var STRATEGY = "https://lepoing.net/manifestation-du-7-novembre-a-montpellier-la-contestation-cherche-encore-sa-strategie/";
+var BUNKER = "https://neru.tv/sources/macron-bunker-secret-pour-fuir-le-peuple/";
+var PAGES = "https://y1dwgth1otzig.github.io/french-protest-charts/?lang=en";
+var REPO = "https://github.com/y1DWgTh1oTZIG/french-protest-charts";
+var SPOOK = "https://www.youtube.com/watch?v=HG-56GKbPtk&t=3896";
+var QUOTE = {
+  kind: "quote",
+  paras: [
+    [
+      "In guerilla warfare, the winning is in not losing. When you sleep on the floor, you can\u2019t fall out of bed."
+    ],
+    [
+      "[We have to force] him to make a choice between the two things which he seems to dig most of all."
+    ],
+    [
+      "There is no way that the United States can police the world and keep us on our ass too unless we cooperate. When we revolt, we reduce it to a simple choice."
+    ],
+    ["[The time for others to make a] choice is when we start."],
+    [
+      "If they don\u2019t follow our program and turn us in to the cops we lose in a week."
+    ],
+    [
+      "[But if they support us] then it\u2019s hit and run, harass and hound, and we can paralyze this country."
+    ]
+  ],
+  by: ["Dan Freeman, ", { link: "The Spook Who Sat by the Door", href: SPOOK }]
+};
+var ABOUT = {
+  /* ---------------------------------------------------------------- english */
+  en: [
+    {
+      id: "project",
+      title: "About This Project",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "This is an attempt to better visualise the ongoing student-led uprising taking place in France, as well as putting it into context against other past uprisings."
+          ]
+        }
+      ]
+    },
+    {
+      id: "analysis",
+      title: "My Analysis",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "Section A shows the early dynamics of the movement quite starkly: school blockades were rapidly spreading around the country (and its overseas territories), which was met with a hugely excessive response from the police at the end of September. This helps to contextualise ",
+            { em: "why" },
+            " people were so angry and why, when the police lost control on Oct 17, they caused such an amount of damage."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "In an attempt to regain control, the state responded with lawfare, with Macron and his prefects attempting to ban protests and implement curfews for young people. This has been resoundingly rejected week after week as\u2014during the school holidays and therefore a break in the school blockades\u2014huge numbers of people continued to take to the streets in defiance of these orders."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Looking at the data since Oct 17, things seem to have settled into an uneasy routine: the unions declare planned routes; the prefects ban them or propose ridiculous alternatives; the unions file urgent appeals that invariably get rejected; the weaker unions accept the alternative routes; the spicier unions join the Gilets Jaunes, students, et al. in defiant undeclared manifestations; the cops wait until most people go; and then they engage in running battles with the remaining few until the evening. But either the more-recent arrest and injury figures are currently undercounted, or there has been a steady decline in eacy since Oct 17."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "However, I think the police may have decided to try intelligence in place of violence for a change. They seem to be using kettling much more often, surrounding and tear-gassing protestors and then allowing them to exit only by allowing their identity card to be photographed and a fine for attending an illegal protest to be issued. The fixed-penalty fines are 135EUR, but I suspect their main objective is the IDs for intelligence collection and issuing future charges. Similarly, police in Brest ",
+            {
+              link: "seized the photo directories of several schools",
+              href: BLOG
+            },
+            ", for as-yet-unclear reasons. It\u2019s worth noting that in France, it is illegal for the state to record ethnicity data and for employers to record lists of striking employees, both because of the experience in WWII where the French collaborator and German occupier governments used these lists to round up their enemies for deportation and worse. The fear in the back of everyone\u2019s mind is the possibility that France will again have a far-right government next April, which ",
+            {
+              link: "almost two thirds of the police openly support",
+              href: RN_VOTE
+            },
+            ", and so where might those lists end up?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "In terms of the historic comparisons (although the data here is less trustworthy; see the section below), the pension reform protests are interesting as, apparently, the only case where the protests were already ongoing for some time before the police repression began. The most obvious comparison to make is with the Gilets Jaunes (especially since the present movement has adopted the same Act-based structure), which managed to prolong a steadily decreasing weekly turnout for well over a year (and at one point had Macron ",
+            { link: "considering escape by helicopter", href: HELICOPTER },
+            "), but it\u2019s hard to say what was achieved by doing so."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "The big question facing the movement is ",
+            { link: "what should they do now", href: STRATEGY },
+            "? They\u2019ve seen off wanton police violence, shameless media demonisation and one particularly chaotic night that could have lost them public support (but this seems not to have happened). As I see it (and I\u2019m sure many others are having the same conversations), they need to figure out what they want and develop their theory of change. For example, the government has already made some small concessions to the students\u2019 original demands for increased education funding, but the movement has now absorbed all sorts of other grievances, from the cost of living to fear of militarism to personal distaste for Macron\u2019s patronising and authoritarian style of rule to fear of an incoming RN government."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Do they want to influence elites? Do they want to focus on influencing next year\u2019s elections? There is the presidential election in April, but the winner could well choose to call a snap legislative election just after. In this case, should work be undertaken to produce something like the Student List in Serbia?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Do they want to inflict economic pain on the state to force it to meet their demands? The data below suggests that we may be reaching an inflection point whereby the cost of policing these protests exceeded even the highest estimated for the damage caused on Oct 17. But as the Gilets Jaunes well know, this is an approach that favours many dispersed, smaller groups acting against intelligently-chosen targets (e.g. malls, logistics hubs, etc.), and not just smashing up random shop windows."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "What are those demands? Just the original student demands? Or the whole programme of reversing the pension reforms, re-funding every sector, demilitarising the police, seeking justice for Palestine, etc.?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Do they want to overthrow the government by force? This has happened before\u2014the end of Fourth Republic came when French military personnel and settlers in Algeria launched an attempted coup d\u2019\xE9tat. Certainly, the government seems to be ",
+            { link: "taking the possibility seriously", href: BUNKER },
+            ". But even if protestors did succeed in causing Macron to flee, it\u2019s not clear how the symbolic victory might translate into a practical takeover."
+          ]
+        },
+        QUOTE
+      ]
+    },
+    {
+      id: "data",
+      title: "Data Problems",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "The biggest challenge has been finding reliable data sources. In particular, I want to highlight some issues with the injury data."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "The police are the only ones to publish official figures, but they make no distinction between: accidental & self-inflicted injuries, and those caused by protestors; nor the severity of injury. Potentially a good way to enrich this would be to compare with figures for injury-related work stoppages, but I don\u2019t know when or where these might be published (and they would probably have to be compared against the non-uprising baseline to identify any excess). On the other hand, no official figures for violence against protestor exists. Deaths are obviously pretty easy to verify, but the exact causes can be unclear. For injuries, the most reliable data is compiled by Prof. Laurent Thines, and provides the floor of verified serious injuries. Some local street medic groups publish accounts of how many people they treated after large protests, but many of these will be for relatively minor things like \u2018gave saline to rinse out teargas\u2019; on the flipside, many people who receive saline or a Maalox squirt for the same thing won\u2019t be recorded; and the street medic landscape is very fragmented, with multiple groups often operating in the same protests but not all reporting their figures afterwards."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Damage is another tricky one, and also one of the most politicised. Wide-ranging figures are published shortly after the fact, but I suspect that if we wait a while we might be able to determine a more realistic floor by looking at the real insurance claim amounts (although that might exclude smaller stores that might not have insurance). And the estimates for policing costs should be taken as very rough, mainly determined by estimating the per-squadron cost of riot police deployment and scaling that up to the reported police deployment numbers. This also dovetails with the injury data problem, because we can\u2019t make estimates for the cost of any subsequent sick leave (whether for police, protestors, or bystanders)."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Obviously, all of these issues are intensified when looking further back at historical events."
+          ]
+        }
+      ]
+    },
+    {
+      id: "method",
+      title: "How I Made This",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "This project began as a personal experiment in \u2018vibe-coding\u2019 (i.e., iterative software development using an LLM and trying to avoid touching the code yourself)."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "The charts are rendered using Chart.js. I\u2019ve made things using this by hand in the past, and it\u2019s pretty tedious, so the ability to have the LLM convert natural language instructions into Chart.js syntax is pretty incredible."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "I used MiniMax M3.1 Flash for research and DeepSeek V4.1 Flash for coding\u2014thanks China! You can view my full development transcripts here:"
+          ]
+        },
+        {
+          kind: "ul",
+          items: [
+            [{ link: "initial development", href: "transcript-1.md" }],
+            [{ link: "chart type selection", href: "transcript-2.md" }],
+            [
+              {
+                link: "adding comparisons and translation",
+                href: "transcript-3.md"
+              }
+            ],
+            [{ link: "reviewing code", href: "transcript-4.md" }],
+            [{ link: "reviewing sources", href: "transcript-5.md" }]
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "This project is hosted on ",
+            { link: "GitHub Pages", href: PAGES },
+            ". You can view the code ",
+            { link: "here", href: REPO },
+            "."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "The first draft of this project took me just over a day of pretty intense back-and-forth."
+          ]
+        }
+      ]
+    }
+  ],
+  /* ---------------------------------------------------------------- français */
+  fr: [
+    {
+      id: "project",
+      title: "\xC0 propos de ce projet",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "Ceci est une tentative de mieux visualiser le soul\xE8vement \xE9tudiant en cours en France, et de le mettre en perspective avec d\u2019autres soul\xE8vements pass\xE9s."
+          ]
+        }
+      ]
+    },
+    {
+      id: "analysis",
+      title: "Mon analyse",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "La section A montre assez cr\xFBment la dynamique initiale du mouvement : les blocages de lyc\xE9es se sont rapidement propag\xE9s dans tout le pays (et dans ses territoires d\u2019outre-mer), et la police y a r\xE9pondu de mani\xE8re extr\xEAmement disproportionn\xE9e fin septembre. Cela aide \xE0 comprendre ",
+            { em: "pourquoi" },
+            " les gens \xE9taient si en col\xE8re et pourquoi, lorsque la police a perdu le contr\xF4le le 17 octobre, les d\xE9g\xE2ts ont \xE9t\xE9 aussi consid\xE9rables."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Pour tenter de reprendre la main, l\u2019\xC9tat a r\xE9pondu par le droit : Macron et ses pr\xE9fets ont cherch\xE9 \xE0 interdire les manifestations et \xE0 instaurer des couvre-feux pour les jeunes. Ces mesures ont \xE9t\xE9 rejet\xE9es avec \xE9clat semaine apr\xE8s semaine, car \u2014 pendant les vacances scolaires, donc en pause des blocages de lyc\xE9es \u2014 des foules immenses ont continu\xE9 \xE0 descendre dans la rue en d\xE9pit de ces arr\xEAt\xE9s."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "\xC0 regarder les donn\xE9es depuis le 17 octobre, les choses semblent s\u2019\xEAtre install\xE9es dans une routine inconfortable : les syndicats annoncent des parcours ; les pr\xE9fets les interdisent ou proposent des itin\xE9raires ridicules ; les syndicats d\xE9posent des recours en urgence qui sont invariablement rejet\xE9s ; les syndicats les plus ti\xE8des acceptent les parcours de substitution ; les plus combatifs rejoignent les Gilets jaunes, les \xE9tudiants, etc. dans des manifestations sauvages et provocatrices ; les flics attendent que la plupart des gens partent ; puis ils engagent des batailles rang\xE9es avec les derniers jusqu\u2019au soir. Mais soit les chiffres r\xE9cents d\u2019interpellations et de bless\xE9s sont actuellement sous-estim\xE9s, soit il y a eu une baisse r\xE9guli\xE8re depuis le 17 octobre."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Je pense cependant que la police a peut-\xEAtre d\xE9cid\xE9 d\u2019essayer le renseignement plut\xF4t que la violence, pour changer. Elle semble recourir beaucoup plus souvent \xE0 l\u2019encerclement (le \xAB kettling \xBB) : entourer et gazer les manifestants, puis ne les laisser sortir qu\u2019en photographiant leur carte d\u2019identit\xE9 et en leur infligeant une amende pour participation \xE0 une manifestation interdite. Les amendes forfaitaires sont de 135 EUR, mais je soup\xE7onne que l\u2019objectif principal soit les pi\xE8ces d\u2019identit\xE9, pour la collecte de renseignements et les poursuites \xE0 venir. De m\xEAme, \xE0 Brest, la police ",
+            {
+              link: "a saisi les trombinoscopes de plusieurs lyc\xE9es",
+              href: BLOG
+            },
+            ", pour des raisons encore floues. Il faut rappeler qu\u2019en France, l\u2019\xC9tat n\u2019a pas le droit d\u2019enregistrer des donn\xE9es ethniques, ni les employeurs de tenir des listes de salari\xE9s gr\xE9vistes, en raison de l\u2019exp\xE9rience de la Seconde Guerre mondiale, o\xF9 les gouvernements collaborateurs fran\xE7ais et l\u2019occupant allemand ont utilis\xE9 ces listes pour arr\xEAter leurs ennemis en vue de leur d\xE9portation et pire. La crainte au fond de chacun est que la France ait de nouveau un gouvernement d\u2019extr\xEAme droite en avril prochain, que ",
+            {
+              link: "pr\xE8s de deux tiers des policiers soutiennent ouvertement",
+              href: RN_VOTE
+            },
+            ", et alors o\xF9 pourraient aboutir ces listes ?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Pour les comparaisons historiques (m\xEAme si les donn\xE9es y sont moins fiables ; voir la section ci-dessous), les mobilisations contre la r\xE9forme des retraites sont int\xE9ressantes : apparemment le seul cas o\xF9 les protestations duraient d\xE9j\xE0 depuis un certain temps avant que la r\xE9pression polici\xE8re ne commence. La comparaison la plus \xE9vidente est avec les Gilets jaunes (d\u2019autant que le mouvement actuel a adopt\xE9 la m\xEAme structure en \xAB actes \xBB), qui ont r\xE9ussi \xE0 prolonger pendant bien plus d\u2019un an une participation hebdomadaire en baisse constante (et ont un moment conduit Macron \xE0 ",
+            {
+              link: "envisager de s\u2019enfuir en h\xE9licopt\xE8re",
+              href: HELICOPTER
+            },
+            "), mais il est difficile de dire ce que cela a permis d\u2019obtenir."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "La grande question qui se pose au mouvement est : ",
+            { link: "que faire maintenant", href: STRATEGY },
+            " ? Il a r\xE9sist\xE9 \xE0 une violence polici\xE8re gratuite, \xE0 une diabolisation m\xE9diatique sans vergogne et \xE0 une nuit particuli\xE8rement chaotique qui aurait pu lui faire perdre le soutien du public (mais cela ne semble pas s\u2019\xEAtre produit). \xC0 mon sens (et je suis s\xFBr que beaucoup d\u2019autres ont les m\xEAmes conversations), il faut d\xE9finir ce que l\u2019on veut et \xE9laborer une th\xE9orie du changement. Par exemple, le gouvernement a d\xE9j\xE0 fait quelques petites concessions aux revendications initiales des \xE9tudiants sur le financement de l\u2019\xE9ducation, mais le mouvement a d\xE9sormais absorb\xE9 toutes sortes d\u2019autres griefs, du co\xFBt de la vie \xE0 la peur du militarisme, en passant par l\u2019aversion personnelle pour le style de gouvernance paternaliste et autoritaire de Macron, jusqu\u2019\xE0 la crainte d\u2019un gouvernement RN."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Veut-il influencer les \xE9lites ? Veut-il peser sur les \xE9lections de l\u2019an prochain ? L\u2019\xE9lection pr\xE9sidentielle a lieu en avril, mais le vainqueur pourrait bien convoquer des l\xE9gislatives anticip\xE9es juste apr\xE8s. Dans ce cas, faudrait-il travailler \xE0 produire quelque chose comme la Liste \xE9tudiante en Serbie ?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Veut-il infliger une douleur \xE9conomique \xE0 l\u2019\xC9tat pour le contraindre \xE0 c\xE9der ? Les donn\xE9es ci-dessous sugg\xE8rent que nous approchons peut-\xEAtre d\u2019un point d\u2019inflexion o\xF9 le co\xFBt du maintien de l\u2019ordre d\xE9passe m\xEAme l\u2019estimation la plus haute des dommages caus\xE9s le 17 octobre. Mais comme les Gilets jaunes le savent bien, cette approche favorise de nombreux groupes dispers\xE9s et plus petits, agissant contre des cibles intelligemment choisies (centres commerciaux, plateformes logistiques, etc.), et pas seulement le saccage de vitrines au hasard."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Quelles sont ces revendications ? Seulement les revendications \xE9tudiantes initiales ? Ou tout le programme : abrogation des r\xE9formes des retraites, refinancement de tous les secteurs, d\xE9militarisation de la police, justice pour la Palestine, etc. ?"
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Veut-il renverser le gouvernement par la force ? Cela s\u2019est d\xE9j\xE0 produit \u2014 la fin de la IVe R\xE9publique est venue de la tentative de coup d\u2019\xC9tat de militaires fran\xE7ais et de colons en Alg\xE9rie. Certes, le gouvernement semble ",
+            { link: "prendre la possibilit\xE9 au s\xE9rieux", href: BUNKER },
+            ". Mais m\xEAme si les manifestants parvenaient \xE0 faire fuir Macron, on ne voit pas bien comment cette victoire symbolique se traduirait en prise de pouvoir concr\xE8te."
+          ]
+        },
+        QUOTE
+      ]
+    },
+    {
+      id: "data",
+      title: "Probl\xE8mes de donn\xE9es",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "La plus grande difficult\xE9 a \xE9t\xE9 de trouver des sources de donn\xE9es fiables. Je veux en particulier souligner quelques probl\xE8mes avec les donn\xE9es sur les bless\xE9s."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "La police est la seule \xE0 publier des chiffres officiels, mais elle ne distingue pas les blessures accidentelles et auto-inflig\xE9es de celles caus\xE9es par les manifestants, ni la gravit\xE9 des blessures. Une bonne fa\xE7on d\u2019enrichir ces donn\xE9es serait peut-\xEAtre de les comparer aux chiffres des arr\xEAts de travail pour accident, mais je ne sais pas quand ni o\xF9 ceux-ci pourraient \xEAtre publi\xE9s (et il faudrait probablement les comparer \xE0 une base de r\xE9f\xE9rence hors soul\xE8vement pour identifier un \xE9ventuel exc\xE8s). \xC0 l\u2019inverse, il n\u2019existe aucun chiffre officiel sur les violences subies par les manifestants. Les d\xE9c\xE8s sont \xE9videmment assez faciles \xE0 v\xE9rifier, mais les causes exactes peuvent \xEAtre floues. Pour les blessures, les donn\xE9es les plus fiables sont compil\xE9es par le Pr Laurent Thines et fournissent le plancher des blessures graves v\xE9rifi\xE9es. Certains collectifs locaux de street medics publient le nombre de personnes soign\xE9es apr\xE8s les grandes manifestations, mais beaucoup de ces cas concernent des choses relativement b\xE9nignes du type \xAB s\xE9rum physiologique pour rincer le gaz lacrymog\xE8ne \xBB ; \xE0 l\u2019inverse, beaucoup de personnes qui re\xE7oivent du s\xE9rum ou une gicl\xE9e de Maalox pour la m\xEAme chose ne seront pas comptabilis\xE9es ; et le paysage des street medics est tr\xE8s fragment\xE9, plusieurs groupes op\xE9rant souvent sur les m\xEAmes manifestations sans tous publier leurs chiffres ensuite."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Les dommages sont un autre cas d\xE9licat, et l\u2019un des plus politis\xE9s. Des chiffres tr\xE8s larges sont publi\xE9s peu apr\xE8s les faits, mais je soup\xE7onne qu\u2019en attendant un peu, on pourrait d\xE9terminer un plancher plus r\xE9aliste en examinant les montants r\xE9els des d\xE9clarations d\u2019assurance (m\xEAme si cela exclurait peut-\xEAtre les petits commerces non assur\xE9s). Et les estimations des co\xFBts de maintien de l\u2019ordre doivent \xEAtre prises comme tr\xE8s approximatives : elles sont surtout obtenues en estimant le co\xFBt par escadron de CRS d\xE9ploy\xE9, puis en l\u2019extrapolant aux effectifs annonc\xE9s. Cela recoupe aussi le probl\xE8me des donn\xE9es sur les bless\xE9s, car nous ne pouvons pas estimer le co\xFBt des arr\xEAts de travail qui en d\xE9coulent (qu\u2019ils concernent des policiers, des manifestants ou des passants)."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "De toute \xE9vidence, tous ces probl\xE8mes s\u2019intensifient lorsqu\u2019on remonte \xE0 des \xE9v\xE9nements historiques."
+          ]
+        }
+      ]
+    },
+    {
+      id: "method",
+      title: "Comment j\u2019ai fait ceci",
+      blocks: [
+        {
+          kind: "p",
+          runs: [
+            "Ce projet a commenc\xE9 comme une exp\xE9rience personnelle de \xAB vibe-coding \xBB (c\u2019est-\xE0-dire du d\xE9veloppement it\xE9ratif avec un LLM, en essayant de ne pas toucher soi-m\xEAme au code)."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Les graphiques sont rendus avec Chart.js. J\u2019en ai fait \xE0 la main par le pass\xE9, et c\u2019est assez fastidieux ; pouvoir faire convertir des instructions en langage naturel en syntaxe Chart.js par le LLM est donc assez incroyable."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "J\u2019ai utilis\xE9 MiniMax M3.1 Flash pour la recherche et DeepSeek V4.1 Flash pour le code \u2014 merci la Chine ! Vous pouvez consulter l\u2019int\xE9gralit\xE9 de mes transcriptions de d\xE9veloppement ici :"
+          ]
+        },
+        {
+          kind: "ul",
+          items: [
+            [{ link: "d\xE9veloppement initial", href: "transcript-1.md" }],
+            [{ link: "choix du type de graphique", href: "transcript-2.md" }],
+            [
+              {
+                link: "ajout de comparaisons et de traduction",
+                href: "transcript-3.md"
+              }
+            ],
+            [{ link: "revue du code", href: "transcript-4.md" }],
+            [{ link: "examen des sources", href: "transcript-5.md" }]
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Ce projet est h\xE9berg\xE9 sur ",
+            { link: "GitHub Pages", href: PAGES },
+            ". Vous pouvez consulter le code ",
+            { link: "ici", href: REPO },
+            "."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "La premi\xE8re version de ce projet m\u2019a pris un peu plus d\u2019une journ\xE9e d\u2019allers-retours assez intenses."
+          ]
+        }
+      ]
+    }
+  ]
+};
+function inline(run) {
+  if (typeof run === "string") return document.createTextNode(run);
+  if ("em" in run) {
+    const em = document.createElement("em");
+    em.textContent = run.em;
+    return em;
+  }
+  const a = document.createElement("a");
+  a.href = run.href;
+  a.textContent = run.link;
+  a.rel = "noopener noreferrer";
+  if (/^https?:/i.test(run.href)) a.target = "_blank";
+  return a;
+}
+function block(b) {
+  if (b.kind === "p") {
+    const p = document.createElement("p");
+    p.append(...b.runs.map(inline));
+    return p;
+  }
+  if (b.kind === "ul") {
+    const ul = document.createElement("ul");
+    for (const item of b.items) {
+      const li = document.createElement("li");
+      li.append(...item.map(inline));
+      ul.append(li);
+    }
+    return ul;
+  }
+  const quote = document.createElement("blockquote");
+  quote.className = "about-quote";
+  for (const para of b.paras) {
+    const p = document.createElement("p");
+    p.append(...para.map(inline));
+    quote.append(p);
+  }
+  const by = document.createElement("footer");
+  by.append(...b.by.map(inline));
+  quote.append(by);
+  return quote;
+}
+function group(sub, open) {
+  const details = document.createElement("details");
+  details.className = "about-group";
+  details.dataset.about = sub.id;
+  details.open = open.get(sub.id) ?? sub.id === OPEN_ID;
+  const summary = document.createElement("summary");
+  summary.className = "about-summary";
+  const title = document.createElement("h3");
+  title.className = "about-title";
+  title.textContent = sub.title;
+  summary.append(title);
+  const body = document.createElement("div");
+  body.className = "about-body";
+  for (const b of sub.blocks) body.append(block(b));
+  details.append(summary, body);
+  return details;
+}
+function renderAbout(host = document.getElementById("about")) {
+  if (!host) return;
+  const lang = localeMeta().meta.htmlLang;
+  const open = /* @__PURE__ */ new Map();
+  for (const el2 of host.querySelectorAll(
+    "details[data-about]"
+  )) {
+    const id = el2.dataset.about;
+    if (id) open.set(id, el2.open);
+  }
+  host.setAttribute("aria-label", SECTION_LABEL[lang]);
+  const subs = ABOUT[lang];
+  const frag = document.createDocumentFragment();
+  for (const sub of subs) frag.append(group(sub, open));
+  host.replaceChildren(frag);
+}
+
 // src/client/page.ts
 var $ = (id) => document.getElementById(id);
 var REPO_LABEL = {
@@ -15199,6 +15685,7 @@ function renderChrome() {
   document.title = m.meta.title;
   repoLink();
   disclaimer();
+  renderAbout();
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
   header("hdr-c", m.sections.c);
@@ -15226,8 +15713,8 @@ var MENTIONS_BLURB = {
   fr: "Organisations et auteurs dont les chiffres sont repris de seconde main, via les articles ci-dessus. Les nommer ici plut\xF4t que d\u2019inventer une URL."
 };
 var both = (en, fr) => ({ en, fr });
-function src(id, group, label, url, what, date, dateEnd) {
-  const s = { id, group, label, url, what };
+function src(id, group2, label, url, what, date, dateEnd) {
+  const s = { id, group: group2, label, url, what };
   if (date) s.date = date;
   if (dateEnd) s.dateEnd = dateEnd;
   return s;
@@ -17387,15 +17874,15 @@ function renderSources(host = document.getElementById("sources")) {
   if (kept[0]) kept[0].textContent = bi(BOX_TITLE);
   const box = el("div", "sources-box");
   box.append(el("p", "intro", bi(INTRO)));
-  for (const group of GROUPS) {
-    const items = SOURCES_BY_GROUP.get(group.id);
+  for (const group2 of GROUPS) {
+    const items = SOURCES_BY_GROUP.get(group2.id);
     if (!items || items.length === 0) continue;
-    const title = el("h3", void 0, bi(group.title));
+    const title = el("h3", void 0, bi(group2.title));
     title.append(" ", el("span", "count", String(items.length)));
     const list = el("ul");
     for (const s of items) list.append(sourceItem(s));
     box.append(
-      sourceGroup(group.id, [title], [el("p", "blurb", bi(group.blurb)), list])
+      sourceGroup(group2.id, [title], [el("p", "blurb", bi(group2.blurb)), list])
     );
   }
   const dl = el("dl", "mention-list");
