@@ -2783,13 +2783,13 @@ function toFontString(font) {
   return (font.style ? font.style + " " : "") + (font.weight ? font.weight + " " : "") + font.size + "px " + font.family;
 }
 function _measureText(ctx, data, gc, longest, string) {
-  let textWidth = data[string];
-  if (!textWidth) {
-    textWidth = data[string] = ctx.measureText(string).width;
+  let textWidth2 = data[string];
+  if (!textWidth2) {
+    textWidth2 = data[string] = ctx.measureText(string).width;
     gc.push(string);
   }
-  if (textWidth > longest) {
-    longest = textWidth;
+  if (textWidth2 > longest) {
+    longest = textWidth2;
   }
   return longest;
 }
@@ -10008,9 +10008,9 @@ var Legend = class extends Element {
     this.legendItems.forEach((legendItem, i) => {
       ctx.strokeStyle = legendItem.fontColor;
       ctx.fillStyle = legendItem.fontColor;
-      const textWidth = ctx.measureText(legendItem.text).width;
+      const textWidth2 = ctx.measureText(legendItem.text).width;
       const textAlign = rtlHelper.textAlign(legendItem.textAlign || (legendItem.textAlign = labelOpts.textAlign));
-      const width = boxWidth + halfFontSize + textWidth;
+      const width = boxWidth + halfFontSize + textWidth2;
       let x = cursor.x;
       let y = cursor.y;
       rtlHelper.setWidth(this.width);
@@ -13744,6 +13744,85 @@ function suffixFor(q, detached) {
   return text ? fill(t().chart.suffixWrap, { text }) : "";
 }
 
+// src/client/tooltip.ts
+var DEFAULT_SIZE = 12;
+var MAX_WIDTH = 360;
+var MIN_WIDTH = 80;
+var probe;
+function measurer() {
+  if (probe === void 0) {
+    probe = document.createElement("canvas").getContext("2d");
+  }
+  return probe;
+}
+function fontCss(font, bold) {
+  const size = font?.size ?? Chart.defaults.font.size ?? DEFAULT_SIZE;
+  const family = Array.isArray(font?.family) ? font.family.join(", ") : font?.family ?? Chart.defaults.font.family;
+  const style = font?.style ?? "normal";
+  const weight = font?.weight ?? (bold ? "bold" : "normal");
+  return `${style} ${weight} ${size}px ${family}`;
+}
+function chromeWidth(tt) {
+  const pad = tt.padding ?? 6;
+  const side = typeof pad === "number" ? pad * 2 : (pad.left ?? 0) + (pad.right ?? 0);
+  const swatch = tt.displayColors === false ? 0 : (tt.boxWidth ?? DEFAULT_SIZE) + (tt.boxPadding ?? 6);
+  return side + swatch + 2 * (tt.caretPadding ?? 2);
+}
+function textWidth(chart, tt) {
+  const frame2 = chart.chartArea?.width ?? chart.width;
+  return Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, frame2 - chromeWidth(tt)));
+}
+function wrapText(text, max, font) {
+  const ctx = measurer();
+  if (!ctx) return text.split("\n");
+  ctx.font = font;
+  const fits = (s) => ctx.measureText(s).width <= max;
+  const lines = [];
+  for (const para of text.split("\n")) {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      lines.push("");
+      continue;
+    }
+    let line = "";
+    for (const word of words) {
+      if (line && !fits(`${line} ${word}`)) {
+        lines.push(line);
+        line = "";
+      }
+      if (!line && !fits(word)) {
+        let rest = word;
+        while (rest.length > 1 && !fits(rest)) {
+          let lo = 1;
+          let hi = rest.length;
+          while (lo < hi) {
+            const mid = lo + hi + 1 >> 1;
+            if (fits(rest.slice(0, mid))) lo = mid;
+            else hi = mid - 1;
+          }
+          lines.push(rest.slice(0, lo));
+          rest = rest.slice(lo);
+        }
+        line = rest;
+        continue;
+      }
+      line = line ? `${line} ${word}` : word;
+    }
+    if (line) lines.push(line);
+  }
+  return lines;
+}
+function wrapTooltipLines(text, item, part = "body") {
+  const chart = item?.chart;
+  if (!chart) return text.split("\n");
+  const tt = chart.options.plugins?.tooltip ?? {};
+  const font = fontCss(
+    part === "title" ? tt.titleFont : part === "footer" ? tt.footerFont : tt.bodyFont,
+    part !== "body"
+  );
+  return wrapText(text, textWidth(chart, tt), font);
+}
+
 // src/client/chart.ts
 Chart.register(
   LineController,
@@ -14232,7 +14311,7 @@ var tickFormat = (unit) => (v) => unit === "eurM" ? fill(t().chart.eurM, { v: nf
 function tooltipCallbacks(v) {
   const m = t().chart;
   return {
-    title: (items) => v.titles[items[0].dataIndex] ?? "",
+    title: (items) => wrapTooltipLines(v.titles[items[0].dataIndex] ?? "", items[0], "title"),
     label: (item) => {
       const ds = item.dataset;
       const unit = ds.unit ?? "count";
@@ -14249,11 +14328,15 @@ function tooltipCallbacks(v) {
         value: fmt(item.parsed.y ?? 0, unit)
       });
       const body = base + suffixFor(ds.quality?.[item.dataIndex], detached);
-      return note2 ? fill(m.tooltipNote, { base: body, note: note2 }) : body;
+      return wrapTooltipLines(
+        note2 ? fill(m.tooltipNote, { base: body, note: note2 }) : body,
+        item,
+        "body"
+      );
     },
     footer: (items) => {
       const note2 = v.footers[items[0].dataIndex];
-      return note2 ? [fill(m.footerMark, { note: note2 })] : [];
+      return note2 ? wrapTooltipLines(fill(m.footerMark, { note: note2 }), items[0], "footer") : [];
     }
   };
 }
@@ -14949,18 +15032,29 @@ function tooltipSpec() {
   return {
     displayColors: false,
     callbacks: {
-      title: (items) => items[0].raw.t,
+      title: (items) => wrapTooltipLines(items[0].raw.t, items[0], "title"),
       label: (item) => {
         const p = item.raw;
         const value = p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
         const flag = m.flags[p.flag];
-        return flag ? fill(m.tooltip.lineWithFlag, { value, flag }) : fill(m.tooltip.linePlain, { value });
+        return wrapTooltipLines(
+          flag ? fill(m.tooltip.lineWithFlag, { value, flag }) : fill(m.tooltip.linePlain, { value }),
+          item,
+          "body"
+        );
       },
-      afterLabel: (item) => item.raw.note ?? "",
+      afterLabel: (item) => {
+        const note2 = item.raw.note;
+        return note2 ? wrapTooltipLines(note2, item, "body") : "";
+      },
       footer: (items) => {
         const p = items[0].raw;
         const n = nf().format(Math.round(p.base));
-        return Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n });
+        return wrapTooltipLines(
+          Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
+          items[0],
+          "footer"
+        );
       }
     }
   };

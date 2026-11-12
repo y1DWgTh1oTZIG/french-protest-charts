@@ -39,6 +39,7 @@ import {
 import { THEME, alpha, gapSegment, track } from "./canvas.ts";
 import { noteText } from "./notes.ts";
 import { el } from "./dom.ts";
+import { wrapTooltipLines } from "./tooltip.ts";
 
 /* ------------------------------------------------------------------- types */
 
@@ -716,7 +717,8 @@ function tooltipSpec() {
   return {
     displayColors: false,
     callbacks: {
-      title: (items: TooltipItem<"line">[]) => (items[0].raw as Pt).t,
+      title: (items: TooltipItem<"line">[]) =>
+        wrapTooltipLines((items[0].raw as Pt).t, items[0], "title"),
       label: (item: TooltipItem<"line">) => {
         const p = item.raw as Pt;
         const value =
@@ -724,17 +726,28 @@ function tooltipSpec() {
             ? nf().format(Math.round(p.low))
             : `${nf().format(Math.round(p.low))} – ${nf().format(Math.round(p.high))}`;
         const flag = m.flags[p.flag];
-        return flag
-          ? fill(m.tooltip.lineWithFlag, { value, flag })
-          : fill(m.tooltip.linePlain, { value });
+        return wrapTooltipLines(
+          flag
+            ? fill(m.tooltip.lineWithFlag, { value, flag })
+            : fill(m.tooltip.linePlain, { value }),
+          item,
+          "body",
+        );
       },
-      afterLabel: (item: TooltipItem<"line">) => (item.raw as Pt).note ?? "",
+      afterLabel: (item: TooltipItem<"line">) => {
+        const note = (item.raw as Pt).note;
+        return note ? wrapTooltipLines(note, item, "body") : "";
+      },
       footer: (items: TooltipItem<"line">[]) => {
         const p = items[0].raw as Pt;
         const n = nf().format(Math.round(p.base));
-        return Math.abs(p.y - p.base) / p.base < 1e-9
-          ? fill(m.tooltip.firstFigure, { n })
-          : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n });
+        return wrapTooltipLines(
+          Math.abs(p.y - p.base) / p.base < 1e-9
+            ? fill(m.tooltip.firstFigure, { n })
+            : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
+          items[0],
+          "footer",
+        );
       },
     },
   };

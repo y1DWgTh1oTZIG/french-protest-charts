@@ -5,9 +5,9 @@ import {
   CategoryScale,
   Chart,
   Legend,
+  LinearScale,
   LineController,
   LineElement,
-  LinearScale,
   LogarithmicScale,
   PointElement,
   SubTitle,
@@ -19,6 +19,7 @@ import {
   type LegendItem,
   type Plugin,
   type PointStyle,
+  type TooltipItem,
 } from "chart.js";
 import { THEME, track } from "./canvas.ts";
 import {
@@ -47,6 +48,7 @@ import {
 } from "./i18n.ts";
 import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
+import { wrapTooltipLines } from "./tooltip.ts";
 
 Chart.register(
   LineController,
@@ -716,18 +718,14 @@ const tickFormat =
       ? fill(t().chart.eurM, { v: nf().format(v) })
       : compact().format(v);
 
-/* ----------------------------------------------------------------- tooltip */
+/* ----- tooltip */
 
 function tooltipCallbacks(v: View) {
   const m = t().chart;
   return {
-    title: (items: { dataIndex: number }[]) =>
-      v.titles[items[0].dataIndex] ?? "",
-    label: (item: {
-      dataset: ChartDataset<"line", (number | null)[]>;
-      dataIndex: number;
-      parsed: { y: number | null };
-    }) => {
+    title: (items: TooltipItem<"line">[]) =>
+      wrapTooltipLines(v.titles[items[0].dataIndex] ?? "", items[0], "title"),
+    label: (item: TooltipItem<"line">) => {
       const ds = item.dataset as ProtestDataset;
       const unit = ds.unit ?? "count";
       const note = noteText(ds.notes?.[item.dataIndex]);
@@ -747,11 +745,19 @@ function tooltipCallbacks(v: View) {
           });
 
       const body = base + suffixFor(ds.quality?.[item.dataIndex], detached);
-      return note ? fill(m.tooltipNote, { base: body, note }) : body;
+      // tooltipNote already carries a \n between base and note; wrapText keeps
+      // that break as a blank-free paragraph split, then folds each paragraph.
+      return wrapTooltipLines(
+        note ? fill(m.tooltipNote, { base: body, note }) : body,
+        item,
+        "body",
+      );
     },
-    footer: (items: { dataIndex: number }[]) => {
+    footer: (items: TooltipItem<"line">[]) => {
       const note = v.footers[items[0].dataIndex];
-      return note ? [fill(m.footerMark, { note })] : [];
+      return note
+        ? wrapTooltipLines(fill(m.footerMark, { note }), items[0], "footer")
+        : [];
     },
   };
 }
