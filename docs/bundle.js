@@ -1070,21 +1070,7 @@ var CATALOGUE = {
       shareOfFirst: "{pct} of the first figure ({n})"
     },
     disclaimer: {
-      strong: "AI-assisted draft.",
-      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources. The full conversation, including every rejected figure, is in the transcript.",
-      links: [
-        "initial development",
-        "adding comparisons and translation",
-        "reviewing code",
-        "reviewing sources"
-      ],
-      hrefs: [
-        "transcript-1.md",
-        "transcript-2.md",
-        "transcript-3.md",
-        "transcript-4.md"
-      ],
-      tail: ""
+      body: "Research and coding was performed using an LLM and figures have not been verified. Do not use them for serious analysis or decision-making without first double-checking the figures and the sources at the bottom."
     }
   },
   fr: {
@@ -1124,21 +1110,7 @@ var CATALOGUE = {
       shareOfFirst: "{pct} du premier chiffre ({n})"
     },
     disclaimer: {
-      strong: "Brouillon assist\xE9 par IA.",
-      lead: " Ces graphiques ont \xE9t\xE9 produits avec un mod\xE8le de langage et n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s de fa\xE7on ind\xE9pendante. Ne les utilisez pas pour une analyse s\xE9rieuse, une publication ou une d\xE9cision sans v\xE9rifier chaque chiffre aupr\xE8s des sources. La conversation compl\xE8te, y compris chaque chiffre \xE9cart\xE9, figure dans la transcription: ",
-      links: [
-        "d\xE9veloppement initial",
-        "ajout de comparaisons et de traductions",
-        "revue du code",
-        "examen des sources"
-      ],
-      hrefs: [
-        "transcript-1.md",
-        "transcript-2.md",
-        "transcript-3.md",
-        "transcript-4.md"
-      ],
-      tail: ""
+      body: "La recherche et le code ont \xE9t\xE9 r\xE9alis\xE9s \xE0 l\u2019aide d\u2019un LLM et les chiffres n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s. Ne les utilisez pas pour une analyse s\xE9rieuse ou pour prendre des d\xE9cisions sans avoir d\u2019abord v\xE9rifi\xE9 les chiffres et les sources en bas de page."
     }
   }
 };
@@ -15142,6 +15114,10 @@ var SECTION_LABEL = {
   en: "Notes on this project",
   fr: "Notes sur le projet"
 };
+var CALLOUT = {
+  en: "\u2026except for this section, which is 100% human written! (in English, and then machine translated)",
+  fr: "\u2026sauf cette section, qui est \xE9crite \xE0 100 % par un humain ! (en anglais, puis traduite automatiquement)"
+};
 var BLOG = "https://www.lemonde.fr/societe/article/2026/11/09/a-brest-la-police-saisit-les-trombinoscopes-de-plusieurs-lycees-eleves-et-parents-denoncent-un-fichage_6808694_3224.html";
 var RN_VOTE = "https://www.humanite.fr/politique/rassemblement-national/entre-les-67-de-vote-rn-dans-ses-rangs-et-lambiance-securitaire-en-vigueur-la-police-deja-prete-a-servir-lextreme-droite";
 var HELICOPTER = "https://www.lavoixdunord.fr/506027/article/2018-12-13/un-helicoptere-etait-pret-samedi-au-cas-ou-pour-emmener-emmanuel-macron";
@@ -15267,6 +15243,27 @@ var ABOUT = {
             "Do they want to overthrow the government by force? This has happened before\u2014the end of Fourth Republic came when French military personnel and settlers in Algeria launched an attempted coup d\u2019\xE9tat. Certainly, the government seems to be ",
             { link: "taking the possibility seriously", href: BUNKER },
             ". But even if protestors did succeed in causing Macron to flee, it\u2019s not clear how the symbolic victory might translate into a practical takeover."
+          ]
+        },
+        /* closing argument, in the author's own words */
+        {
+          kind: "p",
+          runs: [
+            "At the moment, I think a complete fizzling-out is unlikely. I think the most likely course is that this will continue for some time, with slowly diminishing turnout and some small concessions won here and there. Most people\u2019s engagement will be limited to therapeutic marching, but the people who are politicised here will go on to develop new associations and be instrumental in future movements, as the former Gilets Jaunes have been here, and the 68-ers before them."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "But maybe, just maybe, the threat of an incoming fascist government and the memory of so many past underwhelming results will serve to focus minds and harden hearts in time to press home their present advantage and win lasting, significant wins. And just as mere ",
+            { em: "resistance" },
+            " in France has already spread like wildfire across Europe, a real victory in France could be the thing to spark a conflagration that burns down the old world and inaugurates the new."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "I will leave you with this (heavily paraphrased) quote from a classic film, which I watched for the first time recently:"
           ]
         },
         QUOTE
@@ -15457,6 +15454,26 @@ var ABOUT = {
             ". Mais m\xEAme si les manifestants parvenaient \xE0 faire fuir Macron, on ne voit pas bien comment cette victoire symbolique se traduirait en prise de pouvoir concr\xE8te."
           ]
         },
+        {
+          kind: "p",
+          runs: [
+            "Pour l\u2019instant, je pense qu\u2019un essoufflement complet est peu probable. Le sc\xE9nario le plus probable est que cela continue un certain temps, avec une participation en baisse lente et quelques petites concessions obtenues \xE7\xE0 et l\xE0. L\u2019engagement de la plupart des gens se limitera \xE0 une marche th\xE9rapeutique, mais les personnes politis\xE9es ici d\xE9velopperont de nouvelles associations et joueront un r\xF4le d\xE9terminant dans les mouvements \xE0 venir, comme les anciens Gilets jaunes l\u2019ont fait ici, et les soixante-huitards avant eux."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Mais peut-\xEAtre, juste peut-\xEAtre, la menace d\u2019un gouvernement fasciste \xE0 venir et le souvenir de tant de r\xE9sultats d\xE9cevants par le pass\xE9 serviront-ils \xE0 concentrer les esprits et \xE0 durcir les c\u0153urs \xE0 temps pour exploiter leur avantage actuel et obtenir des victoires durables et significatives. Et de m\xEAme que la simple ",
+            { em: "r\xE9sistance" },
+            " en France s\u2019est d\xE9j\xE0 propag\xE9e comme une tra\xEEn\xE9e de poudre \xE0 travers l\u2019Europe, une v\xE9ritable victoire en France pourrait bien \xEAtre ce qui d\xE9clenche un incendie embrasant le vieux monde et inaugurant le nouveau."
+          ]
+        },
+        {
+          kind: "p",
+          runs: [
+            "Je vous laisse avec cette citation (tr\xE8s largement paraphras\xE9e) d\u2019un film classique, que j\u2019ai regard\xE9 pour la premi\xE8re fois r\xE9cemment :"
+          ]
+        },
         QUOTE
       ]
     },
@@ -15605,6 +15622,13 @@ function group(sub, open) {
   details.append(summary, body);
   return details;
 }
+function callout(lang) {
+  const p = document.createElement("p");
+  p.className = "callout callout--positive";
+  p.setAttribute("role", "note");
+  p.textContent = CALLOUT[lang];
+  return p;
+}
 function renderAbout(host = document.getElementById("about")) {
   if (!host) return;
   const lang = localeMeta().meta.htmlLang;
@@ -15618,16 +15642,13 @@ function renderAbout(host = document.getElementById("about")) {
   host.setAttribute("aria-label", SECTION_LABEL[lang]);
   const subs = ABOUT[lang];
   const frag = document.createDocumentFragment();
+  frag.append(callout(lang));
   for (const sub of subs) frag.append(group(sub, open));
   host.replaceChildren(frag);
 }
 
 // src/client/page.ts
 var $ = (id) => document.getElementById(id);
-var REPO_LABEL = {
-  en: "Source code on GitHub",
-  fr: "Code source sur GitHub"
-};
 function tag(name, className, text) {
   const el2 = document.createElement(name);
   if (className) el2.className = className;
@@ -15650,42 +15671,14 @@ function note(id, text) {
 function disclaimer() {
   const host = $("disclaimer");
   if (!host) return;
-  const d = t().disclaimer;
-  const list = document.createElement("ol");
-  list.className = "disclaimer-links";
-  for (const [index, href] of d.hrefs.entries()) {
-    const a = document.createElement("a");
-    a.href = href;
-    a.rel = "noopener noreferrer";
-    a.textContent = d.links[index];
-    a.dataset.index = String(index);
-    const li = document.createElement("li");
-    li.append(a);
-    list.append(li);
-  }
-  const strong = document.createElement("strong");
-  strong.textContent = d.strong;
-  host.replaceChildren(
-    strong,
-    document.createTextNode(d.lead),
-    list,
-    document.createTextNode(d.tail)
-  );
-}
-function repoLink() {
-  const a = $("repo-link");
-  if (!a) return;
-  const lang = document.documentElement.dataset.lang === "en" ? "en" : "fr";
-  const label = REPO_LABEL[lang];
-  a.setAttribute("aria-label", label);
-  a.setAttribute("title", label);
+  host.textContent = t().disclaimer.body;
 }
 function renderChrome() {
   const m = localeMeta();
   document.title = m.meta.title;
-  repoLink();
   disclaimer();
   renderAbout();
+  header("hdr-a", m.sections.a);
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
   header("hdr-c", m.sections.c);

@@ -616,16 +616,127 @@ section > header p {
   margin-bottom: 0.5rem;
 }
 
-/* ---- notes: one collapsible block per sub-section ---- */
+/* ---- notes after the disclaimer ---- */
 .about {
   margin: 0 0 2.75rem;
 }
 
+/* positive counterpart to the amber .disclaimer */
+.callout--positive {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 0 0.75rem 0.9rem;
+  border-left: 3px solid #2f8f46;
+  background: #f5fbf6;
+  color: #1f5130;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  max-width: 110ch;
+}
+
 .about-group {
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
   background: #fff;
   margin: 0 0 0.5rem;
+}
+
+.about-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.about-summary::-webkit-details-marker {
+  display: none;
+}
+
+.about-summary::before {
+  content: "▸";
+  font-size: 0.8em;
+  transform: translateY(-0.1em);
+}
+
+.about-group[open] > .about-summary::before {
+  content: "▾";
+}
+
+.about-group[open] > .about-summary {
+  border-bottom: 1px solid #eef0f2;
+  margin-bottom: 0.6rem;
+}
+
+.about-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: #111827;
+}
+
+.about-body {
+  padding: 0 0.9rem 0.85rem;
+  max-width: 78ch;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.about-body p {
+  margin: 0 0 0.7rem;
+}
+
+.about-body p:last-child,
+.about-body ul:last-child,
+.about-body blockquote:last-child {
+  margin-bottom: 0;
+}
+
+.about-body a {
+  color: #1b5c92;
+  text-decoration: none;
+  border-bottom: 1px solid #b0cfe6;
+}
+
+.about-body ul {
+  margin: 0 0 0.7rem;
+  padding-left: 1.1rem;
+}
+
+.about-quote {
+  margin: 0 0 0.8rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.about-quote p {
+  margin: 0 0 0.45rem;
+}
+
+.about-quote footer {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* ---- notes: one boxed section, one collapsible block per sub-section ---- */
+.about {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1rem 1.1rem 1.1rem;
+  margin: 0 0 2.75rem;
+}
+
+.about-group {
+  border: 1px solid #eef0f2;
+  border-radius: 6px;
+  margin: 0 0 0.5rem;
+}
+
+.about-group:last-child {
+  margin-bottom: 0;
 }
 
 .about-summary {
@@ -645,7 +756,6 @@ section > header p {
   content: "▸";
   font-size: 0.8em;
   transform: translateY(-0.1em);
-  transition: transform 0.15s ease;
 }
 
 .about-group[open] > .about-summary::before {
@@ -661,6 +771,7 @@ section > header p {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
+  color: #111827;
 }
 
 .about-body {

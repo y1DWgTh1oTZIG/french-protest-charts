@@ -40,6 +40,12 @@ const SECTION_LABEL: Record<Lang, string> = {
   fr: "Notes sur le projet",
 };
 
+/** Green counterweight to the amber disclaimer; the "…" continues its sentence. */
+const CALLOUT: Record<Lang, string> = {
+  en: "…except for this section, which is 100% human written! (in English, and then machine translated)",
+  fr: "…sauf cette section, qui est écrite à 100 % par un humain ! (en anglais, puis traduite automatiquement)",
+};
+
 /* ------------------------------------------------------------------- copy */
 
 const BLOG =
@@ -175,6 +181,27 @@ const ABOUT: Record<Lang, readonly SubSection[]> = {
             "Do they want to overthrow the government by force? This has happened before—the end of Fourth Republic came when French military personnel and settlers in Algeria launched an attempted coup d’état. Certainly, the government seems to be ",
             { link: "taking the possibility seriously", href: BUNKER },
             ". But even if protestors did succeed in causing Macron to flee, it’s not clear how the symbolic victory might translate into a practical takeover.",
+          ],
+        },
+        /* closing argument, in the author's own words */
+        {
+          kind: "p",
+          runs: [
+            "At the moment, I think a complete fizzling-out is unlikely. I think the most likely course is that this will continue for some time, with slowly diminishing turnout and some small concessions won here and there. Most people’s engagement will be limited to therapeutic marching, but the people who are politicised here will go on to develop new associations and be instrumental in future movements, as the former Gilets Jaunes have been here, and the 68-ers before them.",
+          ],
+        },
+        {
+          kind: "p",
+          runs: [
+            "But maybe, just maybe, the threat of an incoming fascist government and the memory of so many past underwhelming results will serve to focus minds and harden hearts in time to press home their present advantage and win lasting, significant wins. And just as mere ",
+            { em: "resistance" },
+            " in France has already spread like wildfire across Europe, a real victory in France could be the thing to spark a conflagration that burns down the old world and inaugurates the new.",
+          ],
+        },
+        {
+          kind: "p",
+          runs: [
+            "I will leave you with this (heavily paraphrased) quote from a classic film, which I watched for the first time recently:",
           ],
         },
         QUOTE,
@@ -366,6 +393,26 @@ const ABOUT: Record<Lang, readonly SubSection[]> = {
             ". Mais même si les manifestants parvenaient à faire fuir Macron, on ne voit pas bien comment cette victoire symbolique se traduirait en prise de pouvoir concrète.",
           ],
         },
+        {
+          kind: "p",
+          runs: [
+            "Pour l’instant, je pense qu’un essoufflement complet est peu probable. Le scénario le plus probable est que cela continue un certain temps, avec une participation en baisse lente et quelques petites concessions obtenues çà et là. L’engagement de la plupart des gens se limitera à une marche thérapeutique, mais les personnes politisées ici développeront de nouvelles associations et joueront un rôle déterminant dans les mouvements à venir, comme les anciens Gilets jaunes l’ont fait ici, et les soixante-huitards avant eux.",
+          ],
+        },
+        {
+          kind: "p",
+          runs: [
+            "Mais peut-être, juste peut-être, la menace d’un gouvernement fasciste à venir et le souvenir de tant de résultats décevants par le passé serviront-ils à concentrer les esprits et à durcir les cœurs à temps pour exploiter leur avantage actuel et obtenir des victoires durables et significatives. Et de même que la simple ",
+            { em: "résistance" },
+            " en France s’est déjà propagée comme une traînée de poudre à travers l’Europe, une véritable victoire en France pourrait bien être ce qui déclenche un incendie embrasant le vieux monde et inaugurant le nouveau.",
+          ],
+        },
+        {
+          kind: "p",
+          runs: [
+            "Je vous laisse avec cette citation (très largement paraphrasée) d’un film classique, que j’ai regardé pour la première fois récemment :",
+          ],
+        },
         QUOTE,
       ],
     },
@@ -532,10 +579,14 @@ function group(
   return details;
 }
 
-/**
- * Idempotent: safe to call on every locale change.
- * The mount point is static in index.html so this never appends to <body>.
- */
+function callout(lang: Lang): HTMLElement {
+  const p = document.createElement("p");
+  p.className = "callout callout--positive";
+  p.setAttribute("role", "note");
+  p.textContent = CALLOUT[lang];
+  return p;
+}
+
 export function renderAbout(
   host: HTMLElement | null = document.getElementById("about"),
 ): void {
@@ -555,6 +606,7 @@ export function renderAbout(
 
   const subs = ABOUT[lang];
   const frag = document.createDocumentFragment();
+  frag.append(callout(lang)); // above every <details>
   for (const sub of subs) frag.append(group(sub, open));
   host.replaceChildren(frag);
 }

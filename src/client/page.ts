@@ -47,32 +47,7 @@ function note(id: string, text: string): void {
 function disclaimer(): void {
   const host = $("disclaimer");
   if (!host) return;
-  const d = t().disclaimer;
-
-  const list = document.createElement("ol");
-  list.className = "disclaimer-links";
-
-  for (const [index, href] of d.hrefs.entries()) {
-    const a = document.createElement("a");
-    a.href = href;
-    a.rel = "noopener noreferrer";
-    a.textContent = d.links[index];
-    a.dataset.index = String(index);
-
-    const li = document.createElement("li");
-    li.append(a);
-    list.append(li);
-  }
-
-  const strong = document.createElement("strong");
-  strong.textContent = d.strong;
-
-  host.replaceChildren(
-    strong,
-    document.createTextNode(d.lead),
-    list,
-    document.createTextNode(d.tail),
-  );
+  host.textContent = t().disclaimer.body;
 }
 
 /** The anchor is static in index.html; only its label follows the locale. */
@@ -89,9 +64,9 @@ export function renderChrome(): void {
   const m = localeMeta();
   document.title = m.meta.title;
 
-  repoLink();
   disclaimer();
   renderAbout();
+  header("hdr-a", m.sections.a);
   header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
   header("hdr-c", m.sections.c);

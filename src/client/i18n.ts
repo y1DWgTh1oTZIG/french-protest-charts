@@ -1435,11 +1435,7 @@ const EPISODES_FR: Record<string, EpisodeCopy> = {
 /* ==================================================== catalogue: page + misc */
 
 export interface DisclaimerCopy {
-  readonly strong: string;
-  readonly lead: string;
-  readonly links: string[];
-  readonly hrefs: string[];
-  readonly tail: string;
+  readonly body: string;
 }
 
 export interface PanelsCopy {
@@ -1516,21 +1512,7 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       shareOfFirst: "{pct} of the first figure ({n})",
     },
     disclaimer: {
-      strong: "AI-assisted draft.",
-      lead: " These charts were assembled with a language model and have not been independently verified. Do not use them for serious analysis, publication or decision-making without checking every figure against the sources. The full conversation, including every rejected figure, is in the transcript.",
-      links: [
-        "initial development",
-        "adding comparisons and translation",
-        "reviewing code",
-        "reviewing sources",
-      ],
-      hrefs: [
-        "transcript-1.md",
-        "transcript-2.md",
-        "transcript-3.md",
-        "transcript-4.md",
-      ],
-      tail: "",
+      body: "Research and coding was performed using an LLM and figures have not been verified. Do not use them for serious analysis or decision-making without first double-checking the figures and the sources at the bottom.",
     },
   },
   fr: {
@@ -1569,21 +1551,7 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       shareOfFirst: "{pct} du premier chiffre ({n})",
     },
     disclaimer: {
-      strong: "Brouillon assisté par IA.",
-      lead: " Ces graphiques ont été produits avec un modèle de langage et n’ont pas été vérifiés de façon indépendante. Ne les utilisez pas pour une analyse sérieuse, une publication ou une décision sans vérifier chaque chiffre auprès des sources. La conversation complète, y compris chaque chiffre écarté, figure dans la transcription: ",
-      links: [
-        "développement initial",
-        "ajout de comparaisons et de traductions",
-        "revue du code",
-        "examen des sources",
-      ],
-      hrefs: [
-        "transcript-1.md",
-        "transcript-2.md",
-        "transcript-3.md",
-        "transcript-4.md",
-      ],
-      tail: "",
+      body: "La recherche et le code ont été réalisés à l’aide d’un LLM et les chiffres n’ont pas été vérifiés. Ne les utilisez pas pour une analyse sérieuse ou pour prendre des décisions sans avoir d’abord vérifié les chiffres et les sources en bas de page.",
     },
   },
 };
