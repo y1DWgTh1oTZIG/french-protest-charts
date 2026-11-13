@@ -18,9 +18,14 @@
 
 import {
   Chart,
+  Interaction,
+  type ActiveElement,
   type ChartData,
   type ChartDataset,
+  type ChartEvent,
   type ChartOptions,
+  type InteractionMode,
+  type InteractionModeFunction,
   type TooltipItem,
 } from "chart.js";
 import {
@@ -50,6 +55,7 @@ import { noteText } from "./notes.ts";
 import { el } from "./dom.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
 import { fromChart, keyboardChart } from "./a11y.ts";
+import { getRelativePosition } from "chart.js/helpers";
 
 /* ------------------------------------------------------------------- types */
 
@@ -715,20 +721,117 @@ function yScale(min: number, max: number, showLabels: boolean) {
   };
 }
 
-/* ----------------------------------------------------------------- tooltip */
+//* ----- tooltip */
 
 const pctOf = (v: number, base: number): string => {
   const r = (100 * v) / base;
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
 
-function tooltipSpec() {
+/** Which trellis: one panel per episode (C) or one panel per metric (C′). */
+type TrellisKind = "episode" | "item";
+
+/** Pointer in chart space; `ChartEvent` wraps the native event in `.native`. */
+type Evt = Event & ChartEvent;
+const posOf = (e: ChartEvent, chart: Chart) => {
+  const native = (e as { native?: Event }).native ?? (e as unknown as Event);
+  return getRelativePosition(native as unknown as Evt, chart);
+};
+
+/** Nearest plotted week index to `px`, across every visible dataset. */
+function weekAt(chart: Chart, px: number): number | null {
+  const scale = chart.scales.x;
+  if (!scale) return null;
+  const at = Number(scale.getValueForPixel(px));
+
+  let best: number | null = null;
+  chart.data.datasets.forEach((ds, i) => {
+    if (chart.getDatasetMeta(i).hidden) return;
+    for (const raw of ds.data as (Pt | null)[]) {
+      if (!raw) continue;
+      if (best === null || Math.abs(raw.x - at) < Math.abs(best - at)) {
+        best = raw.x;
+      }
+    }
+  });
+  return best;
+}
+
+/* Chart.js's `nearest` keeps only the items at the minimum distance, so with
+   axis "x" it returns a single point: in C′ — where each dataset is a different
+   episode on a different week grid — that was one arbitrarily chosen episode
+   per x, and its note and its `base` then described a different episode at
+   every x. This mode snaps to one week index and returns *every* dataset's
+   point at that index, so the tooltip describes the whole week. */
+const trellisWeek: InteractionModeFunction = (chart, e) => {
+  const week = weekAt(chart, posOf(e, chart).x);
+  if (week === null) return [];
+
+  const out: ActiveElement[] = [];
+  chart.data.datasets.forEach((ds, datasetIndex) => {
+    const meta = chart.getDatasetMeta(datasetIndex);
+    if (meta.hidden) return;
+    (ds.data as (Pt | null)[]).forEach((raw, index) => {
+      const element = meta.data[index];
+      if (
+        raw &&
+        raw.x === week &&
+        element &&
+        !(element as { skip?: boolean }).skip
+      ) {
+        out.push({ element, datasetIndex, index });
+      }
+    });
+  });
+  return out;
+};
+
+/* `InteractionModeMap` is a closed interface, so the new key needs a cast. */
+(
+  Interaction.modes as unknown as Record<string, InteractionModeFunction>
+).trellisWeek = trellisWeek;
+const WEEK_MODE = "trellisWeek" as unknown as InteractionMode;
+
+/** The pointer can sit anywhere in the week band; emphasis follows the nearest line. */
+function nearestByY(
+  chart: Chart,
+  elements: readonly ActiveElement[],
+  e: ChartEvent,
+): ActiveElement | undefined {
+  const { y } = posOf(e, chart);
+  let best: ActiveElement | undefined;
+  let bestD = Number.POSITIVE_INFINITY;
+  for (const el of elements) {
+    const c = (
+      el.element as unknown as { getCenterPoint(): { y: number } }
+    ).getCenterPoint();
+    const d = Math.abs(c.y - y);
+    if (d < bestD) {
+      bestD = d;
+      best = el;
+    }
+  }
+  return best;
+}
+
+function tooltipSpec(kind: TrellisKind) {
   const m = t();
   return {
-    displayColors: false,
+    /* C: the swatch is the series. C′: every dataset is labelled with the
+       metric name, so the swatch is the only thing tying a line to its episode. */
+    displayColors: true,
+    boxWidth: 8,
+    boxHeight: 8,
+    boxPadding: 4,
     callbacks: {
-      title: (items: TooltipItem<"line">[]) =>
-        wrapTooltipLines((items[0].raw as Pt).t, items[0], "title"),
+      title: (items: TooltipItem<"line">[]) => {
+        const p = items[0].raw as Pt;
+        /* C′ datasets are different episodes on different week grids, so no
+           single episode's date label can title the tooltip. The x axis is
+           labelled with week indices, so the title uses the same number. */
+        const text = kind === "episode" ? p.t : `${a11y().weekHeader} ${p.x}`;
+        return wrapTooltipLines(text, items[0], "title");
+      },
       label: (item: TooltipItem<"line">) => {
         const p = item.raw as Pt;
         const value =
@@ -736,19 +839,43 @@ function tooltipSpec() {
             ? nf().format(Math.round(p.low))
             : `${nf().format(Math.round(p.low))} – ${nf().format(Math.round(p.high))}`;
         const flag = m.flags[p.flag];
-        return wrapTooltipLines(
-          flag
-            ? fill(m.tooltip.lineWithFlag, { value, flag })
-            : fill(m.tooltip.linePlain, { value }),
-          item,
-          "body",
-        );
+        const line = flag
+          ? fill(m.tooltip.lineWithFlag, { value, flag })
+          : fill(m.tooltip.linePlain, { value });
+        /* C′: several episodes share the tooltip and all carry the metric as
+           their label, so each line names its own episode. */
+        const name =
+          kind === "item"
+            ? m.episodes[EPISODES[(item.dataset as PanelDataset).__ep].id].short
+            : "";
+        return wrapTooltipLines(name ? `${name}: ${line}` : line, item, "body");
       },
       afterLabel: (item: TooltipItem<"line">) => {
-        const note = (item.raw as Pt).note;
-        return note ? wrapTooltipLines(note, item, "body") : "";
+        const p = item.raw as Pt;
+        const lines: string[] = [];
+
+        /* A footer can only describe one dataset. In C′ that made the share
+           compare an episode's value with another episode's baseline, so the
+           share of the first figure moves onto each episode's own line, using
+           that line's own `base` (seriesData() computes it per series). */
+        if (kind === "item") {
+          const n = nf().format(Math.round(p.base));
+          lines.push(
+            ...wrapTooltipLines(
+              Math.abs(p.y - p.base) / p.base < 1e-9
+                ? fill(m.tooltip.firstFigure, { n })
+                : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
+              item,
+              "body",
+            ),
+          );
+        }
+
+        if (p.note) lines.push(...wrapTooltipLines(p.note, item, "body"));
+        return lines;
       },
       footer: (items: TooltipItem<"line">[]) => {
+        if (kind !== "episode") return [];
         const p = items[0].raw as Pt;
         const n = nf().format(Math.round(p.base));
         return wrapTooltipLines(
@@ -763,22 +890,12 @@ function tooltipSpec() {
   };
 }
 
-/* ---------------------------------------------------------------- emphasis */
+/* ----- emphasis */
 
 const episodePanels: Chart<"line">[] = [];
 const itemPanels: { chart: Chart<"line">; item: Metric }[] = [];
-/* module state, already present: */
 let activeItem: Metric | null = null;
 let activeEvent: number | null = null;
-
-/** Charts and legend buttons are rebuilt from scratch on every render (theme
- *  flip, locale switch), so any surviving emphasis key is stale: the
- *  `key === activeItem` guard would swallow the next hover on that series.
- *  Clear before wiring the new legends. */
-function resetEmphasis(): void {
-  activeItem = null;
-  activeEvent = null;
-}
 
 const datasetsOf = (chart: Chart<"line">): PanelDataset[] =>
   chart.data.datasets as PanelDataset[];
@@ -788,6 +905,7 @@ const datasetsOf = (chart: Chart<"line">): PanelDataset[] =>
 function restyle(d: PanelDataset, on: boolean, bold = false): void {
   const c = on ? d.__color : alpha(d.__color, DIM);
   d.borderColor = c;
+  d.backgroundColor = c; // the tooltip swatch is drawn from this
   d.pointBorderColor = c;
   d.pointBackgroundColor = d.data.map((p) =>
     isDetached(p.flag) ? THEME.hollow : c,
@@ -826,7 +944,7 @@ function emphasiseEvent(index: number | null): void {
   );
 }
 
-/* ---------------------------------------------------------------- legends */
+/* ----- legends */
 
 interface LegendEntry {
   text: string;
@@ -871,7 +989,7 @@ function legend(host: HTMLElement, entries: readonly LegendEntry[]): void {
   );
 }
 
-/* ----------------------------------------------------------------- panels */
+/* ----- panels */
 
 function observations(ep: Episode): string {
   const m = t();
@@ -908,24 +1026,32 @@ function columns(host: HTMLElement): number {
 
 /** One options factory for both trellises. */
 const panelOptions = (
+  kind: TrellisKind,
   x: object,
   y: object,
   onHover?: ChartOptions<"line">["onHover"],
-): ChartOptions<"line"> => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: false,
-  interaction: { mode: "nearest", axis: "x", intersect: false },
-  layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
-  scales: { x, y } as ChartOptions<"line">["scales"],
-  plugins: {
-    legend: { display: false },
-    title: { display: false },
-    subtitle: { display: false },
-    tooltip: tooltipSpec(),
-  },
-  onHover,
-});
+): ChartOptions<"line"> => {
+  /* Set on all three levels: `options.interaction` seeds both `hover` and
+     `plugins.tooltip.interaction`, but naming them removes any doubt about
+     which one a given Chart.js patch reads. */
+  const interaction = { mode: WEEK_MODE, intersect: false };
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    interaction,
+    hover: interaction,
+    layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
+    scales: { x, y } as ChartOptions<"line">["scales"],
+    plugins: {
+      legend: { display: false },
+      title: { display: false },
+      subtitle: { display: false },
+      tooltip: { ...tooltipSpec(kind), interaction },
+    },
+    onHover,
+  };
+};
 
 export interface TrellisHosts {
   episodeHost: HTMLElement;
@@ -935,7 +1061,6 @@ export interface TrellisHosts {
 }
 
 export function mountCrossEpisode(opts: TrellisHosts): void {
-  resetEmphasis();
   /* destroyAll() has already destroyed the previous instances (canvas.ts owns
      them); clear the handles so emphasis cannot touch a dead chart. */
   episodePanels.length = 0;
@@ -945,7 +1070,6 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
   seriesCache = new Map(); // titles and notes are locale-bound
   opts.episodeHost.replaceChildren();
   opts.itemHost.replaceChildren();
-  resetEmphasis();
 
   const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
@@ -974,10 +1098,13 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
         type: "line",
         data: { datasets } as unknown as ChartData<"line">,
         options: panelOptions(
+          "episode",
           xScale(maxW),
           yScale(yMin, yMax, idx % cols === 0),
-          (_e, elements) => {
-            const d = elements[0]?.dataset as PanelDataset | undefined;
+          (e, elements, host) => {
+            // every series at the week is active; follow the closest line
+            const hit = nearestByY(host, elements, e);
+            const d = hit?.dataset as PanelDataset | undefined;
             emphasiseItem(d ? d.__item : null);
           },
         ),
@@ -1046,7 +1173,11 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
       new Chart<"line">(canvas, {
         type: "line",
         data: { datasets } as unknown as ChartData<"line">,
-        options: panelOptions(xScale(ENFORCEMENT_LAST), yScale(lo, hi, true)),
+        options: panelOptions(
+          "item",
+          xScale(ENFORCEMENT_LAST),
+          yScale(lo, hi, true),
+        ),
         plugins: [],
       }),
     );
@@ -1084,17 +1215,19 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
 
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas.addEventListener("mousemove", (ev) => {
+      // same week band as the tooltip, else the emphasis dims a series the
+      // tooltip is not showing
       const pts = chart.getElementsAtEventForMode(
         ev,
-        "nearest",
+        WEEK_MODE,
         { intersect: false },
         true,
       );
-      if (!pts.length) {
-        emphasiseEvent(null);
-        return;
-      }
-      emphasiseEvent(datasetsOf(chart)[pts[0].datasetIndex].__ep);
+      const hit = pts.length
+        ? nearestByY(chart, pts, ev as unknown as ChartEvent)
+        : undefined;
+      const d = hit ? datasetsOf(chart)[hit.datasetIndex] : undefined;
+      emphasiseEvent(d ? d.__ep : null);
     });
 
     itemPanels.push({ chart, item: series.key });

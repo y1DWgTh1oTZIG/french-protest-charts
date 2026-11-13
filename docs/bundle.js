@@ -7130,12 +7130,12 @@ var Scale = class _Scale extends Element {
     const increment = Math.floor(length / getTicksLimit(length, maxTicksLimit));
     let widestLabelSize = 0;
     let highestLabelSize = 0;
-    let i, j, jlen, label, tickFont, fontString, cache2, lineHeight, width, height, nestedLabel;
+    let i, j, jlen, label, tickFont, fontString2, cache2, lineHeight, width, height, nestedLabel;
     for (i = 0; i < length; i += increment) {
       label = ticks[i].label;
       tickFont = this._resolveTickFontOptions(i);
-      ctx.font = fontString = tickFont.string;
-      cache2 = caches[fontString] = caches[fontString] || {
+      ctx.font = fontString2 = tickFont.string;
+      cache2 = caches[fontString2] = caches[fontString2] || {
         data: {},
         gc: []
       };
@@ -15355,27 +15355,99 @@ var pctOf = (v, base) => {
   const r = 100 * v / base;
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
-function tooltipSpec() {
+var posOf = (e, chart) => {
+  const native = e.native ?? e;
+  return getRelativePosition(native, chart);
+};
+function weekAt(chart, px) {
+  const scale = chart.scales.x;
+  if (!scale) return null;
+  const at = Number(scale.getValueForPixel(px));
+  let best = null;
+  chart.data.datasets.forEach((ds, i) => {
+    if (chart.getDatasetMeta(i).hidden) return;
+    for (const raw of ds.data) {
+      if (!raw) continue;
+      if (best === null || Math.abs(raw.x - at) < Math.abs(best - at)) {
+        best = raw.x;
+      }
+    }
+  });
+  return best;
+}
+var trellisWeek = (chart, e) => {
+  const week = weekAt(chart, posOf(e, chart).x);
+  if (week === null) return [];
+  const out = [];
+  chart.data.datasets.forEach((ds, datasetIndex) => {
+    const meta = chart.getDatasetMeta(datasetIndex);
+    if (meta.hidden) return;
+    ds.data.forEach((raw, index) => {
+      const element = meta.data[index];
+      if (raw && raw.x === week && element && !element.skip) {
+        out.push({ element, datasetIndex, index });
+      }
+    });
+  });
+  return out;
+};
+Interaction.modes.trellisWeek = trellisWeek;
+var WEEK_MODE = "trellisWeek";
+function nearestByY(chart, elements, e) {
+  const { y } = posOf(e, chart);
+  let best;
+  let bestD = Number.POSITIVE_INFINITY;
+  for (const el2 of elements) {
+    const c = el2.element.getCenterPoint();
+    const d = Math.abs(c.y - y);
+    if (d < bestD) {
+      bestD = d;
+      best = el2;
+    }
+  }
+  return best;
+}
+function tooltipSpec(kind) {
   const m = t();
   return {
-    displayColors: false,
+    /* C: the swatch is the series. C′: every dataset is labelled with the
+       metric name, so the swatch is the only thing tying a line to its episode. */
+    displayColors: true,
+    boxWidth: 8,
+    boxHeight: 8,
+    boxPadding: 4,
     callbacks: {
-      title: (items) => wrapTooltipLines(items[0].raw.t, items[0], "title"),
+      title: (items) => {
+        const p = items[0].raw;
+        const text = kind === "episode" ? p.t : `${a11y().weekHeader} ${p.x}`;
+        return wrapTooltipLines(text, items[0], "title");
+      },
       label: (item) => {
         const p = item.raw;
         const value2 = p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
         const flag = m.flags[p.flag];
-        return wrapTooltipLines(
-          flag ? fill(m.tooltip.lineWithFlag, { value: value2, flag }) : fill(m.tooltip.linePlain, { value: value2 }),
-          item,
-          "body"
-        );
+        const line = flag ? fill(m.tooltip.lineWithFlag, { value: value2, flag }) : fill(m.tooltip.linePlain, { value: value2 });
+        const name = kind === "item" ? m.episodes[EPISODES[item.dataset.__ep].id].short : "";
+        return wrapTooltipLines(name ? `${name}: ${line}` : line, item, "body");
       },
       afterLabel: (item) => {
-        const note2 = item.raw.note;
-        return note2 ? wrapTooltipLines(note2, item, "body") : "";
+        const p = item.raw;
+        const lines = [];
+        if (kind === "item") {
+          const n = nf().format(Math.round(p.base));
+          lines.push(
+            ...wrapTooltipLines(
+              Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
+              item,
+              "body"
+            )
+          );
+        }
+        if (p.note) lines.push(...wrapTooltipLines(p.note, item, "body"));
+        return lines;
       },
       footer: (items) => {
+        if (kind !== "episode") return [];
         const p = items[0].raw;
         const n = nf().format(Math.round(p.base));
         return wrapTooltipLines(
@@ -15391,14 +15463,11 @@ var episodePanels = [];
 var itemPanels = [];
 var activeItem = null;
 var activeEvent = null;
-function resetEmphasis() {
-  activeItem = null;
-  activeEvent = null;
-}
 var datasetsOf = (chart) => chart.data.datasets;
 function restyle(d, on, bold = false) {
   const c = on ? d.__color : alpha2(d.__color, DIM);
   d.borderColor = c;
+  d.backgroundColor = c;
   d.pointBorderColor = c;
   d.pointBackgroundColor = d.data.map(
     (p) => isDetached(p.flag) ? THEME.hollow : c
@@ -15487,23 +15556,26 @@ function columns(host) {
   const w = host.clientWidth || 1200;
   return w >= 1180 ? 4 : w >= 620 ? 2 : 1;
 }
-var panelOptions = (x, y, onHover) => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: false,
-  interaction: { mode: "nearest", axis: "x", intersect: false },
-  layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
-  scales: { x, y },
-  plugins: {
-    legend: { display: false },
-    title: { display: false },
-    subtitle: { display: false },
-    tooltip: tooltipSpec()
-  },
-  onHover
-});
+var panelOptions = (kind, x, y, onHover) => {
+  const interaction = { mode: WEEK_MODE, intersect: false };
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    interaction,
+    hover: interaction,
+    layout: { padding: { top: 6, right: 10, bottom: 0, left: 0 } },
+    scales: { x, y },
+    plugins: {
+      legend: { display: false },
+      title: { display: false },
+      subtitle: { display: false },
+      tooltip: { ...tooltipSpec(kind), interaction }
+    },
+    onHover
+  };
+};
 function mountCrossEpisode(opts) {
-  resetEmphasis();
   episodePanels.length = 0;
   itemPanels.length = 0;
   activeItem = null;
@@ -15511,7 +15583,6 @@ function mountCrossEpisode(opts) {
   seriesCache = /* @__PURE__ */ new Map();
   opts.episodeHost.replaceChildren();
   opts.itemHost.replaceChildren();
-  resetEmphasis();
   const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
   const [yMin, yMax] = logBounds(...rawExtent(EPISODES, METRICS, unbounded));
@@ -15534,10 +15605,12 @@ function mountCrossEpisode(opts) {
         type: "line",
         data: { datasets },
         options: panelOptions(
+          "episode",
           xScale(maxW),
           yScale(yMin, yMax, idx % cols === 0),
-          (_e, elements) => {
-            const d = elements[0]?.dataset;
+          (e, elements, host) => {
+            const hit = nearestByY(host, elements, e);
+            const d = hit?.dataset;
             emphasiseItem(d ? d.__item : null);
           }
         ),
@@ -15586,7 +15659,11 @@ function mountCrossEpisode(opts) {
       new Chart(canvas, {
         type: "line",
         data: { datasets },
-        options: panelOptions(xScale(ENFORCEMENT_LAST), yScale(lo, hi, true)),
+        options: panelOptions(
+          "item",
+          xScale(ENFORCEMENT_LAST),
+          yScale(lo, hi, true)
+        ),
         plugins: []
       })
     );
@@ -15611,15 +15688,13 @@ function mountCrossEpisode(opts) {
     canvas.addEventListener("mousemove", (ev) => {
       const pts = chart.getElementsAtEventForMode(
         ev,
-        "nearest",
+        WEEK_MODE,
         { intersect: false },
         true
       );
-      if (!pts.length) {
-        emphasiseEvent(null);
-        return;
-      }
-      emphasiseEvent(datasetsOf(chart)[pts[0].datasetIndex].__ep);
+      const hit = pts.length ? nearestByY(chart, pts, ev) : void 0;
+      const d = hit ? datasetsOf(chart)[hit.datasetIndex] : void 0;
+      emphasiseEvent(d ? d.__ep : null);
     });
     itemPanels.push({ chart, item: series.key });
   });
@@ -18643,6 +18718,7 @@ export {
 
 chart.js/dist/chunks/index.js:
 chart.js/dist/chart.js:
+chart.js/dist/helpers.js:
   (*!
    * Chart.js v4.6.1
    * https://www.chartjs.org
