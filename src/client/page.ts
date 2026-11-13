@@ -27,14 +27,16 @@ function tag<K extends keyof HTMLElementTagNameMap>(
   return el;
 }
 
-/** h2, not h1: index.html already carries the page h1. */
-function header(id: string, s: SectionCopy): void {
+/** h2 at section level, h3 inside a .run-group. Also supplies the id that the
+ *  section's aria-labelledby points at (it was dangling before). */
+function header(id: string, s: SectionCopy, level: 2 | 3 = 2): void {
   const host = $(id);
   if (!host) return;
-  host.replaceChildren(
-    tag("h2", "sec-title", s.title),
-    tag("p", "sec-blurb", s.blurb),
-  );
+
+  const h = tag(level === 3 ? "h3" : "h2", "sec-title", s.title);
+  h.id = `${id}-title`;
+
+  host.replaceChildren(h, tag("p", "sec-blurb", s.blurb));
 }
 
 /** Authored copy only — textContent, so a catalogue entry cannot inject markup. */
@@ -66,12 +68,14 @@ export function renderChrome(): void {
 
   disclaimer();
   renderAbout();
-  header("hdr-a", m.sections.a);
-  header("hdr-b", m.sections.b);
-  header("hdr-c", m.sections.c);
-  header("hdr-cp", m.sections.cp);
+  header("hdr-run-ongoing", m.groups.ongoing, 2);
+  header("hdr-a", m.sections.a, 3);
+  header("hdr-b", m.sections.b, 3);
+  header("hdr-run-historical", m.groups.historical, 2);
+  header("hdr-c", m.sections.c, 3);
+  header("hdr-d", m.sections.d, 3);
   note("note-c", m.sections.c.note ?? "");
-  note("note-cp", m.sections.cp.note ?? "");
+  note("note-d", m.sections.d.note ?? "");
   /* no sources() here: sources.ts owns #sources */
 }
 

@@ -438,6 +438,7 @@ a {
 /* ---- notices ------------------------------------------------------------ */
 .disclaimer {
   max-width: 110ch;
+  margin-top: 1rem;
   margin-bottom: 34px;
   padding: 10px 14px;
   border: 1px solid var(--warn-border);
@@ -482,7 +483,7 @@ a {
   line-height: 1.55;
 }
 
-/* ---- sections ----------------------------------------------------------- */
+/* ---- sections ----- */
 section {
   margin-bottom: var(--section-gap);
 
@@ -491,8 +492,8 @@ section {
     padding-bottom: 6px;
     border-bottom: 1px solid var(--line-1);
 
-    /* page.ts writes <h2 class="sec-title"> + <p class="sec-blurb"> */
-    & > :is(h1, h2) {
+    /* page.ts writes <h2>/<h3 class="sec-title"> + <p class="sec-blurb"> */
+    & > :is(h1, h2, h3) {
       margin-bottom: 4px;
       color: var(--ink-4);
     }
@@ -878,4 +879,40 @@ section {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* ---- run groups: A+B, C+D ----- */
+/* A <section> like any other, so it keeps --section-gap below it; the inner
+   sections lose their own bottom gap against the border. */
+.run-group {
+  padding: clamp(14px, 1.8vw, 20px) clamp(14px, 2vw, 22px);
+  border: 1px solid var(--line-1);
+  border-radius: 10px;
+  background: var(--surface);
+
+  & > header {
+    margin-bottom: clamp(16px, 2vw, 24px);
+
+    & > .sec-title {
+      font-size: var(--fs-xs);
+      color: var(--accent-ink);
+    }
+
+    & > p {
+      font-size: var(--fs-sm);
+    }
+  }
+
+  & > section {
+    margin-bottom: var(--section-gap);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* nested section headers: thinner rule, since the group frame already separates */
+.run-group > section > header {
+  border-bottom-color: var(--line-2);
 }

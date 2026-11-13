@@ -18,7 +18,7 @@ export interface Bi {
 
 /* ============================================================== descriptors */
 
-export type SectionId = "a" | "b" | "c" | "cp";
+export type SectionId = "a" | "b" | "c" | "d";
 
 export interface SectionCopy {
   readonly title: string;
@@ -34,6 +34,11 @@ export interface LocaleMeta {
     readonly title: string;
     readonly description: string;
   };
+  readonly groups: {
+    readonly ongoing: SectionCopy;
+    readonly historical: SectionCopy;
+  };
+
   readonly sections: Readonly<Record<SectionId, SectionCopy>>;
 }
 
@@ -60,14 +65,26 @@ const EN_META: LocaleMeta = {
     c: {
       title: "C · One panel per movement",
       blurb:
-        "Each panel keeps its own time span on a shared logarithmic axis, so the shapes are comparable but the durations are not.",
+        "Each panel keeps its own time span on a shared logarithmic axis, so the shapes are comparable but the durations are not. The tooltip also compares every point with its own series — as a percentage of the highest figure in that panel, of the mean, of the median and of the first published figure. The last of these can run to thousands of percent when a movement began with a handful of people, which is exactly why the other three are given first.",
       note: "Hollow markers are regional, Paris-only, modelled or stock figures. Dashed connectors span a week with nothing published.",
     },
-    cp: {
-      title: "C′ · Transposed: one panel per series",
+    d: {
+      title: "D · Transposed: one panel per series",
       blurb:
-        "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures.",
+        "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures. Tooltip comparisons work as in section C, but are computed over the weeks actually plotted in the hovered panel.",
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order.",
+    },
+  },
+  groups: {
+    ongoing: {
+      title: "The Ongoing Revolt",
+      blurb:
+        "Both sections cover the autumn 2026 movement. A plots every published daily figure; B aggregates those same figures by week, so a peak-day crowd and a summed arrest count never share an axis.",
+    },
+    historical: {
+      title: "Historical Comparisons",
+      blurb:
+        "The same measures set against six earlier French movements: 1968, 1986, 1995, 2006, 2010 and 2016. C keeps one panel per movement; D keeps one panel per series.",
     },
   },
 };
@@ -95,14 +112,26 @@ const FR_META: LocaleMeta = {
     c: {
       title: "C · Un panneau par mouvement",
       blurb:
-        "Chaque panneau conserve sa propre durée sur un axe logarithmique commun : les formes sont comparables, les durées non.",
+        "Chaque panneau conserve sa propre durée sur un axe logarithmique commun : les formes sont comparables, les durées non. L’infobulle compare en outre chaque point à sa propre série — en pourcentage du chiffre le plus élevé du panneau, de la moyenne, de la médiane et du premier chiffre publié. Ce dernier peut atteindre des milliers de pour cent lorsqu’un mouvement a commencé avec une poignée de personnes, et c’est précisément pourquoi les trois autres sont donnés d’abord.",
       note: "Les marqueurs creux sont des chiffres régionaux, parisiens, modélisés ou des stocks. Les liaisons en pointillés traversent une semaine sans publication.",
     },
-    cp: {
-      title: "C′ · Transposé : un panneau par série",
+    d: {
+      title: "D · Transposé : un panneau par série",
       blurb:
-        "Les mêmes données avec les mouvements superposés, pour lire une même mesure de 1968 à 2026. L’axe des x est le nombre de semaines écoulées, arrêté à la dernière semaine de chiffres de maintien de l’ordre.",
+        "Les mêmes données avec les mouvements superposés, pour lire une même mesure de 1968 à 2026. L’axe des x est le nombre de semaines écoulées, arrêté à la dernière semaine de chiffres de maintien de l’ordre. Les comparaisons de l’infobulle fonctionnent comme en section C, mais sont calculées sur les seules semaines tracées dans le panneau survolé.",
       note: "Survolez une mesure ou un mouvement pour l’isoler. L’ordre des panneaux suit celui de la légende.",
+    },
+  },
+  groups: {
+    ongoing: {
+      title: "La révolte en cours",
+      blurb:
+        "Les deux sections portent sur le mouvement de l’automne 2026. A trace chaque chiffre quotidien publié ; B agrège ces mêmes chiffres par semaine, de sorte qu’une foule de jour de pointe et un total d’interpellations ne partagent jamais un axe.",
+    },
+    historical: {
+      title: "Comparaisons historiques",
+      blurb:
+        "Les mêmes mesures rapportées à six mouvements français antérieurs : 1968, 1986, 1995, 2006, 2010 et 2016. C garde un panneau par mouvement ; D un panneau par série.",
     },
   },
 };
@@ -1662,8 +1691,8 @@ type AttrName = "text" | "aria-label" | "title" | "placeholder";
 
 const STATIC: Record<string, Bi> = {
   "hdr.kicker": {
-    en: "Working draft · 15 Sep – 11 Nov 2026",
-    fr: "Document de travail · 15 sept. – 11 nov. 2026",
+    en: "15 Sep – 11 Nov 2026",
+    fr: "15 sept. – 11 nov. 2026",
   },
   "hdr.title": {
     en: "Protest activity in France, autumn 2026",
@@ -1722,7 +1751,7 @@ const STATIC: Record<string, Bi> = {
   },
 };
 
-for (const id of ["a", "b", "c", "cp"] as const) {
+for (const id of ["a", "b", "c", "d"] as const) {
   STATIC[`sec.${id}.title`] = {
     en: EN_META.sections[id].title,
     fr: FR_META.sections[id].title,

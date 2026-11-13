@@ -104,88 +104,94 @@
         aria-label="Notes sur le projet"
       ></section>
 
-      <section aria-labelledby="hdr-a-title">
-        <header id="hdr-a"></header>
+      <section class="run-group" aria-labelledby="hdr-run-ongoing-title">
+        <header id="hdr-run-ongoing"></header>
 
-        <figure class="card">
-          <figcaption id="cap-protesters"></figcaption>
-          <div class="canvas-box">
-            <canvas
-              id="chart-protesters"
-              role="img"
-              aria-labelledby="cap-protesters"
-            ></canvas>
-          </div>
-        </figure>
+        <section aria-labelledby="hdr-a-title">
+          <header id="hdr-a"></header>
 
-        <figure class="card">
-          <figcaption id="cap-enforcement"></figcaption>
-          <div class="canvas-box">
-            <canvas
-              id="chart-enforcement"
-              role="img"
-              aria-labelledby="cap-enforcement"
-            ></canvas>
-          </div>
-        </figure>
+          <figure class="card">
+            <figcaption id="cap-protesters"></figcaption>
+            <div class="canvas-box">
+              <canvas
+                id="chart-protesters"
+                role="img"
+                aria-labelledby="cap-protesters"
+              ></canvas>
+            </div>
+          </figure>
 
-        <figure class="card">
-          <figcaption id="cap-costs"></figcaption>
-          <div class="canvas-box tall">
-            <canvas
-              id="chart-costs"
-              role="img"
-              aria-labelledby="cap-costs"
-            ></canvas>
-          </div>
-        </figure>
+          <figure class="card">
+            <figcaption id="cap-enforcement"></figcaption>
+            <div class="canvas-box">
+              <canvas
+                id="chart-enforcement"
+                role="img"
+                aria-labelledby="cap-enforcement"
+              ></canvas>
+            </div>
+          </figure>
+
+          <figure class="card">
+            <figcaption id="cap-costs"></figcaption>
+            <div class="canvas-box tall">
+              <canvas
+                id="chart-costs"
+                role="img"
+                aria-labelledby="cap-costs"
+              ></canvas>
+            </div>
+          </figure>
+        </section>
+
+        <section aria-labelledby="hdr-b-title">
+          <header id="hdr-b"></header>
+
+          <figure class="card">
+            <figcaption id="cap-protesters-weekly"></figcaption>
+            <div class="canvas-box">
+              <canvas
+                id="chart-protesters-weekly"
+                role="img"
+                aria-labelledby="cap-protesters-weekly"
+              ></canvas>
+            </div>
+          </figure>
+
+          <figure class="card">
+            <figcaption id="cap-enforcement-weekly"></figcaption>
+            <div class="canvas-box">
+              <canvas
+                id="chart-enforcement-weekly"
+                role="img"
+                aria-labelledby="cap-enforcement-weekly"
+              ></canvas>
+            </div>
+          </figure>
+        </section>
       </section>
 
-      <section aria-labelledby="hdr-b-title">
-        <header id="hdr-b"></header>
+      <section class="run-group" aria-labelledby="hdr-run-historical-title">
+        <header id="hdr-run-historical"></header>
 
-        <figure class="card">
-          <figcaption id="cap-protesters-weekly"></figcaption>
-          <div class="canvas-box">
-            <canvas
-              id="chart-protesters-weekly"
-              role="img"
-              aria-labelledby="cap-protesters-weekly"
-            ></canvas>
-          </div>
-        </figure>
+        <section aria-labelledby="hdr-c-title">
+          <header id="hdr-c"></header>
+          <p id="note-c" class="axis-note"></p>
+          <div id="trellis-episodes" class="trellis"></div>
+          <h3 class="legend-title" data-i18n="leg.items.title"></h3>
+          <div id="legend-items" class="legend"></div>
+        </section>
 
-        <figure class="card">
-          <figcaption id="cap-enforcement-weekly"></figcaption>
-          <div class="canvas-box">
-            <canvas
-              id="chart-enforcement-weekly"
-              role="img"
-              aria-labelledby="cap-enforcement-weekly"
-            ></canvas>
-          </div>
-        </figure>
-      </section>
-
-      <section aria-labelledby="hdr-c-title">
-        <header id="hdr-c"></header>
-        <p id="note-c" class="axis-note"></p>
-        <div id="trellis-episodes" class="trellis"></div>
-        <h3 class="legend-title" data-i18n="leg.items.title"></h3>
-        <div id="legend-items" class="legend"></div>
-      </section>
-
-      <section aria-labelledby="hdr-cp-title">
-        <header id="hdr-cp"></header>
-        <p id="note-cp" class="axis-note"></p>
-        <div id="trellis-items" class="trellis"></div>
-        <h3 class="legend-title" data-i18n="leg.movements.title"></h3>
-        <div id="legend-events" class="legend"></div>
+        <section aria-labelledby="hdr-d-title">
+          <header id="hdr-d"></header>
+          <p id="note-d" class="axis-note"></p>
+          <div id="trellis-items" class="trellis"></div>
+          <h3 class="legend-title" data-i18n="leg.movements.title"></h3>
+          <div id="legend-events" class="legend"></div>
+        </section>
       </section>
 
       <section id="sources" aria-labelledby="sources-title">
-        <!-- was <h1>: the page h1 is in the header. Kept outside the replaced area
-             by sources.ts, which preserves leading headings. -->
         <h2 class="sources-title" id="sources-title">Sources</h2>
       </section>
     </main>

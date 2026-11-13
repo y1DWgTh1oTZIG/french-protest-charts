@@ -18,13 +18,23 @@ var EN_META = {
     },
     c: {
       title: "C \xB7 One panel per movement",
-      blurb: "Each panel keeps its own time span on a shared logarithmic axis, so the shapes are comparable but the durations are not.",
+      blurb: "Each panel keeps its own time span on a shared logarithmic axis, so the shapes are comparable but the durations are not. The tooltip also compares every point with its own series \u2014 as a percentage of the highest figure in that panel, of the mean, of the median and of the first published figure. The last of these can run to thousands of percent when a movement began with a handful of people, which is exactly why the other three are given first.",
       note: "Hollow markers are regional, Paris-only, modelled or stock figures. Dashed connectors span a week with nothing published."
     },
-    cp: {
-      title: "C\u2032 \xB7 Transposed: one panel per series",
-      blurb: "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures.",
+    d: {
+      title: "D \xB7 Transposed: one panel per series",
+      blurb: "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures. Tooltip comparisons work as in section C, but are computed over the weeks actually plotted in the hovered panel.",
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order."
+    }
+  },
+  groups: {
+    ongoing: {
+      title: "The Ongoing Revolt",
+      blurb: "Both sections cover the autumn 2026 movement. A plots every published daily figure; B aggregates those same figures by week, so a peak-day crowd and a summed arrest count never share an axis."
+    },
+    historical: {
+      title: "Historical Comparisons",
+      blurb: "The same measures set against six earlier French movements: 1968, 1986, 1995, 2006, 2010 and 2016. C keeps one panel per movement; D keeps one panel per series."
     }
   }
 };
@@ -47,13 +57,23 @@ var FR_META = {
     },
     c: {
       title: "C \xB7 Un panneau par mouvement",
-      blurb: "Chaque panneau conserve sa propre dur\xE9e sur un axe logarithmique commun : les formes sont comparables, les dur\xE9es non.",
+      blurb: "Chaque panneau conserve sa propre dur\xE9e sur un axe logarithmique commun : les formes sont comparables, les dur\xE9es non. L\u2019infobulle compare en outre chaque point \xE0 sa propre s\xE9rie \u2014 en pourcentage du chiffre le plus \xE9lev\xE9 du panneau, de la moyenne, de la m\xE9diane et du premier chiffre publi\xE9. Ce dernier peut atteindre des milliers de pour cent lorsqu\u2019un mouvement a commenc\xE9 avec une poign\xE9e de personnes, et c\u2019est pr\xE9cis\xE9ment pourquoi les trois autres sont donn\xE9s d\u2019abord.",
       note: "Les marqueurs creux sont des chiffres r\xE9gionaux, parisiens, mod\xE9lis\xE9s ou des stocks. Les liaisons en pointill\xE9s traversent une semaine sans publication."
     },
-    cp: {
-      title: "C\u2032 \xB7 Transpos\xE9 : un panneau par s\xE9rie",
-      blurb: "Les m\xEAmes donn\xE9es avec les mouvements superpos\xE9s, pour lire une m\xEAme mesure de 1968 \xE0 2026. L\u2019axe des x est le nombre de semaines \xE9coul\xE9es, arr\xEAt\xE9 \xE0 la derni\xE8re semaine de chiffres de maintien de l\u2019ordre.",
+    d: {
+      title: "D \xB7 Transpos\xE9 : un panneau par s\xE9rie",
+      blurb: "Les m\xEAmes donn\xE9es avec les mouvements superpos\xE9s, pour lire une m\xEAme mesure de 1968 \xE0 2026. L\u2019axe des x est le nombre de semaines \xE9coul\xE9es, arr\xEAt\xE9 \xE0 la derni\xE8re semaine de chiffres de maintien de l\u2019ordre. Les comparaisons de l\u2019infobulle fonctionnent comme en section C, mais sont calcul\xE9es sur les seules semaines trac\xE9es dans le panneau survol\xE9.",
       note: "Survolez une mesure ou un mouvement pour l\u2019isoler. L\u2019ordre des panneaux suit celui de la l\xE9gende."
+    }
+  },
+  groups: {
+    ongoing: {
+      title: "La r\xE9volte en cours",
+      blurb: "Les deux sections portent sur le mouvement de l\u2019automne 2026. A trace chaque chiffre quotidien publi\xE9 ; B agr\xE8ge ces m\xEAmes chiffres par semaine, de sorte qu\u2019une foule de jour de pointe et un total d\u2019interpellations ne partagent jamais un axe."
+    },
+    historical: {
+      title: "Comparaisons historiques",
+      blurb: "Les m\xEAmes mesures rapport\xE9es \xE0 six mouvements fran\xE7ais ant\xE9rieurs : 1968, 1986, 1995, 2006, 2010 et 2016. C garde un panneau par mouvement ; D un panneau par s\xE9rie."
     }
   }
 };
@@ -1189,8 +1209,8 @@ function bi(value2) {
 }
 var STATIC = {
   "hdr.kicker": {
-    en: "Working draft \xB7 15 Sep \u2013 11 Nov 2026",
-    fr: "Document de travail \xB7 15 sept. \u2013 11 nov. 2026"
+    en: "15 Sep \u2013 11 Nov 2026",
+    fr: "15 sept. \u2013 11 nov. 2026"
   },
   "hdr.title": {
     en: "Protest activity in France, autumn 2026",
@@ -1248,7 +1268,7 @@ var STATIC = {
     fr: "Mettre en avant un mouvement"
   }
 };
-for (const id of ["a", "b", "c", "cp"]) {
+for (const id of ["a", "b", "c", "d"]) {
   STATIC[`sec.${id}.title`] = {
     en: EN_META.sections[id].title,
     fr: FR_META.sections[id].title
@@ -16331,13 +16351,12 @@ function tag(name, className, text) {
   if (text !== void 0) el2.textContent = text;
   return el2;
 }
-function header(id, s) {
+function header(id, s, level = 2) {
   const host = $(id);
   if (!host) return;
-  host.replaceChildren(
-    tag("h2", "sec-title", s.title),
-    tag("p", "sec-blurb", s.blurb)
-  );
+  const h = tag(level === 3 ? "h3" : "h2", "sec-title", s.title);
+  h.id = `${id}-title`;
+  host.replaceChildren(h, tag("p", "sec-blurb", s.blurb));
 }
 function note(id, text) {
   const host = $(id);
@@ -16354,12 +16373,14 @@ function renderChrome() {
   document.title = m.meta.title;
   disclaimer();
   renderAbout();
-  header("hdr-a", m.sections.a);
-  header("hdr-b", m.sections.b);
-  header("hdr-c", m.sections.c);
-  header("hdr-cp", m.sections.cp);
+  header("hdr-run-ongoing", m.groups.ongoing, 2);
+  header("hdr-a", m.sections.a, 3);
+  header("hdr-b", m.sections.b, 3);
+  header("hdr-run-historical", m.groups.historical, 2);
+  header("hdr-c", m.sections.c, 3);
+  header("hdr-d", m.sections.d, 3);
   note("note-c", m.sections.c.note ?? "");
-  note("note-cp", m.sections.cp.note ?? "");
+  note("note-d", m.sections.d.note ?? "");
 }
 
 // src/client/sources.ts
