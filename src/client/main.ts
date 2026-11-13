@@ -17,7 +17,11 @@ import {
 import { CHARTS, mountCharts } from "./chart.ts";
 import { destroyAll } from "./canvas.ts";
 import { byId } from "./dom.ts";
-import { mountCrossEpisode, type TrellisHosts } from "./episodes.ts";
+import {
+  mountCrossEpisode,
+  mountSummary,
+  type TrellisHosts,
+} from "./episodes.ts";
 import { applyUrlLang, mountLangSwitch } from "./lang.ts";
 import { renderChrome } from "./page.ts";
 import { renderSources } from "./sources.ts";
@@ -51,6 +55,11 @@ export function render(): void {
       console.error("[trellis]", err);
     }
   }
+  try {
+    mountSummary();
+  } catch (err) {
+    console.error("[summary]", err);
+  }
 }
 
 /* Coalesce: several listeners switching language still produce one render. */
@@ -74,6 +83,8 @@ const REQUIRED = [
   "trellis-items",
   "legend-items",
   "legend-events",
+  "summary",
+  "legend-summary",
   "disclaimer",
   "sources",
 ] as const;

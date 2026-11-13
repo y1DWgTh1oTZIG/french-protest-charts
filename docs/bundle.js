@@ -25,6 +25,11 @@ var EN_META = {
       title: "D \xB7 Transposed: one panel per series",
       blurb: "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures. Tooltip comparisons work as in section C, but are computed over the weeks actually plotted in the hovered panel.",
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order."
+    },
+    e: {
+      title: "E \xB7 Means and medians",
+      blurb: "Each panel gathers one measure across all seven movements. The filled dot is the mean of the published figures in that series, the open dot the median, and the bar between them is the distance between the two: long where a movement had a few enormous weeks and a quiet rest of the time, short where it was steady throughout. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
+      note: "Computed over every published figure in a series, sparse early weeks included. A movement with no figure for a measure is absent from that panel."
     }
   },
   groups: {
@@ -64,6 +69,11 @@ var FR_META = {
       title: "D \xB7 Transpos\xE9 : un panneau par s\xE9rie",
       blurb: "Les m\xEAmes donn\xE9es avec les mouvements superpos\xE9s, pour lire une m\xEAme mesure de 1968 \xE0 2026. L\u2019axe des x est le nombre de semaines \xE9coul\xE9es, arr\xEAt\xE9 \xE0 la derni\xE8re semaine de chiffres de maintien de l\u2019ordre. Les comparaisons de l\u2019infobulle fonctionnent comme en section C, mais sont calcul\xE9es sur les seules semaines trac\xE9es dans le panneau survol\xE9.",
       note: "Survolez une mesure ou un mouvement pour l\u2019isoler. L\u2019ordre des panneaux suit celui de la l\xE9gende."
+    },
+    e: {
+      title: "E \xB7 Moyennes et m\xE9dianes",
+      blurb: "Chaque panneau rassemble une mesure pour les sept mouvements. Le point plein est la moyenne des chiffres publi\xE9s dans la s\xE9rie, le point creux la m\xE9diane, et la barre entre les deux en donne l\u2019\xE9cart : long lorsqu\u2019un mouvement a connu quelques semaines \xE9normes et une longue p\xE9riode calme, court lorsqu\u2019il est rest\xE9 r\xE9gulier. L\u2019axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
+      note: "Calcul\xE9es sur l\u2019ensemble des chiffres publi\xE9s d\u2019une s\xE9rie, semaines creuses du d\xE9but comprises. Un mouvement sans chiffre pour une mesure est absent du panneau."
     }
   },
   groups: {
@@ -1063,7 +1073,10 @@ var CATALOGUE = {
       seriesContinues: "{name} (cont.)",
       obs: "observations {counts} over {weeks}",
       valueRange: "{lo}\u2013{hi}",
-      itemMeta: "range {range} \xB7 up to week {n}"
+      itemMeta: "range {range} \xB7 up to week {n}",
+      mean: "mean",
+      median: "median",
+      summaryMeta: "mean and median \xB7 {n} movements"
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1109,7 +1122,10 @@ var CATALOGUE = {
       seriesContinues: "{name} (suite)",
       obs: "observations {counts} sur {weeks}",
       valueRange: "{lo}\u2013{hi}",
-      itemMeta: "fourchette {range} \xB7 jusqu\u2019\xE0 la semaine {n}"
+      itemMeta: "fourchette {range} \xB7 jusqu\u2019\xE0 la semaine {n}",
+      mean: "moyenne",
+      median: "m\xE9diane",
+      summaryMeta: "moyenne et m\xE9diane \xB7 {n} mouvements"
     },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
@@ -1266,9 +1282,14 @@ var STATIC = {
   "leg.movements.title": {
     en: "Highlight a movement",
     fr: "Mettre en avant un mouvement"
+  },
+  "hdr.skip": { en: "Skip to content", fr: "Aller au contenu" },
+  "leg.summary.title": {
+    en: "Highlight a statistic",
+    fr: "Mettre en avant une statistique"
   }
 };
-for (const id of ["a", "b", "c", "d"]) {
+for (const id of ["a", "b", "c", "d", "e"]) {
   STATIC[`sec.${id}.title`] = {
     en: EN_META.sections[id].title,
     fr: FR_META.sections[id].title
@@ -15779,6 +15800,273 @@ function mountCrossEpisode(opts) {
     }))
   );
 }
+var MEAN_COLOR = "#1f2937";
+var MEDIAN_COLOR = "#6b7280";
+var summaryPanels = [];
+var activeStat = null;
+function decades(lo, hi) {
+  const out = [];
+  const from2 = Math.floor(Math.log10(Math.max(lo, 1e-6)));
+  const to2 = Math.ceil(Math.log10(Math.max(hi, 1)));
+  for (let e = from2; e <= to2; e++) {
+    const v = 10 ** e;
+    if (v >= lo * 1.0001 && v <= hi * 0.9999) out.push(v);
+  }
+  return out;
+}
+function statPoint(ep, i, key, stat) {
+  const pts = seriesData(ep, key);
+  if (!pts) return null;
+  const st = statsOf(pts);
+  if (!st) return null;
+  const v = st[stat];
+  if (!(v > 0)) return null;
+  return {
+    x: i,
+    y: v,
+    low: v,
+    high: v,
+    flag: "n",
+    base: v,
+    t: t().episodes[ep.id].short
+  };
+}
+function statDataset(key, stat, label, color2, hollow, points) {
+  return {
+    type: "line",
+    label,
+    data: [...points],
+    showLine: false,
+    borderColor: color2,
+    backgroundColor: hollow ? THEME.hollow : color2,
+    pointBackgroundColor: hollow ? THEME.hollow : color2,
+    pointBorderColor: color2,
+    pointBorderWidth: 1.75,
+    pointRadius: 5,
+    pointHoverRadius: 6.5,
+    pointHitRadius: 12,
+    __item: key,
+    __ep: -1,
+    __color: color2,
+    __stat: stat
+  };
+}
+function gapDataset(key, i, mean, median) {
+  const mk = (y) => ({
+    x: i,
+    y,
+    low: y,
+    high: y,
+    flag: "n",
+    base: y,
+    t: ""
+  });
+  const c = alpha2(MEAN_COLOR, 0.35);
+  return {
+    type: "line",
+    label: "",
+    data: [mk(mean), mk(median)],
+    showLine: true,
+    borderColor: c,
+    backgroundColor: c,
+    borderWidth: 1.5,
+    pointRadius: 0,
+    pointHoverRadius: 0,
+    pointHitRadius: 0,
+    __item: key,
+    __ep: i,
+    __color: MEAN_COLOR
+  };
+}
+function emphasiseStat(stat) {
+  if (stat === activeStat) return;
+  activeStat = stat;
+  for (const chart of summaryPanels) {
+    for (const d of datasetsOf(chart)) {
+      if (!d.__stat) continue;
+      const on = stat === null || d.__stat === stat;
+      const c = on ? d.__color : alpha2(d.__color, DIM);
+      const hollow = d.__stat === "median";
+      d.borderColor = c;
+      d.pointBorderColor = c;
+      d.backgroundColor = hollow ? THEME.hollow : c;
+      d.pointBackgroundColor = hollow ? THEME.hollow : c;
+    }
+    chart.update("none");
+  }
+}
+function mountSummary() {
+  const host = document.getElementById("summary");
+  const legendHost = document.getElementById("legend-summary");
+  if (!host || !legendHost) return;
+  summaryPanels.length = 0;
+  activeStat = null;
+  host.replaceChildren();
+  legendHost.replaceChildren();
+  const m = t();
+  const cols = columns(host);
+  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  SERIES2.forEach((series, panelIndex) => {
+    const rows = EPISODES.map((ep, i) => {
+      const mean = statPoint(ep, i, series.key, "mean");
+      const median = statPoint(ep, i, series.key, "median");
+      return mean && median ? { mean, median } : null;
+    });
+    const values = [];
+    for (const r of rows) {
+      if (r) values.push(r.mean.y, r.median.y);
+    }
+    if (!values.length) return;
+    const lo = Math.min(...values) * 0.8;
+    const hi = Math.max(...values) * 1.3;
+    const { figure, canvas } = panelFigure(
+      m.items[series.key].short,
+      fill(m.panels.summaryMeta, { n: EPISODES.length })
+    );
+    host.append(figure);
+    const datasets = rows.map(
+      (r, i) => r ? gapDataset(series.key, i, r.mean.y, r.median.y) : gapDataset(series.key, i, 1, 1)
+    );
+    datasets.length = 0;
+    rows.forEach((r, i) => {
+      if (r) datasets.push(gapDataset(series.key, i, r.mean.y, r.median.y));
+    });
+    const meanPts = [];
+    const medianPts = [];
+    for (const r of rows) {
+      if (r) {
+        meanPts.push(r.mean);
+        medianPts.push(r.median);
+      }
+    }
+    datasets.push(
+      statDataset(
+        series.key,
+        "mean",
+        m.panels.mean,
+        MEAN_COLOR,
+        false,
+        meanPts
+      ),
+      statDataset(
+        series.key,
+        "median",
+        m.panels.median,
+        MEDIAN_COLOR,
+        true,
+        medianPts
+      )
+    );
+    const chart = track(
+      new Chart(canvas, {
+        type: "line",
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          interaction: { mode: "nearest", intersect: true, axis: "x" },
+          layout: { padding: { top: 6, right: 12, bottom: 0, left: 0 } },
+          scales: {
+            x: {
+              type: "linear",
+              min: -0.45,
+              max: EPISODES.length - 0.55,
+              grid: { display: false },
+              ticks: {
+                autoSkip: false,
+                maxRotation: 60,
+                minRotation: 60,
+                font: { size: 10 },
+                callback: (v) => {
+                  const n = Number(v);
+                  const i = Math.round(n);
+                  return Math.abs(n - i) < 1e-6 && EPISODES[i] ? m.episodes[EPISODES[i].id].short : "";
+                }
+              },
+              afterBuildTicks: (axis) => {
+                axis.ticks = EPISODES.map((_, i) => ({ value: i }));
+              }
+            },
+            y: {
+              type: "logarithmic",
+              min: lo,
+              max: hi,
+              title: {
+                display: panelIndex % cols === 0,
+                text: m.items[series.key].label,
+                color: THEME.label,
+                font: { size: 11 }
+              },
+              grid: { color: THEME.axisGrid, drawTicks: false },
+              ticks: {
+                autoSkip: false,
+                maxTicksLimit: 5,
+                padding: 6,
+                font: { size: 10 },
+                callback: (v) => {
+                  const n = Number(v);
+                  const dec = Math.abs(Math.log10(n) - Math.round(Math.log10(n))) < 1e-9;
+                  return dec ? compact().format(n) : "";
+                }
+              },
+              afterBuildTicks: (axis) => {
+                axis.ticks = decades(lo, hi).map((value2) => ({ value: value2 }));
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: false },
+            subtitle: { display: false },
+            tooltip: {
+              displayColors: true,
+              boxWidth: 8,
+              boxHeight: 8,
+              boxPadding: 4,
+              callbacks: {
+                title: (items) => {
+                  const p = items[0]?.raw;
+                  return p ? wrapTooltipLines(p.t, items[0], "title") : [];
+                },
+                label: (item) => {
+                  const p = item.raw;
+                  const name = item.dataset.label ?? "";
+                  const value2 = nf().format(Math.round(p.y));
+                  return wrapTooltipLines(
+                    name ? `${name}: ${value2}` : value2,
+                    item,
+                    "body"
+                  );
+                }
+              }
+            }
+          },
+          onHover: (_e, els) => {
+            const d = els[0]?.dataset;
+            emphasiseStat(d?.__stat ?? null);
+          }
+        },
+        plugins: []
+      })
+    );
+    summaryPanels.push(chart);
+  });
+  legend(legendHost, [
+    {
+      text: m.panels.mean,
+      color: MEAN_COLOR,
+      on: () => emphasiseStat("mean"),
+      off: () => emphasiseStat(null)
+    },
+    {
+      text: m.panels.median,
+      color: MEDIAN_COLOR,
+      on: () => emphasiseStat("median"),
+      off: () => emphasiseStat(null)
+    }
+  ]);
+}
 
 // src/client/lang.ts
 function applyUrlLang(search) {
@@ -16379,8 +16667,10 @@ function renderChrome() {
   header("hdr-run-historical", m.groups.historical, 2);
   header("hdr-c", m.sections.c, 3);
   header("hdr-d", m.sections.d, 3);
+  header("hdr-e", m.sections.e, 3);
   note("note-c", m.sections.c.note ?? "");
   note("note-d", m.sections.d.note ?? "");
+  note("note-e", m.sections.e.note ?? "");
 }
 
 // src/client/sources.ts
@@ -18692,6 +18982,11 @@ function render() {
       console.error("[trellis]", err);
     }
   }
+  try {
+    mountSummary();
+  } catch (err) {
+    console.error("[summary]", err);
+  }
 }
 var frame = 0;
 function scheduleRender() {
@@ -18711,6 +19006,8 @@ var REQUIRED = [
   "trellis-items",
   "legend-items",
   "legend-events",
+  "summary",
+  "legend-summary",
   "disclaimer",
   "sources"
 ];

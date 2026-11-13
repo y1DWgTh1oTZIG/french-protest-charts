@@ -916,3 +916,46 @@ section {
 .run-group > section > header {
   border-bottom-color: var(--line-2);
 }
+
+/* ---- skip link ----
+   No rule existed, so the link sat in normal flow above the header in French.
+   Now it is out of flow and only enters on keyboard focus; the typography
+   matches the rest of the page rather than the bare UA default. */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line-4);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  box-shadow: 0 2px 8px var(--shadow-1);
+  transform: translateY(-150%);
+  transition: transform var(--dur) ease;
+
+  &:focus {
+    transform: translateY(0.5rem) translateX(0.5rem);
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+/* ---- section E panels ---- */
+#summary .panel-canvas {
+  height: 15rem;
+}
+
+#summary .legend {
+  margin-top: 0.5rem;
+}

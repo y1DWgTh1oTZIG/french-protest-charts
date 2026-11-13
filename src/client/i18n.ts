@@ -18,7 +18,7 @@ export interface Bi {
 
 /* ============================================================== descriptors */
 
-export type SectionId = "a" | "b" | "c" | "d";
+export type SectionId = "a" | "b" | "c" | "d" | "e";
 
 export interface SectionCopy {
   readonly title: string;
@@ -74,6 +74,12 @@ const EN_META: LocaleMeta = {
         "The same data with movements overlaid, so a single measure can be read across 1968 to 2026. The x axis is elapsed weeks, capped at the last week with enforcement figures. Tooltip comparisons work as in section C, but are computed over the weeks actually plotted in the hovered panel.",
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order.",
     },
+    e: {
+      title: "E · Means and medians",
+      blurb:
+        "Each panel gathers one measure across all seven movements. The filled dot is the mean of the published figures in that series, the open dot the median, and the bar between them is the distance between the two: long where a movement had a few enormous weeks and a quiet rest of the time, short where it was steady throughout. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
+      note: "Computed over every published figure in a series, sparse early weeks included. A movement with no figure for a measure is absent from that panel.",
+    },
   },
   groups: {
     ongoing: {
@@ -120,6 +126,12 @@ const FR_META: LocaleMeta = {
       blurb:
         "Les mêmes données avec les mouvements superposés, pour lire une même mesure de 1968 à 2026. L’axe des x est le nombre de semaines écoulées, arrêté à la dernière semaine de chiffres de maintien de l’ordre. Les comparaisons de l’infobulle fonctionnent comme en section C, mais sont calculées sur les seules semaines tracées dans le panneau survolé.",
       note: "Survolez une mesure ou un mouvement pour l’isoler. L’ordre des panneaux suit celui de la légende.",
+    },
+    e: {
+      title: "E · Moyennes et médianes",
+      blurb:
+        "Chaque panneau rassemble une mesure pour les sept mouvements. Le point plein est la moyenne des chiffres publiés dans la série, le point creux la médiane, et la barre entre les deux en donne l’écart : long lorsqu’un mouvement a connu quelques semaines énormes et une longue période calme, court lorsqu’il est resté régulier. L’axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
+      note: "Calculées sur l’ensemble des chiffres publiés d’une série, semaines creuses du début comprises. Un mouvement sans chiffre pour une mesure est absent du panneau.",
     },
   },
   groups: {
@@ -1475,6 +1487,10 @@ export interface PanelsCopy {
   readonly obs: string;
   readonly valueRange: string;
   readonly itemMeta: string;
+  readonly mean: string;
+  readonly median: string;
+  /** Caption meta on section E panels. */
+  readonly summaryMeta: string;
 }
 
 export interface ItemCopy {
@@ -1524,6 +1540,9 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       obs: "observations {counts} over {weeks}",
       valueRange: "{lo}–{hi}",
       itemMeta: "range {range} · up to week {n}",
+      mean: "mean",
+      median: "median",
+      summaryMeta: "mean and median · {n} movements",
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1569,6 +1588,9 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       obs: "observations {counts} sur {weeks}",
       valueRange: "{lo}–{hi}",
       itemMeta: "fourchette {range} · jusqu’à la semaine {n}",
+      mean: "moyenne",
+      median: "médiane",
+      summaryMeta: "moyenne et médiane · {n} mouvements",
     },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
@@ -1749,9 +1771,14 @@ const STATIC: Record<string, Bi> = {
     en: "Highlight a movement",
     fr: "Mettre en avant un mouvement",
   },
+  "hdr.skip": { en: "Skip to content", fr: "Aller au contenu" },
+  "leg.summary.title": {
+    en: "Highlight a statistic",
+    fr: "Mettre en avant une statistique",
+  },
 };
 
-for (const id of ["a", "b", "c", "d"] as const) {
+for (const id of ["a", "b", "c", "d", "e"] as const) {
   STATIC[`sec.${id}.title`] = {
     en: EN_META.sections[id].title,
     fr: FR_META.sections[id].title,

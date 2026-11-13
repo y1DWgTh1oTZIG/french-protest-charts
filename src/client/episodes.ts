@@ -1332,3 +1332,328 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
     })),
   );
 }
+
+/* ============================================================ section E */
+/* Mean vs median per series, one panel per measure, log y. The dumbbell
+   carries the whole story: a long bar means a few huge weeks dragged the mean
+   away from the median. */
+
+type Stat = "mean" | "median";
+
+interface StatDataset extends PanelDataset {
+  readonly __stat: Stat;
+}
+
+/** Statistic colours are fixed, not per-metric: the panel already names the metric. */
+const MEAN_COLOR = "#1f2937";
+const MEDIAN_COLOR = "#6b7280";
+
+const summaryPanels: Chart<"line">[] = [];
+let activeStat: Stat | null = null;
+
+/** Decade ticks only; Chart.js would otherwise label every generated minor. */
+function decades(lo: number, hi: number): number[] {
+  const out: number[] = [];
+  const from = Math.floor(Math.log10(Math.max(lo, 1e-6)));
+  const to = Math.ceil(Math.log10(Math.max(hi, 1)));
+  for (let e = from; e <= to; e++) {
+    const v = 10 ** e;
+    if (v >= lo * 1.0001 && v <= hi * 0.9999) out.push(v);
+  }
+  return out;
+}
+
+function statPoint(ep: Episode, i: number, key: Metric, stat: Stat): Pt | null {
+  const pts = seriesData(ep, key);
+  if (!pts) return null;
+  const st = statsOf(pts);
+  if (!st) return null;
+
+  const v = st[stat];
+  if (!(v > 0)) return null; // log axis cannot show a zero or a negative
+
+  return {
+    x: i,
+    y: v,
+    low: v,
+    high: v,
+    flag: "n",
+    base: v,
+    t: t().episodes[ep.id].short,
+  };
+}
+
+function statDataset(
+  key: Metric,
+  stat: Stat,
+  label: string,
+  color: string,
+  hollow: boolean,
+  points: readonly Pt[],
+): StatDataset {
+  return {
+    type: "line",
+    label,
+    data: [...points],
+    showLine: false,
+    borderColor: color,
+    backgroundColor: hollow ? THEME.hollow : color,
+    pointBackgroundColor: hollow ? THEME.hollow : color,
+    pointBorderColor: color,
+    pointBorderWidth: 1.75,
+    pointRadius: 5,
+    pointHoverRadius: 6.5,
+    pointHitRadius: 12,
+    __item: key,
+    __ep: -1,
+    __color: color,
+    __stat: stat,
+  } as StatDataset;
+}
+
+function gapDataset(
+  key: Metric,
+  i: number,
+  mean: number,
+  median: number,
+): PanelDataset {
+  const mk = (y: number): Pt => ({
+    x: i,
+    y,
+    low: y,
+    high: y,
+    flag: "n",
+    base: y,
+    t: "",
+  });
+  const c = alpha(MEAN_COLOR, 0.35);
+
+  return {
+    type: "line",
+    label: "",
+    data: [mk(mean), mk(median)],
+    showLine: true,
+    borderColor: c,
+    backgroundColor: c,
+    borderWidth: 1.5,
+    pointRadius: 0,
+    pointHoverRadius: 0,
+    pointHitRadius: 0,
+    __item: key,
+    __ep: i,
+    __color: MEAN_COLOR,
+  } as PanelDataset;
+}
+
+function emphasiseStat(stat: Stat | null): void {
+  if (stat === activeStat) return;
+  activeStat = stat;
+
+  for (const chart of summaryPanels) {
+    for (const d of datasetsOf(chart) as StatDataset[]) {
+      if (!d.__stat) continue;
+      const on = stat === null || d.__stat === stat;
+      const c = on ? d.__color : alpha(d.__color, DIM);
+      const hollow = d.__stat === "median";
+
+      d.borderColor = c;
+      d.pointBorderColor = c;
+      d.backgroundColor = hollow ? THEME.hollow : c;
+      d.pointBackgroundColor = hollow ? THEME.hollow : c;
+    }
+    chart.update("none");
+  }
+}
+
+export function mountSummary(): void {
+  const host = document.getElementById("summary");
+  const legendHost = document.getElementById("legend-summary");
+  if (!host || !legendHost) return;
+
+  summaryPanels.length = 0;
+  activeStat = null;
+  host.replaceChildren();
+  legendHost.replaceChildren();
+
+  const m = t();
+  const cols = columns(host);
+  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+  SERIES.forEach((series, panelIndex) => {
+    /* Rows are paired: a movement needs both statistics to get a bar. */
+    const rows = EPISODES.map((ep, i) => {
+      const mean = statPoint(ep, i, series.key, "mean");
+      const median = statPoint(ep, i, series.key, "median");
+      return mean && median ? { mean, median } : null;
+    });
+
+    const values: number[] = [];
+    for (const r of rows) {
+      if (r) values.push(r.mean.y, r.median.y);
+    }
+    if (!values.length) return;
+
+    const lo = Math.min(...values) * 0.8;
+    const hi = Math.max(...values) * 1.3;
+
+    const { figure, canvas } = panelFigure(
+      m.items[series.key].short,
+      fill(m.panels.summaryMeta, { n: EPISODES.length }),
+    );
+    host.append(figure);
+
+    const datasets: PanelDataset[] = rows.map((r, i) =>
+      r
+        ? gapDataset(series.key, i, r.mean.y, r.median.y)
+        : gapDataset(series.key, i, 1, 1),
+    );
+    /* Explicit `null` data instead of a dummy point would leave a stray bar at
+       y=1, so drop the empty rows from the connectors entirely. */
+    datasets.length = 0;
+    rows.forEach((r, i) => {
+      if (r) datasets.push(gapDataset(series.key, i, r.mean.y, r.median.y));
+    });
+
+    const meanPts: Pt[] = [];
+    const medianPts: Pt[] = [];
+    for (const r of rows) {
+      if (r) {
+        meanPts.push(r.mean);
+        medianPts.push(r.median);
+      }
+    }
+
+    datasets.push(
+      statDataset(
+        series.key,
+        "mean",
+        m.panels.mean,
+        MEAN_COLOR,
+        false,
+        meanPts,
+      ),
+      statDataset(
+        series.key,
+        "median",
+        m.panels.median,
+        MEDIAN_COLOR,
+        true,
+        medianPts,
+      ),
+    );
+
+    const chart = track(
+      new Chart<"line">(canvas, {
+        type: "line",
+        data: { datasets } as unknown as ChartData<"line">,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          interaction: { mode: "nearest", intersect: true, axis: "x" },
+          layout: { padding: { top: 6, right: 12, bottom: 0, left: 0 } },
+          scales: {
+            x: {
+              type: "linear",
+              min: -0.45,
+              max: EPISODES.length - 0.55,
+              grid: { display: false },
+              ticks: {
+                autoSkip: false,
+                maxRotation: 60,
+                minRotation: 60,
+                font: { size: 10 },
+                callback: (v: string | number) => {
+                  const n = Number(v);
+                  const i = Math.round(n);
+                  return Math.abs(n - i) < 1e-6 && EPISODES[i]
+                    ? m.episodes[EPISODES[i].id].short
+                    : "";
+                },
+              },
+              afterBuildTicks: (axis: { ticks: { value: number }[] }) => {
+                axis.ticks = EPISODES.map((_, i) => ({ value: i }));
+              },
+            },
+
+            y: {
+              type: "logarithmic",
+              min: lo,
+              max: hi,
+              title: {
+                display: panelIndex % cols === 0,
+                text: m.items[series.key].label,
+                color: THEME.label,
+                font: { size: 11 },
+              },
+              grid: { color: THEME.axisGrid, drawTicks: false },
+              ticks: {
+                autoSkip: false,
+                maxTicksLimit: 5,
+                padding: 6,
+                font: { size: 10 },
+                callback: (v: string | number) => {
+                  const n = Number(v);
+                  const dec =
+                    Math.abs(Math.log10(n) - Math.round(Math.log10(n))) < 1e-9;
+                  return dec ? compact().format(n) : "";
+                },
+              },
+              afterBuildTicks: (axis: { ticks: { value: number }[] }) => {
+                axis.ticks = decades(lo, hi).map((value) => ({ value }));
+              },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: false },
+            subtitle: { display: false },
+            tooltip: {
+              displayColors: true,
+              boxWidth: 8,
+              boxHeight: 8,
+              boxPadding: 4,
+              callbacks: {
+                title: (items: TooltipItem<"line">[]) => {
+                  const p = items[0]?.raw as Pt | undefined;
+                  return p ? wrapTooltipLines(p.t, items[0], "title") : [];
+                },
+                label: (item: TooltipItem<"line">) => {
+                  const p = item.raw as Pt;
+                  const name = item.dataset.label ?? "";
+                  const value = nf().format(Math.round(p.y));
+                  return wrapTooltipLines(
+                    name ? `${name}: ${value}` : value,
+                    item,
+                    "body",
+                  );
+                },
+              },
+            },
+          },
+          onHover: (_e, els) => {
+            const d = els[0]?.dataset as StatDataset | undefined;
+            emphasiseStat(d?.__stat ?? null);
+          },
+        },
+        plugins: [],
+      }),
+    );
+    summaryPanels.push(chart);
+  });
+
+  legend(legendHost, [
+    {
+      text: m.panels.mean,
+      color: MEAN_COLOR,
+      on: () => emphasiseStat("mean"),
+      off: () => emphasiseStat(null),
+    },
+    {
+      text: m.panels.median,
+      color: MEDIAN_COLOR,
+      on: () => emphasiseStat("median"),
+      off: () => emphasiseStat(null),
+    },
+  ]);
+}

@@ -74,8 +74,10 @@ export function renderChrome(): void {
   header("hdr-run-historical", m.groups.historical, 2);
   header("hdr-c", m.sections.c, 3);
   header("hdr-d", m.sections.d, 3);
+  header("hdr-e", m.sections.e, 3);
   note("note-c", m.sections.c.note ?? "");
   note("note-d", m.sections.d.note ?? "");
+  note("note-e", m.sections.e.note ?? "");
   /* no sources() here: sources.ts owns #sources */
 }
 
