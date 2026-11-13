@@ -347,27 +347,31 @@ a {
   }
 }
 
-/* ---- GitHub link -------------------------------------------------------- */
-/* The anchor is static and only its label is localised, so the inline <svg>
-   has no width/height attribute: unsized it falls back to 300×150. */
+/* ---- GitHub link ----- */
+/* The path is fill-based; .theme-toggle's icons are stroke-based. Keep the two
+   rules separate: a shared `svg { fill: currentColor }` would fill the sun and
+   moon into solid blobs. */
 :is(.repo-link, #repo-link) {
-  display: inline-flex;
+  display: inline-grid;
+  place-items: center;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.125rem; /* match .theme-toggle */
+  height: 2.125rem;
+  border: 1px solid var(--line-4);
   border-radius: 50%;
-  color: var(--ink-4);
+  background: var(--surface-3);
+  color: var(--ink-3);
+  box-shadow: 0 1px 1px var(--shadow-1);
   text-decoration: none;
   transition:
     background-color var(--dur) ease,
     color var(--dur) ease;
 
   & > svg {
-    width: 1.15rem;
-    height: 1.15rem;
+    width: 1.05rem; /* unsized viewBox svg falls back to 300×150 */
+    height: 1.05rem;
     fill: currentColor;
+    stroke: none;
   }
 
   &:hover {
@@ -376,7 +380,7 @@ a {
   }
 
   &:focus-visible {
-    outline: 2px solid currentColor;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 }
