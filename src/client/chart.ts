@@ -35,6 +35,7 @@ import {
 } from "./data.ts";
 import { byId } from "./dom.ts";
 import {
+  a11y,
   compact,
   eurM,
   fill,
@@ -49,6 +50,7 @@ import {
 import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
+import { fromChart, keyboardChart } from "./a11y.ts";
 
 Chart.register(
   LineController,
@@ -886,7 +888,7 @@ function baseScales(v: View): Scales {
         maxRotation: v.maxRotation,
         autoSkip: true,
         maxTicksLimit: v.maxTicksLimit,
-        font: { size: 10 },
+        font: { size: 12 },
         color: THEME.muted,
         padding: 4,
       },
@@ -966,14 +968,14 @@ const shell = (
       display: true,
       text: subtitle,
       color: THEME.muted,
-      font: { size: 11 },
+      font: { size: 12 },
       padding: { top: 0, bottom: 8 },
     },
     title: {
       display: true,
       text: title,
       color: THEME.ink,
-      font: { size: 15, weight: "bold" as const },
+      font: { size: 16, weight: "bold" as const },
       padding: { top: 0, bottom: 2 },
     },
     tooltip: { callbacks: tooltipCallbacks(v) },
@@ -1042,7 +1044,6 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
   );
 }
 
-/** Mounts every canvas in CHARTS; one bad chart must not blank the page. */
 export function mountCharts(): void {
   for (const spec of CHARTS) {
     const canvas = byId(spec.id);
@@ -1051,10 +1052,30 @@ export function mountCharts(): void {
       continue;
     }
     try {
-      // the aria-label in index.html is French-only; keep it in sync with the locale
-      const title = t().chart.charts[spec.copy].title;
-      canvas.setAttribute("aria-label", title);
-      mount(canvas, buildChart(spec));
+      const copy = t().chart.charts[spec.copy];
+      const name = copy.subtitle
+        ? `${copy.title}. ${copy.subtitle}`
+        : copy.title;
+
+      // Name = title + subtitle: the subtitle carries the caveats that make
+      // the figure honest, and it is otherwise invisible to AT.
+      canvas.setAttribute("aria-label", name);
+      canvas.setAttribute("role", "img");
+
+      const chart = mount(canvas, buildChart(spec));
+
+      const host = canvas.closest("figure") ?? canvas.parentElement;
+      host?.querySelector(".data-table")?.remove();
+      const table = fromChart(chart, {
+        caption: fill(a11y().tableCaption, { title: copy.title }),
+        indexHeader: a11y().dateHeader,
+      });
+      host?.append(table);
+
+      keyboardChart(chart, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole,
+      });
     } catch (err) {
       console.error(`[${spec.id}]`, err);
     }

@@ -3,12 +3,26 @@ import type { Chart } from "chart.js";
 export const THEME = {
   ink: "#111827",
   label: "#4b5563",
-  muted: "#6b7280",
+  muted: "#5b6470", // was #6b7280: 6.0:1, safe for 11 px labels
   grid: "#E5E5E5",
   axisGrid: "rgba(17,24,23,0.06)",
   hollow: "#ffffff",
-  dim: 0.18,
+  dim: 0.45, // was 0.18 → ≈1.3:1, i.e. invisible
 } as const;
+
+/** Per-episode encoding: shade + dash + marker. Colour is never the only cue. */
+export const RAMP: readonly {
+  readonly color: string;
+  readonly dash: number[];
+}[] = [
+  { color: "#5C97C5", dash: [] }, // ≥3:1 vs #fff (lightest admissible)
+  { color: "#357AB0", dash: [6, 3] },
+  { color: "#2A6B9C", dash: [2, 3] },
+  { color: "#1B5C92", dash: [8, 3, 2, 3] },
+  { color: "#124A78", dash: [1.5, 3] },
+  { color: "#0A3A63", dash: [10, 4] },
+  { color: "#062844", dash: [4, 3] },
+] as const;
 
 /** #rrggbb → rgba(). Throws instead of emitting `rgba(NaN, …)`. */
 export function alpha(hex: string, a: number): string {

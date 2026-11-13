@@ -10,6 +10,8 @@ import {
   setLang,
   syncLangSwitch,
   type Lang,
+  localeMeta,
+  fill,
 } from "./i18n.ts";
 import { CHARTS, mountCharts } from "./chart.ts";
 import { destroyAll } from "./canvas.ts";
@@ -18,6 +20,7 @@ import { mountCrossEpisode, type TrellisHosts } from "./episodes.ts";
 import { applyUrlLang, mountLangSwitch } from "./lang.ts";
 import { renderChrome } from "./page.ts";
 import { renderSources } from "./sources.ts";
+import { announce } from "./a11y.ts";
 
 function trellisHosts(): TrellisHosts | null {
   const episodeHost = byId("trellis-episodes");
@@ -86,7 +89,10 @@ function boot(): void {
 
   applyUrlLang(); // ?lang= → state, no persist, before any subscriber
   mountLangSwitch(); // the only click handler for the control
-  onLocaleChange(scheduleRender); // the only render trigger
+  onLocaleChange((_next, _prev) => {
+    scheduleRender();
+    announce(fill(t().a11y.switched, { lang: localeMeta().label }));
+  });
   render(); // first paint
   window.addEventListener("pagehide", destroyAll, { once: true });
 }

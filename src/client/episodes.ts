@@ -23,7 +23,16 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from "chart.js";
-import { compact, fill, fmtSpan, fmtWeek, nf, plural, t } from "./i18n.ts";
+import {
+  a11y,
+  compact,
+  fill,
+  fmtSpan,
+  fmtWeek,
+  nf,
+  plural,
+  t,
+} from "./i18n.ts";
 import { END, STUDENT_WEEKS, type StudentWeek } from "./data.ts";
 import {
   METRICS,
@@ -40,6 +49,7 @@ import { THEME, alpha, gapSegment, track } from "./canvas.ts";
 import { noteText } from "./notes.ts";
 import { el } from "./dom.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
+import { fromChart, keyboardChart } from "./a11y.ts";
 
 /* ------------------------------------------------------------------- types */
 
@@ -815,19 +825,37 @@ interface LegendEntry {
   off: () => void;
 }
 
-/** One builder for both legends; `pointerdown` makes the highlight reachable on touch. */
+/** Latched highlight: focus previews, click pins, aria-pressed reports it. */
 function legend(host: HTMLElement, entries: readonly LegendEntry[]): void {
+  let pinned: number | null = null;
+
   host.replaceChildren(
-    ...entries.map(({ text, color, on, off }) => {
+    ...entries.map(({ text, color, dash, on, off }, idx) => {
       const button = el("button");
       button.type = "button";
+      button.setAttribute("aria-pressed", "false");
+
       const swatch = el("span", "swatch");
-      swatch.style.background = color;
+      swatch.style.background = dash?.length
+        ? `repeating-linear-gradient(90deg, ${color} 0 3px, transparent 3px 6px)`
+        : color;
       button.append(swatch, document.createTextNode(text));
+
+      button.addEventListener("click", () => {
+        pinned = pinned === idx ? null : idx;
+        button.setAttribute("aria-pressed", String(pinned === idx));
+        pinned === null ? off() : on();
+      });
       for (const ev of ["mouseenter", "focus", "pointerdown"] as const)
         button.addEventListener(ev, on);
       for (const ev of ["mouseleave", "blur"] as const)
-        button.addEventListener(ev, off);
+        button.addEventListener(ev, () => {
+          if (pinned === idx) return; // a pinned highlight survives blur
+          off();
+          host.querySelectorAll("[aria-pressed]").forEach((b, j) => {
+            if (j !== pinned) b.setAttribute("aria-pressed", "false");
+          });
+        });
       return button;
     }),
   );
@@ -846,18 +874,18 @@ function observations(ep: Episode): string {
   });
 }
 
-function panelFigure(
-  strip: string,
-  meta: string,
-  note?: string,
-): { figure: HTMLElement; canvas: HTMLCanvasElement } {
+function panelFigure(strip: string, meta: string, note?: string) {
   const figure = el("figure", "trellis-panel");
   const caption = el("figcaption");
-  caption.append(el("span", "strip", strip), el("span", "strip-meta", meta));
+  const title = el("span", "strip", strip);
+  title.id = `strip-${crypto.randomUUID().slice(0, 8)}`;
+  caption.append(title, el("span", "strip-meta", meta));
   if (note) caption.append(el("p", "strip-note", note));
 
   const box = el("div", "panel-canvas");
   const canvas = el("canvas");
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-labelledby", title.id); // panel name = series name
   box.append(canvas);
   figure.append(caption, box);
   return { figure, canvas };
@@ -945,6 +973,37 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
       }),
     );
 
+    function decoratePanel(
+      chart: Chart,
+      figure: HTMLElement,
+      title: string,
+    ): void {
+      figure.append(
+        fromChart(chart, {
+          caption: fill(a11y().tableCaption, { title }),
+          indexHeader: a11y().weekHeader,
+          indexOf: (ds, i) =>
+            String((ds as { data: (Pt | null)[] }).data[i]?.t ?? "—"),
+        }),
+      );
+      keyboardChart(chart, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole,
+        readout: (i) =>
+          ((chart.data.datasets[0]?.data as (Pt | null)[] | undefined)?.[i]
+            ?.t ?? String(i + 1)) +
+          ". " +
+          chart.data.datasets
+            .map((d) => {
+              const p = (d.data as (Pt | null)[])[i];
+              return p
+                ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}–${p.high}`}`
+                : `${d.label}: —`;
+            })
+            .join(". "),
+      });
+    }
+
     canvas.addEventListener("mouseleave", () => emphasiseItem(null));
     episodePanels.push(chart);
   });
@@ -979,6 +1038,37 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
         plugins: [],
       }),
     );
+
+    function decoratePanel(
+      chart: Chart,
+      figure: HTMLElement,
+      title: string,
+    ): void {
+      figure.append(
+        fromChart(chart, {
+          caption: fill(a11y().tableCaption, { title }),
+          indexHeader: a11y().weekHeader,
+          indexOf: (ds, i) =>
+            String((ds as { data: (Pt | null)[] }).data[i]?.t ?? "—"),
+        }),
+      );
+      keyboardChart(chart, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole,
+        readout: (i) =>
+          ((chart.data.datasets[0]?.data as (Pt | null)[] | undefined)?.[i]
+            ?.t ?? String(i + 1)) +
+          ". " +
+          chart.data.datasets
+            .map((d) => {
+              const p = (d.data as (Pt | null)[])[i];
+              return p
+                ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}–${p.high}`}`
+                : `${d.label}: —`;
+            })
+            .join(". "),
+      });
+    }
 
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas.addEventListener("mousemove", (ev) => {

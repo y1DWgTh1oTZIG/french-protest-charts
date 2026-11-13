@@ -266,7 +266,7 @@ function fmtWeek(start, end) {
 var ISO_ANY = /\d{4}-\d{2}-\d{2}/;
 var ISO_ALL = /\b(\d{4}-\d{2}-\d{2})\b/g;
 function fmtSpan(span, end) {
-  const sep = t("span.sep");
+  const sep = t2("span.sep");
   if (typeof span === "string") {
     if (end !== void 0) return `${fmtDayMonth(span)}${sep}${fmtDate(end)}`;
     return ISO_ANY.test(span) ? span.replace(ISO_ALL, (m) => fmtDayMonth(m)) : span;
@@ -1160,7 +1160,7 @@ function catalogueFor(forLang) {
   tolerant.set(forLang, proxy);
   return proxy;
 }
-function t(key, params) {
+function t2(key, params) {
   if (key === void 0) return catalogueFor(current);
   const template = DICT[current][key] ?? DICT.en[key];
   if (template === void 0) {
@@ -1272,6 +1272,29 @@ function syncLangSwitch(root = document) {
     b.tabIndex = on ? 0 : -1;
   }
 }
+var A11Y = {
+  en: {
+    about: "Notes on this project",
+    chart: "Chart",
+    chartRole: "chart",
+    chartHint: "Interactive chart. Use the left and right arrow keys to step through data points, Home and End for the ends, Escape to clear. A table of the same data follows the chart.",
+    tableCaption: "Data for \u201C{title}\u201D",
+    dateHeader: "Date",
+    weekHeader: "Week",
+    switched: "Page language: {lang}. Charts redrawn."
+  },
+  fr: {
+    about: "Notes sur ce projet",
+    chart: "Graphique",
+    chartRole: "graphique",
+    chartHint: "Graphique interactif. Utilisez les fl\xE8ches gauche et droite pour parcourir les points, D\xE9but et Fin pour les extr\xE9mit\xE9s, \xC9chap pour quitter. Un tableau des m\xEAmes donn\xE9es suit le graphique.",
+    tableCaption: "Donn\xE9es de \xAB {title} \xBB",
+    dateHeader: "Date",
+    weekHeader: "Semaine",
+    switched: "Langue de la page : {lang}. Graphiques redessin\xE9s."
+  }
+};
+var a11y = () => A11Y[current];
 
 // node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
@@ -1672,15 +1695,15 @@ function rgbString(v) {
 }
 var to = (v) => v <= 31308e-7 ? v * 12.92 : Math.pow(v, 1 / 2.4) * 1.055 - 0.055;
 var from = (v) => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-function interpolate(rgb1, rgb2, t2) {
+function interpolate(rgb1, rgb2, t3) {
   const r = from(b2n(rgb1.r));
   const g = from(b2n(rgb1.g));
   const b = from(b2n(rgb1.b));
   return {
-    r: n2b(to(r + t2 * (from(b2n(rgb2.r)) - r))),
-    g: n2b(to(g + t2 * (from(b2n(rgb2.g)) - g))),
-    b: n2b(to(b + t2 * (from(b2n(rgb2.b)) - b))),
-    a: rgb1.a + t2 * (rgb2.a - rgb1.a)
+    r: n2b(to(r + t3 * (from(b2n(rgb2.r)) - r))),
+    g: n2b(to(g + t3 * (from(b2n(rgb2.g)) - g))),
+    b: n2b(to(b + t3 * (from(b2n(rgb2.b)) - b))),
+    a: rgb1.a + t3 * (rgb2.a - rgb1.a)
   };
 }
 function modHSL(v, i, ratio) {
@@ -1772,9 +1795,9 @@ var Color = class _Color {
     }
     return this;
   }
-  interpolate(color2, t2) {
+  interpolate(color2, t3) {
     if (color2) {
-      this._rgb = interpolate(this._rgb, color2._rgb, t2);
+      this._rgb = interpolate(this._rgb, color2._rgb, t3);
     }
     return this;
   }
@@ -2348,70 +2371,70 @@ function _scaleRangesChanged(meta) {
   Object.assign(_scaleRanges, newRanges);
   return changed;
 }
-var atEdge = (t2) => t2 === 0 || t2 === 1;
-var elasticIn = (t2, s, p) => -(Math.pow(2, 10 * (t2 -= 1)) * Math.sin((t2 - s) * TAU / p));
-var elasticOut = (t2, s, p) => Math.pow(2, -10 * t2) * Math.sin((t2 - s) * TAU / p) + 1;
+var atEdge = (t3) => t3 === 0 || t3 === 1;
+var elasticIn = (t3, s, p) => -(Math.pow(2, 10 * (t3 -= 1)) * Math.sin((t3 - s) * TAU / p));
+var elasticOut = (t3, s, p) => Math.pow(2, -10 * t3) * Math.sin((t3 - s) * TAU / p) + 1;
 var effects = {
-  linear: (t2) => t2,
-  easeInQuad: (t2) => t2 * t2,
-  easeOutQuad: (t2) => -t2 * (t2 - 2),
-  easeInOutQuad: (t2) => (t2 /= 0.5) < 1 ? 0.5 * t2 * t2 : -0.5 * (--t2 * (t2 - 2) - 1),
-  easeInCubic: (t2) => t2 * t2 * t2,
-  easeOutCubic: (t2) => (t2 -= 1) * t2 * t2 + 1,
-  easeInOutCubic: (t2) => (t2 /= 0.5) < 1 ? 0.5 * t2 * t2 * t2 : 0.5 * ((t2 -= 2) * t2 * t2 + 2),
-  easeInQuart: (t2) => t2 * t2 * t2 * t2,
-  easeOutQuart: (t2) => -((t2 -= 1) * t2 * t2 * t2 - 1),
-  easeInOutQuart: (t2) => (t2 /= 0.5) < 1 ? 0.5 * t2 * t2 * t2 * t2 : -0.5 * ((t2 -= 2) * t2 * t2 * t2 - 2),
-  easeInQuint: (t2) => t2 * t2 * t2 * t2 * t2,
-  easeOutQuint: (t2) => (t2 -= 1) * t2 * t2 * t2 * t2 + 1,
-  easeInOutQuint: (t2) => (t2 /= 0.5) < 1 ? 0.5 * t2 * t2 * t2 * t2 * t2 : 0.5 * ((t2 -= 2) * t2 * t2 * t2 * t2 + 2),
-  easeInSine: (t2) => -Math.cos(t2 * HALF_PI) + 1,
-  easeOutSine: (t2) => Math.sin(t2 * HALF_PI),
-  easeInOutSine: (t2) => -0.5 * (Math.cos(PI * t2) - 1),
-  easeInExpo: (t2) => t2 === 0 ? 0 : Math.pow(2, 10 * (t2 - 1)),
-  easeOutExpo: (t2) => t2 === 1 ? 1 : -Math.pow(2, -10 * t2) + 1,
-  easeInOutExpo: (t2) => atEdge(t2) ? t2 : t2 < 0.5 ? 0.5 * Math.pow(2, 10 * (t2 * 2 - 1)) : 0.5 * (-Math.pow(2, -10 * (t2 * 2 - 1)) + 2),
-  easeInCirc: (t2) => t2 >= 1 ? t2 : -(Math.sqrt(1 - t2 * t2) - 1),
-  easeOutCirc: (t2) => Math.sqrt(1 - (t2 -= 1) * t2),
-  easeInOutCirc: (t2) => (t2 /= 0.5) < 1 ? -0.5 * (Math.sqrt(1 - t2 * t2) - 1) : 0.5 * (Math.sqrt(1 - (t2 -= 2) * t2) + 1),
-  easeInElastic: (t2) => atEdge(t2) ? t2 : elasticIn(t2, 0.075, 0.3),
-  easeOutElastic: (t2) => atEdge(t2) ? t2 : elasticOut(t2, 0.075, 0.3),
-  easeInOutElastic(t2) {
+  linear: (t3) => t3,
+  easeInQuad: (t3) => t3 * t3,
+  easeOutQuad: (t3) => -t3 * (t3 - 2),
+  easeInOutQuad: (t3) => (t3 /= 0.5) < 1 ? 0.5 * t3 * t3 : -0.5 * (--t3 * (t3 - 2) - 1),
+  easeInCubic: (t3) => t3 * t3 * t3,
+  easeOutCubic: (t3) => (t3 -= 1) * t3 * t3 + 1,
+  easeInOutCubic: (t3) => (t3 /= 0.5) < 1 ? 0.5 * t3 * t3 * t3 : 0.5 * ((t3 -= 2) * t3 * t3 + 2),
+  easeInQuart: (t3) => t3 * t3 * t3 * t3,
+  easeOutQuart: (t3) => -((t3 -= 1) * t3 * t3 * t3 - 1),
+  easeInOutQuart: (t3) => (t3 /= 0.5) < 1 ? 0.5 * t3 * t3 * t3 * t3 : -0.5 * ((t3 -= 2) * t3 * t3 * t3 - 2),
+  easeInQuint: (t3) => t3 * t3 * t3 * t3 * t3,
+  easeOutQuint: (t3) => (t3 -= 1) * t3 * t3 * t3 * t3 + 1,
+  easeInOutQuint: (t3) => (t3 /= 0.5) < 1 ? 0.5 * t3 * t3 * t3 * t3 * t3 : 0.5 * ((t3 -= 2) * t3 * t3 * t3 * t3 + 2),
+  easeInSine: (t3) => -Math.cos(t3 * HALF_PI) + 1,
+  easeOutSine: (t3) => Math.sin(t3 * HALF_PI),
+  easeInOutSine: (t3) => -0.5 * (Math.cos(PI * t3) - 1),
+  easeInExpo: (t3) => t3 === 0 ? 0 : Math.pow(2, 10 * (t3 - 1)),
+  easeOutExpo: (t3) => t3 === 1 ? 1 : -Math.pow(2, -10 * t3) + 1,
+  easeInOutExpo: (t3) => atEdge(t3) ? t3 : t3 < 0.5 ? 0.5 * Math.pow(2, 10 * (t3 * 2 - 1)) : 0.5 * (-Math.pow(2, -10 * (t3 * 2 - 1)) + 2),
+  easeInCirc: (t3) => t3 >= 1 ? t3 : -(Math.sqrt(1 - t3 * t3) - 1),
+  easeOutCirc: (t3) => Math.sqrt(1 - (t3 -= 1) * t3),
+  easeInOutCirc: (t3) => (t3 /= 0.5) < 1 ? -0.5 * (Math.sqrt(1 - t3 * t3) - 1) : 0.5 * (Math.sqrt(1 - (t3 -= 2) * t3) + 1),
+  easeInElastic: (t3) => atEdge(t3) ? t3 : elasticIn(t3, 0.075, 0.3),
+  easeOutElastic: (t3) => atEdge(t3) ? t3 : elasticOut(t3, 0.075, 0.3),
+  easeInOutElastic(t3) {
     const s = 0.1125;
     const p = 0.45;
-    return atEdge(t2) ? t2 : t2 < 0.5 ? 0.5 * elasticIn(t2 * 2, s, p) : 0.5 + 0.5 * elasticOut(t2 * 2 - 1, s, p);
+    return atEdge(t3) ? t3 : t3 < 0.5 ? 0.5 * elasticIn(t3 * 2, s, p) : 0.5 + 0.5 * elasticOut(t3 * 2 - 1, s, p);
   },
-  easeInBack(t2) {
+  easeInBack(t3) {
     const s = 1.70158;
-    return t2 * t2 * ((s + 1) * t2 - s);
+    return t3 * t3 * ((s + 1) * t3 - s);
   },
-  easeOutBack(t2) {
+  easeOutBack(t3) {
     const s = 1.70158;
-    return (t2 -= 1) * t2 * ((s + 1) * t2 + s) + 1;
+    return (t3 -= 1) * t3 * ((s + 1) * t3 + s) + 1;
   },
-  easeInOutBack(t2) {
+  easeInOutBack(t3) {
     let s = 1.70158;
-    if ((t2 /= 0.5) < 1) {
-      return 0.5 * (t2 * t2 * (((s *= 1.525) + 1) * t2 - s));
+    if ((t3 /= 0.5) < 1) {
+      return 0.5 * (t3 * t3 * (((s *= 1.525) + 1) * t3 - s));
     }
-    return 0.5 * ((t2 -= 2) * t2 * (((s *= 1.525) + 1) * t2 + s) + 2);
+    return 0.5 * ((t3 -= 2) * t3 * (((s *= 1.525) + 1) * t3 + s) + 2);
   },
-  easeInBounce: (t2) => 1 - effects.easeOutBounce(1 - t2),
-  easeOutBounce(t2) {
+  easeInBounce: (t3) => 1 - effects.easeOutBounce(1 - t3),
+  easeOutBounce(t3) {
     const m = 7.5625;
     const d = 2.75;
-    if (t2 < 1 / d) {
-      return m * t2 * t2;
+    if (t3 < 1 / d) {
+      return m * t3 * t3;
     }
-    if (t2 < 2 / d) {
-      return m * (t2 -= 1.5 / d) * t2 + 0.75;
+    if (t3 < 2 / d) {
+      return m * (t3 -= 1.5 / d) * t3 + 0.75;
     }
-    if (t2 < 2.5 / d) {
-      return m * (t2 -= 2.25 / d) * t2 + 0.9375;
+    if (t3 < 2.5 / d) {
+      return m * (t3 -= 2.25 / d) * t3 + 0.9375;
     }
-    return m * (t2 -= 2.625 / d) * t2 + 0.984375;
+    return m * (t3 -= 2.625 / d) * t3 + 0.984375;
   },
-  easeInOutBounce: (t2) => t2 < 0.5 ? effects.easeInBounce(t2 * 2) * 0.5 : effects.easeOutBounce(t2 * 2 - 1) * 0.5 + 0.5
+  easeInOutBounce: (t3) => t3 < 0.5 ? effects.easeInBounce(t3 * 2) * 0.5 : effects.easeOutBounce(t3 * 2 - 1) * 0.5 + 0.5
 };
 function isPatternOrGradient(value) {
   if (value && typeof value === "object") {
@@ -3492,7 +3515,7 @@ function resolveKeysFromAllScopes(scopes) {
 var EPSILON = Number.EPSILON || 1e-14;
 var getPoint = (points, i) => i < points.length && !points[i].skip && points[i];
 var getValueAxis = (indexAxis) => indexAxis === "x" ? "y" : "x";
-function splineCurve(firstPoint, middlePoint, afterPoint, t2) {
+function splineCurve(firstPoint, middlePoint, afterPoint, t3) {
   const previous = firstPoint.skip ? middlePoint : firstPoint;
   const current2 = middlePoint;
   const next = afterPoint.skip ? middlePoint : afterPoint;
@@ -3502,8 +3525,8 @@ function splineCurve(firstPoint, middlePoint, afterPoint, t2) {
   let s12 = d12 / (d01 + d12);
   s01 = isNaN(s01) ? 0 : s01;
   s12 = isNaN(s12) ? 0 : s12;
-  const fa = t2 * s01;
-  const fb = t2 * s12;
+  const fa = t3 * s01;
+  const fb = t3 * s12;
   return {
     previous: {
       x: current2.x - fa * (next.x - previous.x),
@@ -3823,19 +3846,19 @@ function readUsedSize(element, property) {
   const matches = value && value.match(/^(\d+)(\.\d+)?px$/);
   return matches ? +matches[1] : void 0;
 }
-function _pointInLine(p1, p2, t2, mode) {
+function _pointInLine(p1, p2, t3, mode) {
   return {
-    x: p1.x + t2 * (p2.x - p1.x),
-    y: p1.y + t2 * (p2.y - p1.y)
+    x: p1.x + t3 * (p2.x - p1.x),
+    y: p1.y + t3 * (p2.y - p1.y)
   };
 }
-function _steppedInterpolation(p1, p2, t2, mode) {
+function _steppedInterpolation(p1, p2, t3, mode) {
   return {
-    x: p1.x + t2 * (p2.x - p1.x),
-    y: mode === "middle" ? t2 < 0.5 ? p1.y : p2.y : mode === "after" ? t2 < 1 ? p1.y : p2.y : t2 > 0 ? p2.y : p1.y
+    x: p1.x + t3 * (p2.x - p1.x),
+    y: mode === "middle" ? t3 < 0.5 ? p1.y : p2.y : mode === "after" ? t3 < 1 ? p1.y : p2.y : t3 > 0 ? p2.y : p1.y
   };
 }
-function _bezierInterpolation(p1, p2, t2, mode) {
+function _bezierInterpolation(p1, p2, t3, mode) {
   const cp1 = {
     x: p1.cp2x,
     y: p1.cp2y
@@ -3844,12 +3867,12 @@ function _bezierInterpolation(p1, p2, t2, mode) {
     x: p2.cp1x,
     y: p2.cp1y
   };
-  const a = _pointInLine(p1, cp1, t2);
-  const b = _pointInLine(cp1, cp2, t2);
-  const c = _pointInLine(cp2, p2, t2);
-  const d = _pointInLine(a, b, t2);
-  const e = _pointInLine(b, c, t2);
-  return _pointInLine(d, e, t2);
+  const a = _pointInLine(p1, cp1, t3);
+  const b = _pointInLine(cp1, cp2, t3);
+  const c = _pointInLine(cp2, p2, t3);
+  const d = _pointInLine(a, b, t3);
+  const e = _pointInLine(b, c, t3);
+  return _pointInLine(d, e, t3);
 }
 var getRightToLeftAdapter = function(rectX, width) {
   return {
@@ -4625,17 +4648,17 @@ function defaultClip(xScale2, yScale2, allowedOverflow) {
   };
 }
 function toClip(value) {
-  let t2, r, b, l;
+  let t3, r, b, l;
   if (isObject(value)) {
-    t2 = value.top;
+    t3 = value.top;
     r = value.right;
     b = value.bottom;
     l = value.left;
   } else {
-    t2 = r = b = l = value;
+    t3 = r = b = l = value;
   }
   return {
-    top: t2,
+    top: t3,
     right: r,
     bottom: b,
     left: l,
@@ -7605,7 +7628,7 @@ var Scale = class _Scale extends Element {
       return 0;
     }
     const ticks = this.ticks;
-    const index = ticks.findIndex((t2) => t2.value === value);
+    const index = ticks.findIndex((t3) => t3.value === value);
     if (index >= 0) {
       const opts = grid.setContext(this.getContext(index));
       return opts.lineWidth;
@@ -9582,8 +9605,8 @@ var LineElement = class extends Element {
         result.push(p1);
         continue;
       }
-      const t2 = Math.abs((value - p1[property]) / (p2[property] - p1[property]));
-      const interpolated = _interpolate(p1, p2, t2, options.stepped);
+      const t3 = Math.abs((value - p1[property]) / (p2[property] - p1[property]));
+      const interpolated = _interpolate(p1, p2, t3, options.stepped);
       interpolated[property] = point[property];
       result.push(interpolated);
     }
@@ -12984,11 +13007,13 @@ var TimeSeriesScale = class extends TimeScale {
 var THEME = {
   ink: "#111827",
   label: "#4b5563",
-  muted: "#6b7280",
+  muted: "#5b6470",
+  // was #6b7280: 6.0:1, safe for 11 px labels
   grid: "#E5E5E5",
   axisGrid: "rgba(17,24,23,0.06)",
   hollow: "#ffffff",
-  dim: 0.18
+  dim: 0.45
+  // was 0.18 → ≈1.3:1, i.e. invisible
 };
 function alpha2(hex2, a) {
   const m = /^#([0-9a-f]{6})$/i.exec(hex2);
@@ -13701,7 +13726,7 @@ function el(name, cls, text) {
 // src/client/notes.ts
 function noteText(ref) {
   if (!ref) return "";
-  const m = t().chart;
+  const m = t2().chart;
   switch (ref.k) {
     case "obs":
       return m.obsNotes[ref.date]?.[ref.metric] ?? "";
@@ -13739,9 +13764,9 @@ function noteText(ref) {
   }
 }
 function suffixFor(q, detached) {
-  const s = t().chart.suffix;
+  const s = t2().chart.suffix;
   const text = q === "c" ? s.c : q === "w" ? s.w : q === "e" ? s.e : q === "f" ? s.f : q === "x" ? s.x : detached ? s.regional : "";
-  return text ? fill(t().chart.suffixWrap, { text }) : "";
+  return text ? fill(t2().chart.suffixWrap, { text }) : "";
 }
 
 // src/client/tooltip.ts
@@ -13821,6 +13846,173 @@ function wrapTooltipLines(text, item, part = "body") {
     part !== "body"
   );
   return wrapText(text, textWidth(chart, tt), font);
+}
+
+// src/client/a11y.ts
+var live2 = null;
+var timer = 0;
+function region() {
+  if (live2?.isConnected) return live2;
+  live2 = document.getElementById("a11y-live");
+  if (!live2) {
+    live2 = document.createElement("p");
+    live2.id = "a11y-live";
+    live2.className = "sr-only";
+    live2.setAttribute("role", "status");
+    live2.setAttribute("aria-live", "polite");
+    live2.setAttribute("aria-atomic", "true");
+    document.body.append(live2);
+  }
+  return live2;
+}
+function announce(text) {
+  const r = region();
+  r.textContent = "";
+  window.clearTimeout(timer);
+  timer = window.setTimeout(() => r.textContent = text, 120);
+}
+var txt = (v) => {
+  if (v == null) return "\u2014";
+  if (typeof v === "number") return nf().format(Math.round(v));
+  if (typeof v === "object") {
+    const p = v;
+    if (typeof p.low === "number" && typeof p.high === "number")
+      return p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
+    for (const n of [p.v, p.y])
+      if (typeof n === "number") return nf().format(Math.round(n));
+  }
+  return String(v);
+};
+function dataTable(spec) {
+  const details = document.createElement("details");
+  details.className = "data-table";
+  const summary = document.createElement("summary");
+  summary.textContent = spec.caption;
+  const table = document.createElement("table");
+  const cap = document.createElement("caption");
+  cap.className = "sr-only";
+  cap.textContent = spec.caption;
+  const head = table.createTHead().insertRow();
+  for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = h;
+    head.append(th);
+  }
+  const body = table.createTBody();
+  spec.index.forEach((label, i) => {
+    const tr = body.insertRow();
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = label;
+    tr.append(th);
+    for (const c of spec.columns)
+      tr.insertCell().textContent = c.values[i] ?? "\u2014";
+  });
+  table.append();
+  details.append(summary, table);
+  return details;
+}
+function fromChart(chart, opts) {
+  const data = chart.data;
+  const sets = data.datasets.filter(
+    (d) => opts.include?.(d) ?? true
+  );
+  const labels = (data.labels ?? []).map(String);
+  const n = labels.length || Math.max(
+    0,
+    ...sets.map((d) => (d.data ?? []).length)
+  );
+  return dataTable({
+    caption: opts.caption,
+    indexHeader: opts.indexHeader,
+    index: Array.from(
+      { length: n },
+      (_, i) => opts.indexOf?.(sets[0], i) ?? labels[i] ?? String(i + 1)
+    ),
+    columns: sets.map((d) => {
+      const ds = d;
+      return {
+        header: String(ds.label ?? ""),
+        values: Array.from({ length: n }, (_, i) => txt(ds.data?.[i]))
+      };
+    })
+  });
+}
+function readout(chart, i) {
+  const label = chart.data.labels?.[i] ?? "";
+  const parts = chart.data.datasets.filter((d) => !d.detachedOnly).map((d) => {
+    const ds = d;
+    return `${ds.label}: ${txt(ds.data?.[i])}`;
+  });
+  return [label, ...parts].join(". ");
+}
+var seq = 0;
+function keyboardChart(chart, opts) {
+  const canvas = chart.canvas;
+  const n = chart.data.labels?.length ?? 0;
+  if (!n) return;
+  const hintId = canvas.id ? `kbd-${canvas.id}` : `kbd-chart-${++seq}`;
+  if (!document.getElementById(hintId)) {
+    const hint = document.createElement("p");
+    hint.id = hintId;
+    hint.className = "sr-only";
+    hint.textContent = opts.hint;
+    canvas.after(hint);
+  }
+  canvas.tabIndex = 0;
+  canvas.setAttribute("aria-roledescription", opts.roledescription);
+  const ids = new Set(
+    (canvas.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
+  );
+  ids.add(hintId);
+  canvas.setAttribute("aria-describedby", [...ids].join(" "));
+  const speak = opts.readout ?? ((i) => readout(chart, i));
+  let at = -1;
+  const paint = (next) => {
+    if (next === null || next < 0 || next >= n) {
+      at = -1;
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      chart.update("none");
+      return;
+    }
+    at = next;
+    const els = chart.data.datasets.map((_, datasetIndex) => ({
+      datasetIndex,
+      index: at
+    }));
+    const pt = chart.getDatasetMeta(0).data[at];
+    chart.setActiveElements(els);
+    chart.tooltip.setActiveElements(els, { x: pt?.x ?? 0, y: pt?.y ?? 0 });
+    chart.update("none");
+    announce(speak(at));
+  };
+  canvas.addEventListener("keydown", (ev) => {
+    switch (ev.key) {
+      case "ArrowRight":
+      case "ArrowUp":
+        paint(at < 0 ? 0 : Math.min(n - 1, at + 1));
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        paint(at < 0 ? n - 1 : Math.max(0, at - 1));
+        break;
+      case "Home":
+        paint(0);
+        break;
+      case "End":
+        paint(n - 1);
+        break;
+      case "Escape":
+        paint(null);
+        break;
+      default:
+        return;
+    }
+    ev.preventDefault();
+  });
+  canvas.addEventListener("blur", () => paint(null));
 }
 
 // src/client/chart.ts
@@ -13981,7 +14173,7 @@ var CHARTS = [
   }
 ];
 function view(weekly) {
-  const c = t().chart;
+  const c = t2().chart;
   return weekly ? {
     labels: WEEKS.map(
       (w) => fmtWeek(w.key, w.end) + (w.touchesEdge ? c.edgeMark : "")
@@ -14019,7 +14211,7 @@ function datasetsFor(id, weekly) {
     const r = def.pointRadius?.[i] ?? def.radius;
     return r === 0 ? 0 : r + bump;
   };
-  const copy = t().chart.series[id];
+  const copy = t2().chart.series[id];
   const axis = def.axis ?? LEFT;
   const plot = (keep) => def.data.map((p) => keep(p) ? p.v : null);
   const bands = (keep) => def.data.map((p) => keep(p) ? p.band : null);
@@ -14305,11 +14497,11 @@ var spanMark = {
   }
 };
 function fmt(v, unit) {
-  return unit === "eurM" ? fill(t().chart.eurM, { v: eurM().format(v) }) : nf().format(Math.round(v));
+  return unit === "eurM" ? fill(t2().chart.eurM, { v: eurM().format(v) }) : nf().format(Math.round(v));
 }
-var tickFormat = (unit) => (v) => unit === "eurM" ? fill(t().chart.eurM, { v: nf().format(v) }) : compact().format(v);
+var tickFormat = (unit) => (v) => unit === "eurM" ? fill(t2().chart.eurM, { v: nf().format(v) }) : compact().format(v);
 function tooltipCallbacks(v) {
-  const m = t().chart;
+  const m = t2().chart;
   return {
     title: (items) => wrapTooltipLines(v.titles[items[0].dataIndex] ?? "", items[0], "title"),
     label: (item) => {
@@ -14435,7 +14627,7 @@ function baseScales(v) {
         maxRotation: v.maxRotation,
         autoSkip: true,
         maxTicksLimit: v.maxTicksLimit,
-        font: { size: 10 },
+        font: { size: 12 },
         color: THEME.muted,
         padding: 4
       }
@@ -14495,14 +14687,14 @@ var shell = (v, subtitle, title, extra) => ({
       display: true,
       text: subtitle,
       color: THEME.muted,
-      font: { size: 11 },
+      font: { size: 12 },
       padding: { top: 0, bottom: 8 }
     },
     title: {
       display: true,
       text: title,
       color: THEME.ink,
-      font: { size: 15, weight: "bold" },
+      font: { size: 16, weight: "bold" },
       padding: { top: 0, bottom: 2 }
     },
     tooltip: { callbacks: tooltipCallbacks(v) },
@@ -14510,7 +14702,7 @@ var shell = (v, subtitle, title, extra) => ({
   }
 });
 function buildChart(spec) {
-  const card = t().chart.charts[spec.copy];
+  const card = t2().chart.charts[spec.copy];
   const v = view(spec.weekly);
   return {
     data: {
@@ -14563,9 +14755,22 @@ function mountCharts() {
       continue;
     }
     try {
-      const title = t().chart.charts[spec.copy].title;
-      canvas.setAttribute("aria-label", title);
-      mount(canvas, buildChart(spec));
+      const copy = t2().chart.charts[spec.copy];
+      const name = copy.subtitle ? `${copy.title}. ${copy.subtitle}` : copy.title;
+      canvas.setAttribute("aria-label", name);
+      canvas.setAttribute("role", "img");
+      const chart = mount(canvas, buildChart(spec));
+      const host = canvas.closest("figure") ?? canvas.parentElement;
+      host?.querySelector(".data-table")?.remove();
+      const table = fromChart(chart, {
+        caption: fill(a11y().tableCaption, { title: copy.title }),
+        indexHeader: a11y().dateHeader
+      });
+      host?.append(table);
+      keyboardChart(chart, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole
+      });
     } catch (err) {
       console.error(`[${spec.id}]`, err);
     }
@@ -14869,7 +15074,7 @@ var ENFORCEMENT_LAST = EPISODES.reduce(
   0
 );
 function rowTitle(ep, r) {
-  const m = t();
+  const m = t2();
   if (ep.id === "students26") {
     const base = fmtWeek(r.from, r.to);
     return r.partial ? fill(m.panels.partialWeek, { label: base }) : base;
@@ -14880,9 +15085,9 @@ function rowTitle(ep, r) {
 }
 function noteFor(id, r, m) {
   if (id === "students26") {
-    return noteText(r.noteRef?.[m]) || t().episodes.students26.fallbackNote?.[m];
+    return noteText(r.noteRef?.[m]) || t2().episodes.students26.fallbackNote?.[m];
   }
-  return t().episodes[id].weeks[r.w]?.note?.[m];
+  return t2().episodes[id].weeks[r.w]?.note?.[m];
 }
 var seriesCache = /* @__PURE__ */ new Map();
 function seriesData(ep, key) {
@@ -14916,7 +15121,7 @@ function buildDataset(ep, epIndex, key, color2, maxX) {
   const points = all.filter((p) => p.x <= maxX);
   if (!points.length) return null;
   return {
-    label: t().items[key].label,
+    label: t2().items[key].label,
     data: points,
     borderColor: color2,
     backgroundColor: color2,
@@ -15028,7 +15233,7 @@ var pctOf = (v, base) => {
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
 function tooltipSpec() {
-  const m = t();
+  const m = t2();
   return {
     displayColors: false,
     callbacks: {
@@ -15098,23 +15303,36 @@ function emphasiseEvent(index) {
   );
 }
 function legend(host, entries) {
+  let pinned = null;
   host.replaceChildren(
-    ...entries.map(({ text, color: color2, on, off }) => {
+    ...entries.map(({ text, color: color2, dash, on, off }, idx) => {
       const button = el("button");
       button.type = "button";
+      button.setAttribute("aria-pressed", "false");
       const swatch = el("span", "swatch");
-      swatch.style.background = color2;
+      swatch.style.background = dash?.length ? `repeating-linear-gradient(90deg, ${color2} 0 3px, transparent 3px 6px)` : color2;
       button.append(swatch, document.createTextNode(text));
+      button.addEventListener("click", () => {
+        pinned = pinned === idx ? null : idx;
+        button.setAttribute("aria-pressed", String(pinned === idx));
+        pinned === null ? off() : on();
+      });
       for (const ev of ["mouseenter", "focus", "pointerdown"])
         button.addEventListener(ev, on);
       for (const ev of ["mouseleave", "blur"])
-        button.addEventListener(ev, off);
+        button.addEventListener(ev, () => {
+          if (pinned === idx) return;
+          off();
+          host.querySelectorAll("[aria-pressed]").forEach((b, j) => {
+            if (j !== pinned) b.setAttribute("aria-pressed", "false");
+          });
+        });
       return button;
     })
   );
 }
 function observations(ep) {
-  const m = t();
+  const m = t2();
   const counts = METRICS.map(
     (k) => ep.weeks.filter((r) => r[k] !== void 0).length
   ).join("\xB7");
@@ -15126,10 +15344,14 @@ function observations(ep) {
 function panelFigure(strip, meta, note2) {
   const figure = el("figure", "trellis-panel");
   const caption = el("figcaption");
-  caption.append(el("span", "strip", strip), el("span", "strip-meta", meta));
+  const title = el("span", "strip", strip);
+  title.id = `strip-${crypto.randomUUID().slice(0, 8)}`;
+  caption.append(title, el("span", "strip-meta", meta));
   if (note2) caption.append(el("p", "strip-note", note2));
   const box = el("div", "panel-canvas");
   const canvas = el("canvas");
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-labelledby", title.id);
   box.append(canvas);
   figure.append(caption, box);
   return { figure, canvas };
@@ -15161,7 +15383,7 @@ function mountCrossEpisode(opts) {
   seriesCache = /* @__PURE__ */ new Map();
   opts.episodeHost.replaceChildren();
   opts.itemHost.replaceChildren();
-  const m = t();
+  const m = t2();
   const unbounded = Number.POSITIVE_INFINITY;
   const [yMin, yMax] = logBounds(...rawExtent(EPISODES, METRICS, unbounded));
   const cols = columns(opts.episodeHost);
@@ -15194,6 +15416,23 @@ function mountCrossEpisode(opts) {
         // no per-panel labels: the episode is the panel title
       })
     );
+    function decoratePanel(chart2, figure2, title) {
+      figure2.append(
+        fromChart(chart2, {
+          caption: fill(a11y().tableCaption, { title }),
+          indexHeader: a11y().weekHeader,
+          indexOf: (ds, i) => String(ds.data[i]?.t ?? "\u2014")
+        })
+      );
+      keyboardChart(chart2, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole,
+        readout: (i) => (chart2.data.datasets[0]?.data?.[i]?.t ?? String(i + 1)) + ". " + chart2.data.datasets.map((d) => {
+          const p = d.data[i];
+          return p ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}\u2013${p.high}`}` : `${d.label}: \u2014`;
+        }).join(". ")
+      });
+    }
     canvas.addEventListener("mouseleave", () => emphasiseItem(null));
     episodePanels.push(chart);
   });
@@ -15222,6 +15461,23 @@ function mountCrossEpisode(opts) {
         plugins: []
       })
     );
+    function decoratePanel(chart2, figure2, title) {
+      figure2.append(
+        fromChart(chart2, {
+          caption: fill(a11y().tableCaption, { title }),
+          indexHeader: a11y().weekHeader,
+          indexOf: (ds, i) => String(ds.data[i]?.t ?? "\u2014")
+        })
+      );
+      keyboardChart(chart2, {
+        hint: a11y().chartHint,
+        roledescription: a11y().chartRole,
+        readout: (i) => (chart2.data.datasets[0]?.data?.[i]?.t ?? String(i + 1)) + ". " + chart2.data.datasets.map((d) => {
+          const p = d.data[i];
+          return p ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}\u2013${p.high}`}` : `${d.label}: \u2014`;
+        }).join(". ")
+      });
+    }
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas.addEventListener("mousemove", (ev) => {
       const pts = chart.getElementsAtEventForMode(
@@ -15868,7 +16124,7 @@ function note(id, text) {
 function disclaimer() {
   const host = $("disclaimer");
   if (!host) return;
-  host.textContent = t().disclaimer.body;
+  host.textContent = t2().disclaimer.body;
 }
 function renderChrome() {
   const m = localeMeta();
@@ -18153,7 +18409,10 @@ function boot() {
   }
   applyUrlLang();
   mountLangSwitch();
-  onLocaleChange(scheduleRender);
+  onLocaleChange((_next, _prev) => {
+    scheduleRender();
+    announce(fill(t().a11y.switched, { lang: localeMeta().label }));
+  });
   render();
   window.addEventListener("pagehide", destroyAll, { once: true });
 }
