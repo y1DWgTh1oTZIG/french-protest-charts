@@ -16401,7 +16401,6 @@ function renderChrome() {
   disclaimer();
   renderAbout();
   header("hdr-a", m.sections.a);
-  header("hdr-a", m.sections.a);
   header("hdr-b", m.sections.b);
   header("hdr-c", m.sections.c);
   header("hdr-cp", m.sections.cp);
