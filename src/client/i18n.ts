@@ -1458,12 +1458,11 @@ export interface TooltipCopy {
   readonly lineWithFlag: string;
   readonly firstFigure: string;
   readonly shareOfFirst: string;
-  /** "Comparisons: {list}" — one compact line instead of five clauses. */
+  /** "Comparisons: {list}" — one compact line. */
   readonly shareComparisons: string;
   readonly cmpHighest: string;
   readonly cmpMean: string;
   readonly cmpMedian: string;
-  readonly cmpMode: string;
   readonly cmpFirst: string;
   /** Joins the last item: "a, b and c" / "a, b et c". */
   readonly listAnd: string;
@@ -1523,7 +1522,6 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       cmpHighest: "highest",
       cmpMean: "mean",
       cmpMedian: "median",
-      cmpMode: "mode",
       cmpFirst: "first figure",
       listAnd: " and ",
     },
@@ -1569,7 +1567,6 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       cmpHighest: "le plus élevé",
       cmpMean: "moyenne",
       cmpMedian: "médiane",
-      cmpMode: "mode",
       cmpFirst: "premier chiffre",
       listAnd: " et ",
     },

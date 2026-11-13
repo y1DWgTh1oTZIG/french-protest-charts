@@ -67,13 +67,13 @@
   /* type scale */
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --fs-lg: 0.95rem;
-  --fs-body: clamp(0.875rem, 0.84rem + 0.12vw, 0.9375rem);
-  --fs-md: 0.85rem;
-  --fs-sm: 0.8rem;
-  --fs-xs: 0.75rem;
-  --fs-2xs: 0.6875rem;
-  --fs-3xs: 0.6563rem;
+  --fs-lg: 1.0625rem; /* was 0.95 */
+  --fs-body: clamp(1rem, 0.96rem + 0.14vw, 1.0625rem); /* was 0.875–0.9375 */
+  --fs-md: 0.9375rem; /* was 0.85 */
+  --fs-sm: 0.875rem; /* was 0.8 */
+  --fs-xs: 0.8125rem; /* was 0.75 */
+  --fs-2xs: 0.75rem; /* was 0.6875 */
+  --fs-3xs: 0.7188rem; /* was 0.6563 */
 
   /* rhythm */
   --gutter: clamp(12px, 2vw, 20px);
@@ -688,6 +688,28 @@ section {
     font-size: var(--fs-sm);
     color: var(--ink-4);
   }
+}
+
+/* The one section the author wrote by hand; the others are machine-drafted.
+   Thicker full border + a tinted summary header, no colour change to the text. */
+.about-group--featured {
+  border: 2px solid color-mix(in oklab, var(--accent) 45%, var(--line-3));
+  background: var(--surface);
+  /* compensates for the extra 1px so the body text stays aligned with the
+     other groups */
+  padding: calc(1rem - 1px) calc(1.1rem - 1px);
+}
+
+.about-group--featured > .about-summary {
+  background: color-mix(in oklab, var(--accent) 10%, var(--surface));
+  /* extra vertical padding, since the tint needs breathing room to read as a
+     header bar rather than as a highlighted line of text */
+  padding-block: 0.55rem;
+  border-radius: 6px;
+}
+
+.about-group--featured:not([open]) > .about-summary {
+  border-bottom: 0;
 }
 
 /* ---- sources ------------------------------------------------------------ */

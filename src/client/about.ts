@@ -32,8 +32,11 @@ interface SubSection {
   readonly blocks: readonly Block[];
 }
 
-/** Only this sub-section is expanded on load. */
-const OPEN_ID = "project";
+/** Only this sub-section is expanded on load. Set to "" to collapse everything. */
+const OPEN_ID = "";
+
+/** Gets the accent treatment; must exist in both locales. */
+const FEATURED_ID = "analysis";
 
 const SECTION_LABEL: Record<Lang, string> = {
   en: "Notes on this project",
@@ -89,18 +92,6 @@ const QUOTE: Block = {
 const ABOUT: Record<Lang, readonly SubSection[]> = {
   /* ---------------------------------------------------------------- english */
   en: [
-    {
-      id: "project",
-      title: "About This Project",
-      blocks: [
-        {
-          kind: "p",
-          runs: [
-            "This is an attempt to better visualise the ongoing student-led uprising taking place in France, as well as putting it into context against other past uprisings.",
-          ],
-        },
-      ],
-    },
     {
       id: "analysis",
       title: "My Analysis",
@@ -296,18 +287,6 @@ const ABOUT: Record<Lang, readonly SubSection[]> = {
 
   /* ---------------------------------------------------------------- français */
   fr: [
-    {
-      id: "project",
-      title: "À propos de ce projet",
-      blocks: [
-        {
-          kind: "p",
-          runs: [
-            "Ceci est une tentative de mieux visualiser le soulèvement étudiant en cours en France, et de le mettre en perspective avec d’autres soulèvements passés.",
-          ],
-        },
-      ],
-    },
     {
       id: "analysis",
       title: "Mon analyse",
@@ -559,7 +538,10 @@ function group(
   open: ReadonlyMap<string, boolean>,
 ): HTMLDetailsElement {
   const details = document.createElement("details");
-  details.className = "about-group";
+  details.className =
+    sub.id === FEATURED_ID
+      ? "about-group about-group--featured"
+      : "about-group";
   details.dataset.about = sub.id;
   details.open = open.get(sub.id) ?? sub.id === OPEN_ID;
 

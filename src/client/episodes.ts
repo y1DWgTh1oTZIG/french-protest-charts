@@ -732,8 +732,6 @@ interface SeriesStats {
   readonly high: number;
   readonly mean: number;
   readonly median: number;
-  /** Always defined: exact repeats are rare, so the mode is clustered. */
-  readonly mode: number;
 }
 
 /** Datasets are rebuilt on every mount, so a WeakMap needs no invalidation. */
@@ -786,13 +784,12 @@ function statsOf(points: readonly Pt[]): SeriesStats | null {
     high: sorted[n - 1],
     mean: sum / n,
     median,
-    mode: modeOf(sorted),
   };
   statsCache.set(points, stats);
   return stats;
 }
 
-/** "Comparisons: 3% (highest), 6% (mean), 5% (median), 6% (mode) and 24,167% (first figure)" */
+/** "Comparisons: 3% (highest), 6% (mean), 5% (median) and 24,167% (first figure)" */
 function shareLine(p: Pt, dataset: PanelDataset): string | null {
   if (!(p.base > 0)) return null;
   const stats = statsOf(dataset.data);
@@ -806,7 +803,6 @@ function shareLine(p: Pt, dataset: PanelDataset): string | null {
     part(m.cmpHighest, stats.high),
     part(m.cmpMean, stats.mean),
     part(m.cmpMedian, stats.median),
-    part(m.cmpMode, stats.mode),
     part(m.cmpFirst, p.base),
   ];
 

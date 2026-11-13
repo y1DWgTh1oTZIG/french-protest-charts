@@ -1072,7 +1072,6 @@ var CATALOGUE = {
       cmpHighest: "highest",
       cmpMean: "mean",
       cmpMedian: "median",
-      cmpMode: "mode",
       cmpFirst: "first figure",
       listAnd: " and "
     },
@@ -1119,7 +1118,6 @@ var CATALOGUE = {
       cmpHighest: "le plus \xE9lev\xE9",
       cmpMean: "moyenne",
       cmpMedian: "m\xE9diane",
-      cmpMode: "mode",
       cmpFirst: "premier chiffre",
       listAnd: " et "
     },
@@ -15370,25 +15368,6 @@ var pctOf = (v, base) => {
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
 var statsCache = /* @__PURE__ */ new WeakMap();
-var MODE_TOLERANCE = 1.03;
-function modeOf(sorted) {
-  let bestN = 0;
-  let bestLo = 0;
-  let bestHi = 0;
-  let hi = 0;
-  for (let lo = 0; lo < sorted.length; lo++) {
-    if (hi < lo) hi = lo;
-    const ceiling = Math.max(sorted[lo] * MODE_TOLERANCE, sorted[lo] + 1e-9);
-    while (hi + 1 < sorted.length && sorted[hi + 1] <= ceiling) hi++;
-    const n = hi - lo + 1;
-    if (n > bestN) {
-      bestN = n;
-      bestLo = lo;
-      bestHi = hi;
-    }
-  }
-  return (sorted[bestLo] + sorted[bestHi]) / 2;
-}
 function statsOf(points) {
   const cached = statsCache.get(points);
   if (cached) return cached;
@@ -15404,8 +15383,7 @@ function statsOf(points) {
   const stats = {
     high: sorted[n - 1],
     mean: sum / n,
-    median,
-    mode: modeOf(sorted)
+    median
   };
   statsCache.set(points, stats);
   return stats;
@@ -15420,7 +15398,6 @@ function shareLine(p, dataset) {
     part(m.cmpHighest, stats.high),
     part(m.cmpMean, stats.mean),
     part(m.cmpMedian, stats.median),
-    part(m.cmpMode, stats.mode),
     part(m.cmpFirst, p.base)
   ];
   const last = parts.pop();
@@ -15831,7 +15808,8 @@ function mountLangSwitch(host = document.querySelector(
 }
 
 // src/client/about.ts
-var OPEN_ID = "project";
+var OPEN_ID = "";
+var FEATURED_ID = "analysis";
 var SECTION_LABEL = {
   en: "Notes on this project",
   fr: "Notes sur le projet"
@@ -15873,18 +15851,6 @@ var QUOTE = {
 var ABOUT = {
   /* ---------------------------------------------------------------- english */
   en: [
-    {
-      id: "project",
-      title: "About This Project",
-      blocks: [
-        {
-          kind: "p",
-          runs: [
-            "This is an attempt to better visualise the ongoing student-led uprising taking place in France, as well as putting it into context against other past uprisings."
-          ]
-        }
-      ]
-    },
     {
       id: "analysis",
       title: "My Analysis",
@@ -16079,18 +16045,6 @@ var ABOUT = {
   ],
   /* ---------------------------------------------------------------- français */
   fr: [
-    {
-      id: "project",
-      title: "\xC0 propos de ce projet",
-      blocks: [
-        {
-          kind: "p",
-          runs: [
-            "Ceci est une tentative de mieux visualiser le soul\xE8vement \xE9tudiant en cours en France, et de le mettre en perspective avec d\u2019autres soul\xE8vements pass\xE9s."
-          ]
-        }
-      ]
-    },
     {
       id: "analysis",
       title: "Mon analyse",
@@ -16329,7 +16283,7 @@ function block(b) {
 }
 function group(sub, open) {
   const details = document.createElement("details");
-  details.className = "about-group";
+  details.className = sub.id === FEATURED_ID ? "about-group about-group--featured" : "about-group";
   details.dataset.about = sub.id;
   details.open = open.get(sub.id) ?? sub.id === OPEN_ID;
   const summary = document.createElement("summary");
