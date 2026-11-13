@@ -1662,6 +1662,7 @@ const STATIC: Record<string, Bi> = {
     en: "Show this page in English",
     fr: "Afficher la page en anglais",
   },
+  "ui.theme": { en: "Dark mode", fr: "Mode sombre" },
   "card.prot.title": { en: "Protesters", fr: "Manifestants" },
   "card.prot.sub": {
     en: "Ministry and organiser counts",
@@ -1713,6 +1714,9 @@ for (const id of ["a", "b", "c", "cp"] as const) {
 }
 
 STATIC["doc.title"] = { en: EN_META.meta.title, fr: FR_META.meta.title };
+
+/** Flat key set, for the build-time guard. Must stay below all STATIC writes. */
+export const STATIC_KEYS: ReadonlySet<string> = new Set(Object.keys(STATIC));
 
 /** Resolves every `[data-i18n]` under root. Idempotent. */
 export function applyStaticCopy(root: ParentNode = document): void {

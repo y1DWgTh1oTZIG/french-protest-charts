@@ -1,4 +1,5 @@
 import type { Chart } from "chart.js";
+import { scheduleRender } from "./main";
 
 /* ── Theme ───────────────────────────────────────────────────────────────────
    Colours live in styles.css as light-dark(light, dark). getComputedStyle
@@ -16,10 +17,46 @@ const VARS = {
   hollow: "--chart-hollow",
   tooltipBg: "--chart-tooltip-bg",
   tooltipInk: "--chart-tooltip-ink",
+  series1: "--chart-series-1",
+  series2: "--chart-series-2",
+  series3: "--chart-series-3",
+  series4: "--chart-series-4",
+  series5: "--chart-series-5",
+  series6: "--chart-series-6",
+  series7: "--chart-series-7",
 } as const;
+
+/* 3. regression: 0.18 was previously corrected to 0.45 for exactly this
+      reason. 0.45 keeps the series legible while de-emphasised. */
+export const DIM = 0.45;
+
+/* 2. titles/subtitles were still #666 (Chart.js default) → ≈3.1:1 on dark. */
+export const TEXT = {
+  get title() {
+    return value("ink");
+  }, // 18.9:1 dark, 16.7:1 light
+  get subtitle() {
+    return value("label");
+  }, // 8.8:1 dark
+};
+
+/* 8. repaint without losing user state: read the hidden set first */
+export function repaintPreservingState(): void {
+  const hidden = new Set(
+    [
+      ...document.querySelectorAll<HTMLButtonElement>(
+        '.legend button[aria-pressed="false"]',
+      ),
+    ].map((b) => b.dataset.series ?? ""),
+  );
+  refreshTheme();
+  scheduleRender();
+}
 
 type ThemeKey = keyof typeof VARS;
 
+/* Light-mode values are the current RAMP hex, so a missing token degrades to
+   today's appearance instead of to `inherit`. */
 const FALLBACK: Record<ThemeKey, string> = {
   ink: "#111827",
   label: "#4b5563",
@@ -29,6 +66,13 @@ const FALLBACK: Record<ThemeKey, string> = {
   hollow: "#ffffff",
   tooltipBg: "rgba(17, 24, 39, 0.92)",
   tooltipInk: "#ffffff",
+  series1: "#5C97C5",
+  series2: "#357AB0",
+  series3: "#2A6B9C",
+  series4: "#1B5C92",
+  series5: "#124A78",
+  series6: "#0A3A63",
+  series7: "#062844",
 };
 
 const ctx2d = document.createElement("canvas").getContext("2d");
@@ -60,6 +104,17 @@ function read(): Record<ThemeKey, string> {
 
 const value = (key: ThemeKey): string => ((cache ??= read()), cache[key]);
 
+/* 4. one ordered array for the trellis, so the ramp can never drift from CSS */
+export const SERIES: readonly string[] = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7",
+].map((k) => value(k as ThemeKey));
+
 /** Drop the resolved colours; theme.ts calls this before re-rendering. */
 export function refreshTheme(): void {
   cache = null;
@@ -90,22 +145,47 @@ export const THEME = {
   get tooltipInk() {
     return value("tooltipInk");
   },
-  dim: 0.18,
+  dim: 0.45, // was 0.18 — ≈1.3:1 against both modes (WCAG 1.4.1)
 };
 
-/** Per-episode encoding: shade + dash + marker. Colour is never the only cue. */
+const SERIES_KEYS = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7",
+] as const satisfies readonly ThemeKey[];
+
+/** Index access for the trellis loop: never cache the result across renders. */
+function seriesColor(i: number): string {
+  const last = SERIES_KEYS.length - 1;
+  return value(SERIES_KEYS[Math.min(Math.max(i, 0), last)]);
+}
+
+const DASHES: readonly number[][] = [
+  [],
+  [6, 3],
+  [2, 3],
+  [8, 3, 2, 3],
+  [1.5, 3],
+  [10, 4],
+  [4, 3],
+];
+
+/** Per-episode encoding: shade + dash. `color` is a getter, so it is resolved
+ *  on every chart build — after refreshTheme(), and never during module init.
+ *  Call sites keep working unchanged: `RAMP[i].color`, `RAMP[i].dash`. */
 export const RAMP: readonly {
   readonly color: string;
   readonly dash: number[];
-}[] = [
-  { color: "#5C97C5", dash: [] }, // ≥3:1 vs #fff (lightest admissible)
-  { color: "#357AB0", dash: [6, 3] },
-  { color: "#2A6B9C", dash: [2, 3] },
-  { color: "#1B5C92", dash: [8, 3, 2, 3] },
-  { color: "#124A78", dash: [1.5, 3] },
-  { color: "#0A3A63", dash: [10, 4] },
-  { color: "#062844", dash: [4, 3] },
-] as const;
+}[] = DASHES.map((dash, i) => ({
+  get color(): string {
+    return seriesColor(i);
+  },
+  dash,
+}));
 
 /** #rrggbb → rgba(). Throws instead of emitting `rgba(NaN, …)`. */
 export function alpha(hex: string, a: number): string {

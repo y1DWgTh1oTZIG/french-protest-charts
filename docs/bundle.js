@@ -1197,6 +1197,7 @@ var STATIC = {
     en: "Show this page in English",
     fr: "Afficher la page en anglais"
   },
+  "ui.theme": { en: "Dark mode", fr: "Mode sombre" },
   "card.prot.title": { en: "Protesters", fr: "Manifestants" },
   "card.prot.sub": {
     en: "Ministry and organiser counts",
@@ -1246,6 +1247,7 @@ for (const id of ["a", "b", "c", "cp"]) {
   };
 }
 STATIC["doc.title"] = { en: EN_META.meta.title, fr: FR_META.meta.title };
+var STATIC_KEYS = new Set(Object.keys(STATIC));
 function applyStaticCopy(root2 = document) {
   const L = current;
   for (const node of root2.querySelectorAll("[data-i18n]")) {
@@ -13012,7 +13014,14 @@ var VARS = {
   axisGrid: "--chart-axis-grid",
   hollow: "--chart-hollow",
   tooltipBg: "--chart-tooltip-bg",
-  tooltipInk: "--chart-tooltip-ink"
+  tooltipInk: "--chart-tooltip-ink",
+  series1: "--chart-series-1",
+  series2: "--chart-series-2",
+  series3: "--chart-series-3",
+  series4: "--chart-series-4",
+  series5: "--chart-series-5",
+  series6: "--chart-series-6",
+  series7: "--chart-series-7"
 };
 var FALLBACK = {
   ink: "#111827",
@@ -13022,7 +13031,14 @@ var FALLBACK = {
   axisGrid: "rgba(17, 24, 39, 0.06)",
   hollow: "#ffffff",
   tooltipBg: "rgba(17, 24, 39, 0.92)",
-  tooltipInk: "#ffffff"
+  tooltipInk: "#ffffff",
+  series1: "#5C97C5",
+  series2: "#357AB0",
+  series3: "#2A6B9C",
+  series4: "#1B5C92",
+  series5: "#124A78",
+  series6: "#0A3A63",
+  series7: "#062844"
 };
 var ctx2d = document.createElement("canvas").getContext("2d");
 function normalise(css, fallback) {
@@ -13046,6 +13062,15 @@ function read() {
   return out;
 }
 var value = (key) => (cache ??= read(), cache[key]);
+var SERIES = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7"
+].map((k) => value(k));
 function refreshTheme() {
   cache = null;
 }
@@ -13074,8 +13099,37 @@ var THEME = {
   get tooltipInk() {
     return value("tooltipInk");
   },
-  dim: 0.18
+  dim: 0.45
+  // was 0.18 — ≈1.3:1 against both modes (WCAG 1.4.1)
 };
+var SERIES_KEYS = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7"
+];
+function seriesColor(i) {
+  const last = SERIES_KEYS.length - 1;
+  return value(SERIES_KEYS[Math.min(Math.max(i, 0), last)]);
+}
+var DASHES = [
+  [],
+  [6, 3],
+  [2, 3],
+  [8, 3, 2, 3],
+  [1.5, 3],
+  [10, 4],
+  [4, 3]
+];
+var RAMP = DASHES.map((dash, i) => ({
+  get color() {
+    return seriesColor(i);
+  },
+  dash
+}));
 function alpha2(hex2, a) {
   const m = /^#([0-9a-f]{6})$/i.exec(hex2);
   if (!m) throw new Error(`alpha() expects #rrggbb, got "${hex2}"`);
@@ -14848,13 +14902,13 @@ function mountCharts() {
 
 // src/client/episodes.ts
 var DIM = THEME.dim;
-var SERIES = [
+var SERIES2 = [
   { key: "p", color: "#1d4ed8" },
   { key: "a", color: "#b91c1c" },
   { key: "f", color: "#047857" },
   { key: "i", color: "#b45309" }
 ];
-var RAMP = [
+var RAMP2 = [
   "#D6E6F2",
   "#B0CFE6",
   "#86B4D7",
@@ -15337,6 +15391,10 @@ var episodePanels = [];
 var itemPanels = [];
 var activeItem = null;
 var activeEvent = null;
+function resetEmphasis() {
+  activeItem = null;
+  activeEvent = null;
+}
 var datasetsOf = (chart) => chart.data.datasets;
 function restyle(d, on, bold = false) {
   const c = on ? d.__color : alpha2(d.__color, DIM);
@@ -15445,6 +15503,7 @@ var panelOptions = (x, y, onHover) => ({
   onHover
 });
 function mountCrossEpisode(opts) {
+  resetEmphasis();
   episodePanels.length = 0;
   itemPanels.length = 0;
   activeItem = null;
@@ -15452,6 +15511,7 @@ function mountCrossEpisode(opts) {
   seriesCache = /* @__PURE__ */ new Map();
   opts.episodeHost.replaceChildren();
   opts.itemHost.replaceChildren();
+  resetEmphasis();
   const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
   const [yMin, yMax] = logBounds(...rawExtent(EPISODES, METRICS, unbounded));
@@ -15466,7 +15526,7 @@ function mountCrossEpisode(opts) {
       text.banner
     );
     opts.episodeHost.append(figure);
-    const datasets = SERIES.map(
+    const datasets = SERIES2.map(
       (s) => buildDataset(ep, idx, s.key, s.color, unbounded)
     ).filter((d) => d !== null);
     const chart = track(
@@ -15507,7 +15567,7 @@ function mountCrossEpisode(opts) {
   });
   const itemCols = columns(opts.itemHost);
   opts.itemHost.style.gridTemplateColumns = `repeat(${itemCols}, minmax(0, 1fr))`;
-  SERIES.forEach((series) => {
+  SERIES2.forEach((series) => {
     const [rawLo, rawHi] = rawExtent(EPISODES, [series.key], ENFORCEMENT_LAST);
     const [lo, hi] = logBounds(rawLo, rawHi);
     const range = fill(m.panels.valueRange, {
@@ -15520,7 +15580,7 @@ function mountCrossEpisode(opts) {
     );
     opts.itemHost.append(figure);
     const datasets = EPISODES.map(
-      (ep, i) => buildDataset(ep, i, series.key, RAMP[i], ENFORCEMENT_LAST)
+      (ep, i) => buildDataset(ep, i, series.key, RAMP2[i], ENFORCEMENT_LAST)
     ).filter((d) => d !== null);
     const chart = track(
       new Chart(canvas, {
@@ -15565,7 +15625,7 @@ function mountCrossEpisode(opts) {
   });
   legend(
     opts.itemLegend,
-    SERIES.map((s) => ({
+    SERIES2.map((s) => ({
       text: m.items[s.key].label,
       color: s.color,
       on: () => emphasiseItem(s.key),
@@ -15576,7 +15636,7 @@ function mountCrossEpisode(opts) {
     opts.eventLegend,
     EPISODES.map((ep, i) => ({
       text: m.episodes[ep.id].short,
-      color: RAMP[i],
+      color: RAMP2[i],
       on: () => emphasiseEvent(i),
       off: () => emphasiseEvent(null)
     }))

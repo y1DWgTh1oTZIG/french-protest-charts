@@ -22,7 +22,9 @@
   --ink-2: light-dark(#374151, #c3cad4);
   --ink-3: light-dark(#4b5563, #a9b2be);
   --ink-4: light-dark(#6b7280, #8d96a3);
-  --ink-5: light-dark(#9ca3af, #6f7885);
+  /* 1. dates/counts/footnotes: 2.54 → 4.6:1 light, 4.22 → 5.3:1 dark.
+        Keep --ink-5 only for ≥18.66px bold / ≥24px text. */
+  --ink-5: light-dark(#6b7280, #98a1ae);
   --line-1: light-dark(#e5e7eb, #262e39);
   --line-2: light-dark(#f3f4f6, #1e2530);
   --line-3: light-dark(#eef0f2, #232b36);
@@ -51,6 +53,17 @@
   --chart-tooltip-bg: light-dark(rgb(17 24 39 / 92%), rgb(45 54 66 / 97%));
   --chart-tooltip-ink: light-dark(#fff, #eef1f5);
 
+  /* 4. series get tokens so both modes are authored and reviewed together.
+        Light values keep the ordinal ramp; dark values are a *reversed-value*
+        ramp so step 1 stays the furthest from the card, not the closest. */
+  --chart-series-1: light-dark(#5c97c5, #3a7099);
+  --chart-series-2: light-dark(#357ab0, #437aa4);
+  --chart-series-3: light-dark(#2a6b9c, #5289b8);
+  --chart-series-4: light-dark(#1b5c92, #74a3cd);
+  --chart-series-5: light-dark(#124a78, #96bcdd);
+  --chart-series-6: light-dark(#0a3a63, #bbd6ec);
+  --chart-series-7: light-dark(#062844, #dcebf7);
+
   /* type scale */
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -73,6 +86,43 @@
   --chart-tall-h: clamp(380px, 30vw + 230px, 620px);
   --panel-h: clamp(200px, 14vw + 150px, 240px);
   --panel-tall-h: clamp(212px, 15vw + 160px, 252px);
+
+  /* 5. localized label lives with the other UI strings */
+  --tab-hover: var(--hover);
+
+  /* 6. palette-free fallback: browsers without light-dark() still get real ink */
+  @supports not (color: light-dark(#fff, #000)) {
+    :root {
+      --bg: #fff;
+      --surface: #fff;
+      --surface-2: #fafafa;
+      --surface-3: #fff;
+      --ink-1: #111827;
+      --ink-2: #374151;
+      --ink-3: #4b5563;
+      --ink-4: #6b7280;
+      --ink-5: #5c6470;
+      --line-1: #e5e7eb;
+      --line-2: #f3f4f6;
+      --line-3: #eef0f2;
+      --line-4: #d8dde3;
+      --accent: #0072b2;
+      --accent-ink: #1b5c92;
+      --accent-on: #fff;
+      --chart-ink: #111827;
+      --chart-label: #4b5563;
+      --chart-muted: #5c6470;
+      --chart-grid: #e5e5e5;
+      --chart-hollow: #fff;
+    }
+  }
+}
+
+/* 7. a dark page must not print dark canvases onto white paper */
+@media print {
+  :root {
+    color-scheme: only light;
+  }
 }
 
 /* An explicit choice pins the mode; its absence follows the OS. */

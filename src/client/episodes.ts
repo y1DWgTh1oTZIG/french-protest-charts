@@ -767,8 +767,18 @@ function tooltipSpec() {
 
 const episodePanels: Chart<"line">[] = [];
 const itemPanels: { chart: Chart<"line">; item: Metric }[] = [];
+/* module state, already present: */
 let activeItem: Metric | null = null;
 let activeEvent: number | null = null;
+
+/** Charts and legend buttons are rebuilt from scratch on every render (theme
+ *  flip, locale switch), so any surviving emphasis key is stale: the
+ *  `key === activeItem` guard would swallow the next hover on that series.
+ *  Clear before wiring the new legends. */
+function resetEmphasis(): void {
+  activeItem = null;
+  activeEvent = null;
+}
 
 const datasetsOf = (chart: Chart<"line">): PanelDataset[] =>
   chart.data.datasets as PanelDataset[];
@@ -925,6 +935,7 @@ export interface TrellisHosts {
 }
 
 export function mountCrossEpisode(opts: TrellisHosts): void {
+  resetEmphasis();
   /* destroyAll() has already destroyed the previous instances (canvas.ts owns
      them); clear the handles so emphasis cannot touch a dead chart. */
   episodePanels.length = 0;
@@ -934,6 +945,7 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
   seriesCache = new Map(); // titles and notes are locale-bound
   opts.episodeHost.replaceChildren();
   opts.itemHost.replaceChildren();
+  resetEmphasis();
 
   const m = t();
   const unbounded = Number.POSITIVE_INFINITY;
