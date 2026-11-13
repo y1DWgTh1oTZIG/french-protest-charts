@@ -840,3 +840,20 @@ section {
     --dur: 0s;
   }
 }
+
+/* ---- visually hidden ----
+   a11y.ts and index.html both rely on .sr-only (canvas hints, #status,
+   #a11y-live, table captions) but the class was never defined, so those
+   paragraphs rendered in flow. Inside .panel-canvas that pushed the hint out of
+   the fixed-height box and over the next panel's note. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

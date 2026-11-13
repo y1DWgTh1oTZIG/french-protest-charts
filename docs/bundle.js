@@ -1067,7 +1067,14 @@ var CATALOGUE = {
       linePlain: "{value}",
       lineWithFlag: "{value} \xB7 {flag}",
       firstFigure: "first published figure: {n}",
-      shareOfFirst: "{pct} of the first figure ({n})"
+      shareOfFirst: "{pct} of the first figure ({n})",
+      shareComparisons: "Comparisons: {list}",
+      cmpHighest: "highest",
+      cmpMean: "mean",
+      cmpMedian: "median",
+      cmpMode: "mode",
+      cmpFirst: "first figure",
+      listAnd: " and "
     },
     disclaimer: {
       body: "Research and coding was performed using an LLM and figures have not been verified. Do not use them for serious analysis or decision-making without first double-checking the figures and the sources at the bottom."
@@ -1107,7 +1114,14 @@ var CATALOGUE = {
       linePlain: "{value}",
       lineWithFlag: "{value} \xB7 {flag}",
       firstFigure: "premier chiffre publi\xE9 : {n}",
-      shareOfFirst: "{pct} du premier chiffre ({n})"
+      shareOfFirst: "{pct} du premier chiffre ({n})",
+      shareComparisons: "Comparaisons : {list}",
+      cmpHighest: "le plus \xE9lev\xE9",
+      cmpMean: "moyenne",
+      cmpMedian: "m\xE9diane",
+      cmpMode: "mode",
+      cmpFirst: "premier chiffre",
+      listAnd: " et "
     },
     disclaimer: {
       body: "La recherche et le code ont \xE9t\xE9 r\xE9alis\xE9s \xE0 l\u2019aide d\u2019un LLM et les chiffres n\u2019ont pas \xE9t\xE9 v\xE9rifi\xE9s. Ne les utilisez pas pour une analyse s\xE9rieuse ou pour prendre des d\xE9cisions sans avoir d\u2019abord v\xE9rifi\xE9 les chiffres et les sources en bas de page."
@@ -15355,6 +15369,65 @@ var pctOf = (v, base) => {
   const r = 100 * v / base;
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
+var statsCache = /* @__PURE__ */ new WeakMap();
+var MODE_TOLERANCE = 1.03;
+function modeOf(sorted) {
+  let bestN = 0;
+  let bestLo = 0;
+  let bestHi = 0;
+  let hi = 0;
+  for (let lo = 0; lo < sorted.length; lo++) {
+    if (hi < lo) hi = lo;
+    const ceiling = Math.max(sorted[lo] * MODE_TOLERANCE, sorted[lo] + 1e-9);
+    while (hi + 1 < sorted.length && sorted[hi + 1] <= ceiling) hi++;
+    const n = hi - lo + 1;
+    if (n > bestN) {
+      bestN = n;
+      bestLo = lo;
+      bestHi = hi;
+    }
+  }
+  return (sorted[bestLo] + sorted[bestHi]) / 2;
+}
+function statsOf(points) {
+  const cached = statsCache.get(points);
+  if (cached) return cached;
+  const vs = [];
+  for (const p of points) if (Number.isFinite(p.y)) vs.push(p.y);
+  if (vs.length === 0) return null;
+  const sorted = [...vs].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mid = n >> 1;
+  const median = n % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  let sum = 0;
+  for (const v of vs) sum += v;
+  const stats = {
+    high: sorted[n - 1],
+    mean: sum / n,
+    median,
+    mode: modeOf(sorted)
+  };
+  statsCache.set(points, stats);
+  return stats;
+}
+function shareLine(p, dataset) {
+  if (!(p.base > 0)) return null;
+  const stats = statsOf(dataset.data);
+  if (!stats) return null;
+  const m = t().tooltip;
+  const part = (label, n) => `${pctOf(p.y, n)} (${label})`;
+  const parts = [
+    part(m.cmpHighest, stats.high),
+    part(m.cmpMean, stats.mean),
+    part(m.cmpMedian, stats.median),
+    part(m.cmpMode, stats.mode),
+    part(m.cmpFirst, p.base)
+  ];
+  const last = parts.pop();
+  return fill(m.shareComparisons, {
+    list: `${parts.join(", ")}${m.listAnd}${last}`
+  });
+}
 var posOf = (e, chart) => {
   const native = e.native ?? e;
   return getRelativePosition(native, chart);
@@ -15435,13 +15508,8 @@ function tooltipSpec(kind) {
         const lines = [];
         if (kind === "item") {
           const n = nf().format(Math.round(p.base));
-          lines.push(
-            ...wrapTooltipLines(
-              Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
-              item,
-              "body"
-            )
-          );
+          const text = Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : shareLine(p, item.dataset);
+          if (text) lines.push(...wrapTooltipLines(text, item, "body"));
         }
         if (p.note) lines.push(...wrapTooltipLines(p.note, item, "body"));
         return lines;
@@ -15450,11 +15518,8 @@ function tooltipSpec(kind) {
         if (kind !== "episode") return [];
         const p = items[0].raw;
         const n = nf().format(Math.round(p.base));
-        return wrapTooltipLines(
-          Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
-          items[0],
-          "footer"
-        );
+        const text = Math.abs(p.y - p.base) / p.base < 1e-9 ? fill(m.tooltip.firstFigure, { n }) : shareLine(p, items[0].dataset);
+        return text ? wrapTooltipLines(text, items[0], "footer") : [];
       }
     }
   };

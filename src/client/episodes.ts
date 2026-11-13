@@ -728,6 +728,94 @@ const pctOf = (v: number, base: number): string => {
   return r >= 10 ? `${Math.round(r)}%` : `${Number(r.toFixed(1))}%`;
 };
 
+interface SeriesStats {
+  readonly high: number;
+  readonly mean: number;
+  readonly median: number;
+  /** Always defined: exact repeats are rare, so the mode is clustered. */
+  readonly mode: number;
+}
+
+/** Datasets are rebuilt on every mount, so a WeakMap needs no invalidation. */
+const statsCache = new WeakMap<readonly Pt[], SeriesStats>();
+
+/** Two figures within 3% of each other count as the same mode. */
+const MODE_TOLERANCE = 1.03;
+
+/** Widest run of near-equal values; ties go to the lower one (sorted input). */
+function modeOf(sorted: readonly number[]): number {
+  let bestN = 0;
+  let bestLo = 0;
+  let bestHi = 0;
+  let hi = 0;
+
+  for (let lo = 0; lo < sorted.length; lo++) {
+    if (hi < lo) hi = lo;
+    const ceiling = Math.max(sorted[lo] * MODE_TOLERANCE, sorted[lo] + 1e-9);
+    while (hi + 1 < sorted.length && sorted[hi + 1] <= ceiling) hi++;
+    const n = hi - lo + 1;
+    if (n > bestN) {
+      bestN = n;
+      bestLo = lo;
+      bestHi = hi;
+    }
+  }
+  /* Midpoint of the winning run keeps the value inside the data. */
+  return (sorted[bestLo] + sorted[bestHi]) / 2;
+}
+
+/** One pass per dataset, not per mousemove: the tooltip re-renders constantly. */
+function statsOf(points: readonly Pt[]): SeriesStats | null {
+  const cached = statsCache.get(points);
+  if (cached) return cached;
+
+  const vs: number[] = [];
+  for (const p of points) if (Number.isFinite(p.y)) vs.push(p.y);
+  if (vs.length === 0) return null;
+
+  const sorted = [...vs].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mid = n >> 1;
+  const median =
+    n % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+
+  let sum = 0;
+  for (const v of vs) sum += v;
+
+  const stats: SeriesStats = {
+    high: sorted[n - 1],
+    mean: sum / n,
+    median,
+    mode: modeOf(sorted),
+  };
+  statsCache.set(points, stats);
+  return stats;
+}
+
+/** "Comparisons: 3% (highest), 6% (mean), 5% (median), 6% (mode) and 24,167% (first figure)" */
+function shareLine(p: Pt, dataset: PanelDataset): string | null {
+  if (!(p.base > 0)) return null;
+  const stats = statsOf(dataset.data);
+  if (!stats) return null;
+
+  const m = t().tooltip;
+  const part = (label: string, n: number): string =>
+    `${pctOf(p.y, n)} (${label})`;
+
+  const parts = [
+    part(m.cmpHighest, stats.high),
+    part(m.cmpMean, stats.mean),
+    part(m.cmpMedian, stats.median),
+    part(m.cmpMode, stats.mode),
+    part(m.cmpFirst, p.base),
+  ];
+
+  const last = parts.pop()!;
+  return fill(m.shareComparisons, {
+    list: `${parts.join(", ")}${m.listAnd}${last}`,
+  });
+}
+
 /** Which trellis: one panel per episode (C) or one panel per metric (C′). */
 type TrellisKind = "episode" | "item";
 
@@ -860,15 +948,11 @@ function tooltipSpec(kind: TrellisKind) {
            that line's own `base` (seriesData() computes it per series). */
         if (kind === "item") {
           const n = nf().format(Math.round(p.base));
-          lines.push(
-            ...wrapTooltipLines(
-              Math.abs(p.y - p.base) / p.base < 1e-9
-                ? fill(m.tooltip.firstFigure, { n })
-                : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
-              item,
-              "body",
-            ),
-          );
+          const text =
+            Math.abs(p.y - p.base) / p.base < 1e-9
+              ? fill(m.tooltip.firstFigure, { n })
+              : shareLine(p, item.dataset as PanelDataset);
+          if (text) lines.push(...wrapTooltipLines(text, item, "body"));
         }
 
         if (p.note) lines.push(...wrapTooltipLines(p.note, item, "body"));
@@ -878,13 +962,11 @@ function tooltipSpec(kind: TrellisKind) {
         if (kind !== "episode") return [];
         const p = items[0].raw as Pt;
         const n = nf().format(Math.round(p.base));
-        return wrapTooltipLines(
+        const text =
           Math.abs(p.y - p.base) / p.base < 1e-9
             ? fill(m.tooltip.firstFigure, { n })
-            : fill(m.tooltip.shareOfFirst, { pct: pctOf(p.y, p.base), n }),
-          items[0],
-          "footer",
-        );
+            : shareLine(p, items[0].dataset as PanelDataset);
+        return text ? wrapTooltipLines(text, items[0], "footer") : [];
       },
     },
   };

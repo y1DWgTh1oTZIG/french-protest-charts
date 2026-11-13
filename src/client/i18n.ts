@@ -1458,6 +1458,15 @@ export interface TooltipCopy {
   readonly lineWithFlag: string;
   readonly firstFigure: string;
   readonly shareOfFirst: string;
+  /** "Comparisons: {list}" — one compact line instead of five clauses. */
+  readonly shareComparisons: string;
+  readonly cmpHighest: string;
+  readonly cmpMean: string;
+  readonly cmpMedian: string;
+  readonly cmpMode: string;
+  readonly cmpFirst: string;
+  /** Joins the last item: "a, b and c" / "a, b et c". */
+  readonly listAnd: string;
 }
 
 export interface Catalogue {
@@ -1510,6 +1519,13 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       lineWithFlag: "{value} · {flag}",
       firstFigure: "first published figure: {n}",
       shareOfFirst: "{pct} of the first figure ({n})",
+      shareComparisons: "Comparisons: {list}",
+      cmpHighest: "highest",
+      cmpMean: "mean",
+      cmpMedian: "median",
+      cmpMode: "mode",
+      cmpFirst: "first figure",
+      listAnd: " and ",
     },
     disclaimer: {
       body: "Research and coding was performed using an LLM and figures have not been verified. Do not use them for serious analysis or decision-making without first double-checking the figures and the sources at the bottom.",
@@ -1549,6 +1565,13 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       lineWithFlag: "{value} · {flag}",
       firstFigure: "premier chiffre publié : {n}",
       shareOfFirst: "{pct} du premier chiffre ({n})",
+      shareComparisons: "Comparaisons : {list}",
+      cmpHighest: "le plus élevé",
+      cmpMean: "moyenne",
+      cmpMedian: "médiane",
+      cmpMode: "mode",
+      cmpFirst: "premier chiffre",
+      listAnd: " et ",
     },
     disclaimer: {
       body: "La recherche et le code ont été réalisés à l’aide d’un LLM et les chiffres n’ont pas été vérifiés. Ne les utilisez pas pour une analyse sérieuse ou pour prendre des décisions sans avoir d’abord vérifié les chiffres et les sources en bas de page.",
