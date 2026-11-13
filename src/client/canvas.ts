@@ -1,14 +1,97 @@
 import type { Chart } from "chart.js";
 
-export const THEME = {
+/* ── Theme ───────────────────────────────────────────────────────────────────
+   Colours live in styles.css as light-dark(light, dark). getComputedStyle
+   returns a custom property UNRESOLVED, so each one is read off a probe's
+   computed `color` and normalised through a 2d context: Chart.js needs
+   #rrggbb / rgba(), not color(srgb …). THEME keeps its old shape via getters,
+   so no call site changes; charts are rebuilt on every render() anyway. */
+
+const VARS = {
+  ink: "--chart-ink",
+  label: "--chart-label",
+  muted: "--chart-muted",
+  grid: "--chart-grid",
+  axisGrid: "--chart-axis-grid",
+  hollow: "--chart-hollow",
+  tooltipBg: "--chart-tooltip-bg",
+  tooltipInk: "--chart-tooltip-ink",
+} as const;
+
+type ThemeKey = keyof typeof VARS;
+
+const FALLBACK: Record<ThemeKey, string> = {
   ink: "#111827",
   label: "#4b5563",
-  muted: "#5b6470", // was #6b7280: 6.0:1, safe for 11 px labels
-  grid: "#E5E5E5",
-  axisGrid: "rgba(17,24,23,0.06)",
+  muted: "#6b7280",
+  grid: "#e5e5e5",
+  axisGrid: "rgba(17, 24, 39, 0.06)",
   hollow: "#ffffff",
-  dim: 0.45, // was 0.18 → ≈1.3:1, i.e. invisible
-} as const;
+  tooltipBg: "rgba(17, 24, 39, 0.92)",
+  tooltipInk: "#ffffff",
+};
+
+const ctx2d = document.createElement("canvas").getContext("2d");
+
+function normalise(css: string, fallback: string): string {
+  if (!ctx2d) return fallback;
+  ctx2d.fillStyle = fallback;
+  ctx2d.fillStyle = css;
+  return typeof ctx2d.fillStyle === "string" ? ctx2d.fillStyle : fallback;
+}
+
+let cache: Record<ThemeKey, string> | null = null;
+
+function read(): Record<ThemeKey, string> {
+  const out = {} as Record<ThemeKey, string>;
+  const probe = document.createElement("span");
+  probe.setAttribute("aria-hidden", "true");
+  probe.style.cssText = "position:absolute;width:0;height:0;visibility:hidden";
+  (document.body ?? document.documentElement).append(probe);
+
+  for (const key of Object.keys(VARS) as ThemeKey[]) {
+    probe.style.color = `var(${VARS[key]})`;
+    out[key] = normalise(getComputedStyle(probe).color, FALLBACK[key]);
+  }
+
+  probe.remove();
+  return out;
+}
+
+const value = (key: ThemeKey): string => ((cache ??= read()), cache[key]);
+
+/** Drop the resolved colours; theme.ts calls this before re-rendering. */
+export function refreshTheme(): void {
+  cache = null;
+}
+
+export const THEME = {
+  get ink() {
+    return value("ink");
+  },
+  get label() {
+    return value("label");
+  },
+  get muted() {
+    return value("muted");
+  },
+  get grid() {
+    return value("grid");
+  },
+  get axisGrid() {
+    return value("axisGrid");
+  },
+  get hollow() {
+    return value("hollow");
+  },
+  get tooltipBg() {
+    return value("tooltipBg");
+  },
+  get tooltipInk() {
+    return value("tooltipInk");
+  },
+  dim: 0.18,
+};
 
 /** Per-episode encoding: shade + dash + marker. Colour is never the only cue. */
 export const RAMP: readonly {

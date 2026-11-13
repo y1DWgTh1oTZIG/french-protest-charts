@@ -12,6 +12,7 @@ import {
   type Lang,
   localeMeta,
   fill,
+  t,
 } from "./i18n.ts";
 import { CHARTS, mountCharts } from "./chart.ts";
 import { destroyAll } from "./canvas.ts";
@@ -21,6 +22,7 @@ import { applyUrlLang, mountLangSwitch } from "./lang.ts";
 import { renderChrome } from "./page.ts";
 import { renderSources } from "./sources.ts";
 import { announce } from "./a11y.ts";
+import { initTheme } from "./theme.ts";
 
 function trellisHosts(): TrellisHosts | null {
   const episodeHost = byId("trellis-episodes");
@@ -54,7 +56,7 @@ export function render(): void {
 /* Coalesce: several listeners switching language still produce one render. */
 let frame = 0;
 
-function scheduleRender(): void {
+export function scheduleRender(): void {
   if (frame) return;
   frame = window.requestAnimationFrame(() => {
     frame = 0;
@@ -89,6 +91,7 @@ function boot(): void {
 
   applyUrlLang(); // ?lang= → state, no persist, before any subscriber
   mountLangSwitch(); // the only click handler for the control
+  initTheme(); // toggle + system-change listener; charts repaint on change
   onLocaleChange((_next, _prev) => {
     scheduleRender();
     announce(fill(t().a11y.switched, { lang: localeMeta().label }));

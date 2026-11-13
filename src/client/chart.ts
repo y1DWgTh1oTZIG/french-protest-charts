@@ -952,12 +952,12 @@ const shell = (
       position: "top" as const,
       align: "end" as const,
       labels: {
+        color: THEME.label, // was Chart.js default #666: invisible on dark
         usePointStyle: true,
         boxWidth: 8,
         boxHeight: 8,
         padding: 14,
         font: { size: 11 },
-        // Chart.js passes the ChartData; the old datasetsOf() probe is gone
         filter: (item: LegendItem, data: ChartData<"line">) =>
           !(
             data.datasets[item.datasetIndex ?? -1] as ProtestDataset | undefined
@@ -978,7 +978,14 @@ const shell = (
       font: { size: 16, weight: "bold" as const },
       padding: { top: 0, bottom: 2 },
     },
-    tooltip: { callbacks: tooltipCallbacks(v) },
+    tooltip: {
+      backgroundColor: THEME.tooltipBg,
+      titleColor: THEME.tooltipInk,
+      bodyColor: THEME.tooltipInk,
+      borderColor: THEME.grid,
+      borderWidth: 1,
+      callbacks: tooltipCallbacks(v),
+    },
     ...extra,
   },
 });
