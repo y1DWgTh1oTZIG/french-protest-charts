@@ -15581,34 +15581,115 @@ function emphasiseEvent(index) {
     (d) => index === null || d.__ep === index
   );
 }
-function legend(host, entries) {
-  let pinned = null;
-  host.replaceChildren(
-    ...entries.map(({ text, color: color2, dash, on, off }, idx) => {
-      const button = el("button");
-      button.type = "button";
-      button.setAttribute("aria-pressed", "false");
-      const swatch = el("span", "swatch");
-      swatch.style.background = dash?.length ? `repeating-linear-gradient(90deg, ${color2} 0 3px, transparent 3px 6px)` : color2;
-      button.append(swatch, document.createTextNode(text));
+var legendHidden = /* @__PURE__ */ new Map();
+var legendButtons = /* @__PURE__ */ new Map();
+function legendState(key, n) {
+  const s = legendHidden.get(key) ?? [];
+  while (s.length < n) s.push(false);
+  s.length = n;
+  legendHidden.set(key, s);
+  return s;
+}
+function legendMark(key, idx) {
+  legendButtons.get(key)?.forEach((b, i) => {
+    b.classList.toggle("is-active", i === idx);
+  });
+}
+function legend(host, key, entries) {
+  const hidden = legendState(key, entries.length);
+  const buttons = entries.map((entry, idx) => {
+    const button = el("button");
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(hidden[idx]));
+    button.classList.toggle("is-off", hidden[idx]);
+    const swatch = el("span", "swatch");
+    swatch.style.background = entry.dash?.length ? `repeating-linear-gradient(90deg, ${entry.color} 0 3px, transparent 3px 6px)` : entry.color;
+    button.append(swatch, document.createTextNode(entry.text));
+    if (entry.hide) {
       button.addEventListener("click", () => {
-        pinned = pinned === idx ? null : idx;
-        button.setAttribute("aria-pressed", String(pinned === idx));
-        pinned === null ? off() : on();
+        hidden[idx] = !hidden[idx];
+        button.setAttribute("aria-pressed", String(hidden[idx]));
+        button.classList.toggle("is-off", hidden[idx]);
+        entry.hide?.(hidden[idx]);
       });
-      for (const ev of ["mouseenter", "focus", "pointerdown"])
-        button.addEventListener(ev, on);
-      for (const ev of ["mouseleave", "blur"])
-        button.addEventListener(ev, () => {
-          if (pinned === idx) return;
-          off();
-          host.querySelectorAll("[aria-pressed]").forEach((b, j) => {
-            if (j !== pinned) b.setAttribute("aria-pressed", "false");
-          });
-        });
-      return button;
-    })
-  );
+    } else {
+      let pinned = false;
+      button.addEventListener("click", () => {
+        pinned = !pinned;
+        button.setAttribute("aria-pressed", String(pinned));
+        pinned ? entry.on() : entry.off();
+      });
+    }
+    for (const ev of ["mouseenter", "focus", "pointerdown"])
+      button.addEventListener(ev, () => {
+        entry.on();
+        legendMark(key, idx);
+      });
+    for (const ev of ["mouseleave", "blur"])
+      button.addEventListener(ev, () => {
+        if (!entry.hide && button.getAttribute("aria-pressed") === "true")
+          return;
+        entry.off();
+        legendMark(key, null);
+      });
+    return button;
+  });
+  legendButtons.set(key, buttons);
+  host.replaceChildren(...buttons);
+  entries.forEach((entry, idx) => {
+    if (hidden[idx]) entry.hide?.(true);
+  });
+}
+function chartsIn(host) {
+  const out = [];
+  for (const c of host?.querySelectorAll("canvas") ?? []) {
+    const chart = Chart.getChart(c);
+    if (chart) out.push(chart);
+  }
+  return out;
+}
+function toggleDatasets(host, field, key, hidden) {
+  for (const chart of chartsIn(host)) {
+    let touched = false;
+    datasetsOf(chart).forEach((d, i) => {
+      if (d[field] !== key) return;
+      chart.setDatasetVisibility(i, !hidden);
+      touched = true;
+    });
+    if (touched) chart.update("none");
+  }
+}
+function applyStatVisibility() {
+  const h = legendState("stats", 2);
+  const anyHidden = h[0] || h[1];
+  for (const chart of summaryPanels) {
+    datasetsOf(chart).forEach((d, i) => {
+      const stat = d.__stat;
+      chart.setDatasetVisibility(
+        i,
+        stat === void 0 ? !anyHidden : !h[stat === "mean" ? 0 : 1]
+      );
+    });
+    chart.update("none");
+  }
+}
+function wireLegendSync(host, key, indexOf) {
+  for (const canvas of host?.querySelectorAll("canvas") ?? []) {
+    const chart = Chart.getChart(canvas);
+    if (!chart) continue;
+    canvas.addEventListener("pointermove", (ev) => {
+      const mode = chart.options.interaction?.mode ?? "nearest";
+      const els = chart.getElementsAtEventForMode(
+        ev,
+        mode,
+        { intersect: !!chart.options.interaction?.intersect },
+        true
+      );
+      const d = els.length ? datasetsOf(chart)[els[0].datasetIndex] : void 0;
+      legendMark(key, d ? indexOf(d) : null);
+    });
+    canvas.addEventListener("pointerleave", () => legendMark(key, null));
+  }
 }
 function observations(ep) {
   const m = t();
@@ -15781,23 +15862,38 @@ function mountCrossEpisode(opts) {
     });
     itemPanels.push({ chart, item: series.key });
   });
+  const cHost = document.getElementById("trellis-episodes");
+  const dHost = document.getElementById("trellis-items");
   legend(
     opts.itemLegend,
+    "items",
     SERIES2.map((s) => ({
       text: m.items[s.key].label,
       color: s.color,
       on: () => emphasiseItem(s.key),
-      off: () => emphasiseItem(null)
+      off: () => emphasiseItem(null),
+      hide: (hidden) => toggleDatasets(cHost, "__item", s.key, hidden)
     }))
   );
   legend(
     opts.eventLegend,
+    "events",
     EPISODES.map((ep, i) => ({
       text: m.episodes[ep.id].short,
       color: RAMP2[i],
       on: () => emphasiseEvent(i),
-      off: () => emphasiseEvent(null)
+      off: () => emphasiseEvent(null),
+      hide: (hidden) => toggleDatasets(dHost, "__ep", i, hidden)
     }))
+  );
+  wireLegendSync(cHost, "items", (d) => {
+    const k = SERIES2.findIndex((s) => s.key === d.__item);
+    return k < 0 ? null : k;
+  });
+  wireLegendSync(
+    dHost,
+    "events",
+    (d) => d.__ep >= 0 && d.__ep < EPISODES.length ? d.__ep : null
   );
 }
 var MEAN_COLOR = "#1f2937";
@@ -15879,18 +15975,17 @@ function gapDataset(key, i, mean, median) {
   };
 }
 function emphasiseStat(stat) {
-  if (stat === activeStat) return;
   activeStat = stat;
   for (const chart of summaryPanels) {
     for (const d of datasetsOf(chart)) {
       if (!d.__stat) continue;
       const on = stat === null || d.__stat === stat;
       const c = on ? d.__color : alpha2(d.__color, DIM);
-      const hollow = d.__stat === "median";
+      const fill2 = d.__stat === "median" && on ? THEME.hollow : c;
       d.borderColor = c;
       d.pointBorderColor = c;
-      d.backgroundColor = hollow ? THEME.hollow : c;
-      d.pointBackgroundColor = hollow ? THEME.hollow : c;
+      d.backgroundColor = fill2;
+      d.pointBackgroundColor = fill2;
     }
     chart.update("none");
   }
@@ -16041,10 +16136,6 @@ function mountSummary() {
                 }
               }
             }
-          },
-          onHover: (_e, els) => {
-            const d = els[0]?.dataset;
-            emphasiseStat(d?.__stat ?? null);
           }
         },
         plugins: []
@@ -16052,20 +16143,46 @@ function mountSummary() {
     );
     summaryPanels.push(chart);
   });
-  legend(legendHost, [
+  legend(legendHost, "stats", [
     {
       text: m.panels.mean,
       color: MEAN_COLOR,
       on: () => emphasiseStat("mean"),
-      off: () => emphasiseStat(null)
+      off: () => emphasiseStat(null),
+      hide: (hidden) => {
+        legendState("stats", 2)[0] = hidden;
+        applyStatVisibility();
+      }
     },
     {
       text: m.panels.median,
       color: MEDIAN_COLOR,
       on: () => emphasiseStat("median"),
-      off: () => emphasiseStat(null)
+      off: () => emphasiseStat(null),
+      hide: (hidden) => {
+        legendState("stats", 2)[1] = hidden;
+        applyStatVisibility();
+      }
     }
   ]);
+  for (const chart of summaryPanels) {
+    const canvas = chart.canvas;
+    canvas.addEventListener("pointermove", (ev) => {
+      const els = chart.getElementsAtEventForMode(
+        ev,
+        "nearest",
+        { intersect: true },
+        true
+      );
+      const d = els.length ? datasetsOf(chart)[els[0].datasetIndex] : void 0;
+      emphasiseStat(d?.__stat ?? null);
+    });
+    canvas.addEventListener("pointerleave", () => emphasiseStat(null));
+  }
+  wireLegendSync(host, "stats", (d) => {
+    const s = d.__stat;
+    return s === "mean" ? 0 : s === "median" ? 1 : null;
+  });
 }
 
 // src/client/lang.ts

@@ -621,6 +621,35 @@ section {
   }
 }
 
+/* ---- interactive legend states ---- */
+.legend button {
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+/* hovered or hovered-from-chart */
+.legend button.is-active {
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  outline: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  outline-offset: 1px;
+}
+
+/* filtered out of the charts */
+.legend button.is-off {
+  opacity: 0.4;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legend button {
+    transition: none;
+  }
+}
+
 /* ---- about -------------------------------------------------------------- */
 :is(#about, .about) {
   margin-bottom: 2.75rem;

@@ -1022,49 +1022,176 @@ function emphasiseEvent(index: number | null): void {
   );
 }
 
-/* ----- legends */
+/* ========================================================= interactive legends
+
+   Click = filter the entry out of every chart in its section. Hover/focus
+   previews the highlight, and a chart hover marks the matching entry. Hidden
+   state lives in a module map so a locale re-mount replays it. */
+
+type LegendKey = "items" | "events" | "stats";
 
 interface LegendEntry {
   text: string;
   color: string;
+  dash?: string;
   on: () => void;
   off: () => void;
+  /** Omit to make the entry highlight-only (no filter). */
+  hide?: (hidden: boolean) => void;
 }
 
-/** Latched highlight: focus previews, click pins, aria-pressed reports it. */
-function legend(host: HTMLElement, entries: readonly LegendEntry[]): void {
-  let pinned: number | null = null;
+const legendHidden = new Map<LegendKey, boolean[]>();
+const legendButtons = new Map<LegendKey, HTMLButtonElement[]>();
 
-  host.replaceChildren(
-    ...entries.map(({ text, color, dash, on, off }, idx) => {
-      const button = el("button");
-      button.type = "button";
-      button.setAttribute("aria-pressed", "false");
+function legendState(key: LegendKey, n: number): boolean[] {
+  const s = legendHidden.get(key) ?? [];
+  while (s.length < n) s.push(false);
+  s.length = n;
+  legendHidden.set(key, s);
+  return s;
+}
 
-      const swatch = el("span", "swatch");
-      swatch.style.background = dash?.length
-        ? `repeating-linear-gradient(90deg, ${color} 0 3px, transparent 3px 6px)`
-        : color;
-      button.append(swatch, document.createTextNode(text));
+/** Reverse direction: chart hover → legend entry. */
+function legendMark(key: LegendKey, idx: number | null): void {
+  legendButtons.get(key)?.forEach((b, i) => {
+    b.classList.toggle("is-active", i === idx);
+  });
+}
 
+function legend(
+  host: HTMLElement,
+  key: LegendKey,
+  entries: readonly LegendEntry[],
+): void {
+  const hidden = legendState(key, entries.length);
+
+  const buttons = entries.map((entry, idx) => {
+    const button = el("button");
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(hidden[idx]));
+    button.classList.toggle("is-off", hidden[idx]);
+
+    const swatch = el("span", "swatch");
+    swatch.style.background = entry.dash?.length
+      ? `repeating-linear-gradient(90deg, ${entry.color} 0 3px, transparent 3px 6px)`
+      : entry.color;
+    button.append(swatch, document.createTextNode(entry.text));
+
+    if (entry.hide) {
       button.addEventListener("click", () => {
-        pinned = pinned === idx ? null : idx;
-        button.setAttribute("aria-pressed", String(pinned === idx));
-        pinned === null ? off() : on();
+        hidden[idx] = !hidden[idx];
+        button.setAttribute("aria-pressed", String(hidden[idx]));
+        button.classList.toggle("is-off", hidden[idx]);
+        entry.hide?.(hidden[idx]);
       });
-      for (const ev of ["mouseenter", "focus", "pointerdown"] as const)
-        button.addEventListener(ev, on);
-      for (const ev of ["mouseleave", "blur"] as const)
-        button.addEventListener(ev, () => {
-          if (pinned === idx) return; // a pinned highlight survives blur
-          off();
-          host.querySelectorAll("[aria-pressed]").forEach((b, j) => {
-            if (j !== pinned) b.setAttribute("aria-pressed", "false");
-          });
-        });
-      return button;
-    }),
-  );
+    } else {
+      let pinned = false;
+      button.addEventListener("click", () => {
+        pinned = !pinned;
+        button.setAttribute("aria-pressed", String(pinned));
+        pinned ? entry.on() : entry.off();
+      });
+    }
+
+    for (const ev of ["mouseenter", "focus", "pointerdown"] as const)
+      button.addEventListener(ev, () => {
+        entry.on();
+        legendMark(key, idx);
+      });
+    for (const ev of ["mouseleave", "blur"] as const)
+      button.addEventListener(ev, () => {
+        if (!entry.hide && button.getAttribute("aria-pressed") === "true")
+          return;
+        entry.off();
+        legendMark(key, null);
+      });
+
+    return button;
+  });
+
+  legendButtons.set(key, buttons);
+  host.replaceChildren(...buttons);
+
+  /* Re-apply filters after a re-mount. */
+  entries.forEach((entry, idx) => {
+    if (hidden[idx]) entry.hide?.(true);
+  });
+}
+
+/* ---- filtering ---- */
+
+type ModeArg = Parameters<Chart["getElementsAtEventForMode"]>[1];
+
+/** Charts inside a section host, in DOM order. */
+function chartsIn(host: Element | null): Chart<"line">[] {
+  const out: Chart<"line">[] = [];
+  for (const c of host?.querySelectorAll("canvas") ?? []) {
+    const chart = Chart.getChart(c);
+    if (chart) out.push(chart as Chart<"line">);
+  }
+  return out;
+}
+
+/** Show/hide every dataset in `host` whose `field` equals `key`. */
+function toggleDatasets(
+  host: Element | null,
+  field: "__item" | "__ep",
+  key: string | number,
+  hidden: boolean,
+): void {
+  for (const chart of chartsIn(host)) {
+    let touched = false;
+    datasetsOf(chart).forEach((d, i) => {
+      if ((d as unknown as Record<string, unknown>)[field] !== key) return;
+      chart.setDatasetVisibility(i, !hidden);
+      touched = true;
+    });
+    if (touched) chart.update("none");
+  }
+}
+
+/** Mean/median plus the connector bars, which need both statistics. */
+function applyStatVisibility(): void {
+  const h = legendState("stats", 2);
+  const anyHidden = h[0] || h[1];
+
+  for (const chart of summaryPanels) {
+    datasetsOf(chart).forEach((d, i) => {
+      const stat = (d as StatDataset).__stat;
+      chart.setDatasetVisibility(
+        i,
+        stat === undefined ? !anyHidden : !h[stat === "mean" ? 0 : 1],
+      );
+    });
+    chart.update("none");
+  }
+}
+
+/** Chart hover → legend entry, for every canvas in a section. */
+function wireLegendSync(
+  host: Element | null,
+  key: LegendKey,
+  indexOf: (d: PanelDataset) => number | null,
+): void {
+  for (const canvas of host?.querySelectorAll("canvas") ?? []) {
+    const chart = Chart.getChart(canvas);
+    if (!chart) continue;
+
+    canvas.addEventListener("pointermove", (ev) => {
+      const mode = (chart.options.interaction?.mode ?? "nearest") as ModeArg;
+      const els = chart.getElementsAtEventForMode(
+        ev,
+        mode,
+        { intersect: !!chart.options.interaction?.intersect },
+        true,
+      );
+      const d = els.length
+        ? (datasetsOf(chart)[els[0].datasetIndex] as PanelDataset)
+        : undefined;
+      legendMark(key, d ? indexOf(d) : null);
+    });
+    canvas.addEventListener("pointerleave", () => legendMark(key, null));
+  }
 }
 
 /* ----- panels */
@@ -1312,24 +1439,39 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
   });
 
   /* ---- legends ---- */
+  const cHost = document.getElementById("trellis-episodes");
+  const dHost = document.getElementById("trellis-items");
+
   legend(
     opts.itemLegend,
+    "items",
     SERIES.map((s) => ({
       text: m.items[s.key].label,
       color: s.color,
       on: () => emphasiseItem(s.key),
       off: () => emphasiseItem(null),
+      hide: (hidden) => toggleDatasets(cHost, "__item", s.key, hidden),
     })),
   );
 
   legend(
     opts.eventLegend,
+    "events",
     EPISODES.map((ep, i) => ({
       text: m.episodes[ep.id].short,
       color: RAMP[i],
       on: () => emphasiseEvent(i),
       off: () => emphasiseEvent(null),
+      hide: (hidden) => toggleDatasets(dHost, "__ep", i, hidden),
     })),
+  );
+
+  wireLegendSync(cHost, "items", (d) => {
+    const k = SERIES.findIndex((s) => s.key === d.__item);
+    return k < 0 ? null : k;
+  });
+  wireLegendSync(dHost, "events", (d) =>
+    d.__ep >= 0 && d.__ep < EPISODES.length ? d.__ep : null,
   );
 }
 
@@ -1446,7 +1588,6 @@ function gapDataset(
 }
 
 function emphasiseStat(stat: Stat | null): void {
-  if (stat === activeStat) return;
   activeStat = stat;
 
   for (const chart of summaryPanels) {
@@ -1454,12 +1595,12 @@ function emphasiseStat(stat: Stat | null): void {
       if (!d.__stat) continue;
       const on = stat === null || d.__stat === stat;
       const c = on ? d.__color : alpha(d.__color, DIM);
-      const hollow = d.__stat === "median";
+      const fill = d.__stat === "median" && on ? THEME.hollow : c;
 
       d.borderColor = c;
       d.pointBorderColor = c;
-      d.backgroundColor = hollow ? THEME.hollow : c;
-      d.pointBackgroundColor = hollow ? THEME.hollow : c;
+      d.backgroundColor = fill;
+      d.pointBackgroundColor = fill;
     }
     chart.update("none");
   }
@@ -1631,10 +1772,6 @@ export function mountSummary(): void {
               },
             },
           },
-          onHover: (_e, els) => {
-            const d = els[0]?.dataset as StatDataset | undefined;
-            emphasiseStat(d?.__stat ?? null);
-          },
         },
         plugins: [],
       }),
@@ -1642,18 +1779,47 @@ export function mountSummary(): void {
     summaryPanels.push(chart);
   });
 
-  legend(legendHost, [
+  legend(legendHost, "stats", [
     {
       text: m.panels.mean,
       color: MEAN_COLOR,
       on: () => emphasiseStat("mean"),
       off: () => emphasiseStat(null),
+      hide: (hidden) => {
+        legendState("stats", 2)[0] = hidden;
+        applyStatVisibility();
+      },
     },
     {
       text: m.panels.median,
       color: MEDIAN_COLOR,
       on: () => emphasiseStat("median"),
       off: () => emphasiseStat(null),
+      hide: (hidden) => {
+        legendState("stats", 2)[1] = hidden;
+        applyStatVisibility();
+      },
     },
   ]);
+
+  for (const chart of summaryPanels) {
+    const canvas = chart.canvas;
+    canvas.addEventListener("pointermove", (ev) => {
+      const els = chart.getElementsAtEventForMode(
+        ev,
+        "nearest",
+        { intersect: true },
+        true,
+      );
+      const d = els.length
+        ? (datasetsOf(chart)[els[0].datasetIndex] as StatDataset)
+        : undefined;
+      emphasiseStat(d?.__stat ?? null);
+    });
+    canvas.addEventListener("pointerleave", () => emphasiseStat(null));
+  }
+  wireLegendSync(host, "stats", (d) => {
+    const s = (d as StatDataset).__stat;
+    return s === "mean" ? 0 : s === "median" ? 1 : null;
+  });
 }
