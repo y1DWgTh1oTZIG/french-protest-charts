@@ -1,369 +1,784 @@
-/* ================================================================ per capita
+/* =============================================================== per capita
  *
- * Sections A and B plot counts; section C plots counts for seven movements.
- * None of them answers the question a count cannot: what share of the country
- * was in the street, and how does that share compare across 58 years?
+ * Turnout as a share of the population, for sections A, B and C.
  *
- * Three rules, and they are the whole design:
+ * ── The stack ─────────────────────────────────────────────────────────────
+ * 100 % stacked, drawn explicitly in `pcStack`: a blue polygon from the axis
+ * floor up to the turnout line, and a pale polygon from the turnout line up
+ * to the stack total (100 %). The two share that polyline as a boundary and
+ * tile the plot area exactly, which is what "100 % stacked" means. It is NOT
+ * Chart.js `stacked: true` — segment lengths are not additive on a log axis,
+ * so the polygons are built from pixel positions in one pass.
  *
- *   1. Every row keeps the ministry and organiser counts visible NEXT TO the
- *      rate. A percentage of a union claim is not a measurement.
- *   2. Sums of turnout are person-days, not people. The total row says so and
- *      does not claim a share of the population that participated.
- *   3. A missing denominator prints an em dash and says why. 1968 is
- *      metropolitan France because no France-entière row exists for it.
+ * ── The axis ──────────────────────────────────────────────────────────────
+ * Logarithmic, floor derived from the smallest plotted share (one decade of
+ * headroom), ceil fixed at the stack total of 100 % — the total, not a cap.
  *
- * Reads DAILY/WEEKLY.turnout and EPISODES directly, so a figure added to
- * data.ts or episodes.ts appears here without a second edit.
+ * ── Data density ──────────────────────────────────────────────────────────
+ * Only nine days carry a published crowd. `spanGaps` connects them and the
+ * area is interpolated between observations; the nine are marked with dots so
+ * an interpolated stretch is visibly different from a measured day.
  */
 
-import { DAILY, DATES, WEEKLY, WEEKS } from "./data.ts";
-import { EPISODES, seriesData } from "./episodes.ts";
-import { byId, el } from "./dom.ts";
-import { bi, fill, fmtDate, fmtWeek, nf, t, type Bi } from "./i18n.ts";
 import {
-  EPISODE_POP,
+  CategoryScale,
+  Chart,
+  Legend,
+  LineController,
+  LineElement,
+  LogarithmicScale,
+  PointElement,
+  Tooltip,
+  type ChartDataset,
+  type ChartOptions,
+  type Plugin,
+  type Scale,
+  type TooltipItem,
+} from "chart.js";
+import { dataTable, keyboardChart } from "./a11y.ts";
+import { THEME, track } from "./canvas.ts";
+import { DAILY, DATES, WEEKLY, WEEKS, type Pt as DayPt } from "./data.ts";
+import { byId, el } from "./dom.ts";
+import { EPISODES, seriesData } from "./episodes.ts";
+import {
+  a11y,
+  fill,
+  fmtDate,
+  fmtDayMonth,
+  fmtWeek,
+  getLocale,
+  nf,
+  t,
+} from "./i18n.ts";
+import type { Episode } from "./model.ts";
+import {
   KEY_2026,
+  basisOf,
   denominator,
-  fmtPctBand,
-  fmtRateBand,
-  per100k,
+  pctOfValue,
+  popKeyFor,
   population,
-  share,
 } from "./population.ts";
+import { wrapTooltipLines } from "./tooltip.ts";
 
-/* ----- copy. Kept here in both languages rather than in the catalogue: this
-   block is self-contained, and a missing catalogue branch renders '' silently. */
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend,
+);
+
+/* ----- constants */
+
+const BLUE = "#1d4ed8";
+const PALE = "rgba(29,78,216,0.10)";
+/** The top of the stack. Not a cap: 100 % is the whole country. */
+const STACK_TOTAL = 100;
+
+/* ----- copy */
+
+interface Bi {
+  readonly en: string;
+  readonly fr: string;
+}
+const L = (o: Bi): string =>
+  String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
 
 const COPY = {
-  titleDaily: {
-    en: "Turnout as a share of the population",
-    fr: "La foule rapportée à la population",
+  turnout: { en: "In the street", fr: "Dans la rue" },
+  rest: { en: "The rest of the population", fr: "Le reste de la population" },
+  measured: { en: "Measured day", fr: "Jour mesuré" },
+  logNote: {
+    en: "· log scale: band heights are not proportional",
+    fr: "· échelle log : les hauteurs ne sont pas proportionnelles",
   },
-  titleWeekly: {
+  axisY: {
+    en: "Share of the population (log)",
+    fr: "Part de la population (log)",
+  },
+  axisDate: { en: "Date", fr: "Date" },
+  axisWeek: { en: "Week", fr: "Semaine" },
+  axisWeekNo: { en: "Week of the movement", fr: "Semaine du mouvement" },
+  titleA: {
+    en: "Turnout as a share of the population, day by day",
+    fr: "La foule rapportée à la population, jour par jour",
+  },
+  titleB: {
     en: "Weekly peak as a share of the population",
     fr: "Pointe hebdomadaire rapportée à la population",
   },
-  titleEpisodes: {
-    en: "Peak turnout of each movement, as a share of its population",
-    fr: "Pointe de chaque mouvement rapportée à sa population",
-  },
-  capDaily: {
-    en: "Turnout by day against France entière, {pop} residents at 1 January 2026. The band runs from the ministry count to the organiser count.",
-    fr: "Foule par jour rapportée à la France entière, {pop} habitants au 1er janvier 2026. La fourchette va du décompte ministériel au décompte syndical.",
-  },
-  capWeekly: {
-    en: "The peak day of each week against France entière, {pop} residents at 1 January 2026. A peak, not a sum: the same person is counted once per day.",
-    fr: "Le jour de pointe de chaque semaine rapporté à la France entière, {pop} habitants au 1er janvier 2026. Une pointe, pas une somme : une même personne est comptée une fois par jour.",
-  },
-  capEpisodes: {
-    en: "The highest weekly turnout in each movement, against the population of that year. The figure plotted is the midpoint of the published band; the band is given in the last column.",
-    fr: "La foule hebdomadaire la plus élevée de chaque mouvement, rapportée à la population de l’année. Le chiffre retenu est le milieu de la fourchette publiée ; la fourchette figure en dernière colonne.",
+  ttCount: { en: "{v} in the street", fr: "{v} dans la rue" },
+  ttShare: { en: "{v} of the population", fr: "{v} de la population" },
+  tableCaption: {
+    en: "Table of figures: {title}",
+    fr: "Tableau des chiffres : {title}",
   },
   colDate: { en: "Date", fr: "Date" },
   colWeek: { en: "Week", fr: "Semaine" },
-  colMinistry: { en: "Ministry", fr: "Ministère" },
-  colOrganisers: { en: "Organisers", fr: "Organisateurs" },
+  colCount: { en: "Count", fr: "Décompte" },
   colShare: { en: "Share of population", fr: "Part de la population" },
-  colRate: { en: "Per 100 000", fr: "Pour 100 000" },
-  colMovement: { en: "Movement", fr: "Mouvement" },
-  colBase: { en: "Population", fr: "Population" },
-  colPeak: { en: "Peak", fr: "Pointe" },
-  colBand: { en: "Published band", fr: "Fourchette publiée" },
-  peakLabel: {
-    en: "Peak day · {date} · {pct}",
-    fr: "Jour de pointe · {date} · {pct}",
+  base: { en: "Population {n}", fr: "Population {n}" },
+  metro: { en: "metropolitan France", fr: "France métropolitaine" },
+  noBase: { en: "no denominator", fr: "pas de dénominateur" },
+  noteA: {
+    en: "France entière — {pop} residents at 1 January 2026 (INSEE, provisional). Nine days carry a published crowd; the band is interpolated between them and those nine are marked with a dot. Blue is the ministry count, and the organisers’ ceiling is in the tooltip. Logarithmic axis from {min} to 100 %: it spreads the range so small shares are readable, so band heights are not proportional to population. The 29 September count is a floor — public-service cortège only.",
+    fr: "France entière — {pop} habitants au 1er janvier 2026 (INSEE, chiffre provisoire). Neuf jours portent une foule publiée ; la bande est interpolée entre eux et ces neuf jours sont marqués d’un point. Le bleu est le décompte ministériel, la borne syndicale est dans l’infobulle. Axe logarithmique de {min} à 100 % : il étale la plage pour rendre les petites parts lisibles, les hauteurs ne sont donc pas proportionnelles à la population. Le décompte du 29 septembre est un plancher — cortège de la fonction publique seulement.",
   },
-  peakSub: {
-    en: "{n} residents in 100 000 were in the street — the upper bound of the day.",
-    fr: "{n} habitants sur 100 000 étaient dans la rue — la borne haute du jour.",
+  noteB: {
+    en: "The peak day of each week, against France entière — {pop} residents. A peak, not a sum: the same person is counted once per day. Logarithmic axis from {min} to 100 %: band heights are not proportional.",
+    fr: "Le jour de pointe de chaque semaine, rapporté à la France entière — {pop} habitants. Une pointe, pas une somme : une même personne est comptée une fois par jour. Axe logarithmique de {min} à 100 % : les hauteurs ne sont pas proportionnelles.",
   },
-  totalLabel: {
-    en: "Person-days · {n} counted days",
-    fr: "Jours-manifestation · {n} jours comptés",
+  noteC: {
+    en: "Each panel uses the population of its own year and the same logarithmic axis, so the seven are comparable. May 68 is read against metropolitan France — 49 711 853 residents at the census of 7 March 1968 — because no France-entière count exists for that year in this vintage; the metropolitan base is narrower than France entière by the overseas departments, so its rate reads a little high against the others. On it, 13 May is 0,40 % to 2,01 % of the country: 200 000 according to the prefecture, over a million according to the organisers, and that fivefold band is the disagreement, not an error bar. Its crowd is a scholarly reconstruction, so its rate is a magnitude, not a measurement. The Gilets jaunes count includes road blockades (Act I); the Nahel crowd is an episode-level estimate.",
+    fr: "Chaque panneau utilise la population de son année et le même axe logarithmique : les sept sont comparables. Mai 68 est rapporté à la France métropolitaine — 49 711 853 habitants au recensement du 7 mars 1968 — car aucun décompte France entière n’existe pour cette année dans cette version ; la base métropolitaine est plus étroite que la France entière du fait des départements d’outre-mer, son taux est donc un peu surestimé par rapport aux autres. Sur cette base, le 13 mai représente de 0,40 % à 2,01 % du pays : 200 000 selon la préfecture, plus d’un million selon les organisateurs, et cette fourchette de 1 à 5 est le désaccord, non une barre d’erreur. Sa foule est une reconstruction savante : son taux est un ordre de grandeur, non une mesure. Le décompte des Gilets jaunes inclut les blocages routiers (acte I) ; la foule du mouvement Nahel est une estimation d’épisode.",
   },
-  totalSub: {
-    en: "These are attendances, not people: the same person marched more than once, so this is not the share of the population that protested.",
-    fr: "Ce sont des présences, pas des personnes : une même personne a défilé plusieurs fois, ce n’est donc pas la part de la population qui a manifesté.",
-  },
-  noteDaily: {
-    en: "France entière, {pop} residents at 1 January 2026 (INSEE, provisional). Metropolitan France would give {metro}. The 29 September band is a floor: it counts the public-service cortège, with no student crowd counted separately. The 5 November and 17 October upper bounds are organiser claims, not counts.",
-    fr: "France entière, {pop} habitants au 1er janvier 2026 (INSEE, chiffre provisoire). La France métropolitaine donnerait {metro}. La fourchette du 29 septembre est un plancher : elle compte le cortège de la fonction publique, sans foule étudiante distincte. Les bornes hautes des 17 octobre et 5 novembre sont des chiffres syndicaux, pas des décomptes.",
-  },
-  noteEpisodes: {
-    en: "May 68 is read against metropolitan France only: no France-entière figure exists for 1968 in this vintage, and its 49 723 072 is a resident estimate, not a census count. Its turnout band is a scholarly reconstruction, so the rate is approximate. A rate adds arithmetic precision to a numerator that may not have it — read it as a magnitude.",
-    fr: "Mai 68 est rapporté à la France métropolitaine seulement : aucun chiffre pour la France entière n’existe pour 1968 dans cette version, et ses 49 723 072 sont une estimation de population, non un décompte censitaire. Sa fourchette de foule est une reconstruction savante : le taux est donc approximatif. Un taux ajoute une précision arithmétique à un numérateur qui n’en a peut-être pas — à lire comme un ordre de grandeur.",
-  },
-  absent: { en: "no denominator", fr: "pas de dénominateur" },
-} satisfies Record<string, Bi>;
+} as const satisfies Record<string, Bi>;
 
-const txt = (k: keyof typeof COPY): string => bi(COPY[k]);
+const SHARE = {
+  france: { en: "Share of population", fr: "Part de la population" },
+  metropole: {
+    en: "Share of the metropolitan population",
+    fr: "Part de la population métropolitaine",
+  },
+  ttFrance: { en: "{v} of the population", fr: "{v} de la population" },
+  ttMetro: {
+    en: "{v} of the metropolitan population",
+    fr: "{v} de la population métropolitaine",
+  },
+} as const satisfies Record<string, Bi>;
 
-/* ----- rows ----- */
+/* ----- rows */
 
 interface Row {
-  readonly where: string;
-  readonly lo: number;
-  readonly hi: number;
-  readonly pctLo: number | null;
-  readonly pctHi: number | null;
-  readonly rateLo: number | null;
-  readonly rateHi: number | null;
+  readonly key: string;
+  readonly title: string;
+  readonly p: number | null; // fraction: 0.008
+  readonly plo: number | null;
+  readonly phi: number | null;
+  readonly lo: number | null;
+  readonly hi: number | null;
+  readonly note?: string;
+  readonly basis?: "france" | "metro"; // which denominator produced plo/phi
 }
 
-/** Daily or weekly turnout, straight from the projected series. Detached
- *  points are INCLUDED: a partial or regional day is still a published
- *  crowd, and dropping it would hide the floor. */
-function rowsFor(weekly: boolean): Row[] {
+/* ----- formatting */
+
+let tag = "";
+let pctFmt: Intl.NumberFormat | null = null;
+
+function locale(): string {
+  const next = String(getLocale()).slice(0, 2) === "fr" ? "fr-FR" : "en-GB";
+  if (next !== tag) {
+    tag = next;
+    pctFmt = new Intl.NumberFormat(next, {
+      style: "percent",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+  return next;
+}
+
+const pctText = (v: number | null): string => {
+  locale();
+  return v === null ? "—" : pctFmt!.format(v);
+};
+
+const pctBand = (lo: number | null, hi: number | null): string => {
+  if (lo === null || hi === null) return "—";
+  const a = pctText(lo);
+  return Math.abs(hi - lo) < 1e-9 ? a : `${a} – ${pctText(hi)}`;
+};
+
+const countText = (v: number | null): string =>
+  v === null ? "—" : nf().format(Math.round(v));
+
+const countBand = (r: Row): string => {
+  if (r.lo === null) return "—";
+  const hi = r.hi ?? r.lo;
+  return Math.abs(hi - r.lo) < 1e-9
+    ? countText(r.lo)
+    : `${countText(r.lo)} – ${countText(hi)}`;
+};
+
+/** Percent value (0.8 means 0.8 %) → "0,80 %" / "0.80%", decimals derived
+ *  from the magnitude so a 0,001 % tick keeps its zeros. */
+function tickText(v: number): string {
+  const exp = Math.round(Math.log10(v));
+  const d = Math.max(0, -exp);
+  const n = new Intl.NumberFormat(locale(), {
+    minimumFractionDigits: d,
+    maximumFractionDigits: d,
+  }).format(v);
+  return locale() === "fr-FR" ? `${n} %` : `${n}%`;
+}
+
+/* ----- row builders */
+
+function dailyRows(): Row[] {
   const pop = population(KEY_2026);
-  const series = weekly ? WEEKLY.turnout : DAILY.turnout;
+  const notes = t().chart.dayNotes as Record<string, string | undefined>;
+  return DATES.map((d, i) => {
+    const p = DAILY.turnout[i] as DayPt | undefined;
+    const v = p?.v ?? null;
+    const hi = p?.band?.[1] ?? v;
+    const plo = v === null ? null : pctOfValue(v, pop);
+    const phi = hi === null ? null : pctOfValue(hi, pop);
+    return {
+      key: fmtDayMonth(d),
+      title: fmtDate(d),
+      p: plo === null ? null : plo / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
+      lo: v,
+      hi: hi ?? null,
+      note: notes?.[d],
+    };
+  });
+}
+
+function weeklyRows(): Row[] {
+  const pop = population(KEY_2026);
+  return WEEKS.map((w, i) => {
+    const p = WEEKLY.turnout[i] as DayPt | undefined;
+    const v = p?.v ?? null;
+    const hi = p?.band?.[1] ?? v;
+    const plo = v === null ? null : pctOfValue(v, pop);
+    const phi = hi === null ? null : pctOfValue(hi, pop);
+    return {
+      key: String(w.key),
+      title: fmtWeek(w.key, w.end),
+      p: plo === null ? null : plo / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
+      lo: v,
+      hi: hi ?? null,
+    };
+  });
+}
+
+function episodeRows(ep: Episode): Row[] {
+  const pop = population(popKeyFor(ep.id));
+  const basis = basisOf(pop) ?? undefined; // 1968 → "metro"
+  const pts = seriesData(ep, "p") ?? [];
+  const byWeek = new Map(pts.map((p) => [p.x, p]));
+
+  /* Derive the span from the series as well as the week rows: an episode
+     with no `weeks` gave maxW = 1, which is why the June 2023 panel drew an
+     axis reading 0…1 and a single point. */
+  const span = Math.max(...pts.map((p) => p.x), ...ep.weeks.map((r) => r.w), 0);
+
   const out: Row[] = [];
-
-  series.forEach((p, i) => {
-    if (!p || p.v === null) return;
-    const lo = p.band?.[0] ?? p.v;
-    const hi = p.band?.[1] ?? p.v;
-
-    let where: string;
-    if (weekly) {
-      const w = WEEKS[i];
-      if (!w) return;
-      where = fmtWeek(w.key, w.end);
-    } else {
-      if (!DATES[i]) return;
-      where = fmtDate(DATES[i]);
+  for (let w = 0; w <= span; w++) {
+    const p = byWeek.get(w);
+    if (!p) {
+      out.push({
+        key: String(w),
+        title: String(w),
+        p: null,
+        plo: null,
+        phi: null,
+        lo: null,
+        hi: null,
+        basis,
+      });
+      continue;
     }
-
+    /* Fall back to the point estimate when a series carries no band, so a
+       single-figure observation still plots and still prints a share. */
+    const lo = p.low ?? p.y ?? null;
+    const hi = p.high ?? p.y ?? null;
+    const mid = pctOfValue(p.y, pop);
+    const plo = pctOfValue(lo, pop);
+    const phi = pctOfValue(hi, pop);
     out.push({
-      where,
+      key: String(w),
+      title: p.t,
+      p: mid === null ? null : mid / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
       lo,
       hi,
-      pctLo: share(lo, pop),
-      pctHi: share(hi, pop),
-      rateLo: per100k(lo, pop),
-      rateHi: per100k(hi, pop),
+      note: p.note,
+      basis,
     });
-  });
-
+  }
   return out;
 }
 
-/* ----- one table, two sections ----- */
+/* ----- plugins */
 
-function cell(text: string, cls = "pc-num"): HTMLElement {
-  return el("td", cls, text);
+/** 100 % stack. Blue from the axis floor to the turnout line, pale from the
+ *  turnout line to the stack total. Drawn from pixel positions so the log
+ *  scale cannot distort the two areas relative to each other. */
+const pcStack: Plugin<"line"> = {
+  id: "pcStack",
+  beforeDatasetsDraw(chart) {
+    const data = chart.data.datasets[0]?.data as (number | null)[] | undefined;
+    if (!data) return;
+
+    const meta = chart.getDatasetMeta(0);
+    const pts: Array<{ x: number; y: number }> = [];
+    meta.data.forEach((item, i) => {
+      const v = data[i];
+      if (v === null || v === undefined || !(v > 0)) return;
+      pts.push({ x: item.x, y: item.y });
+    });
+    if (!pts.length) return;
+
+    const { ctx, chartArea, scales } = chart;
+    const yTop = scales.y?.getPixelForValue(STACK_TOTAL) ?? chartArea.top;
+    const yBottom = chartArea.bottom;
+    const x0 = pts[0].x;
+    const xN = pts[pts.length - 1].x;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+      chartArea.left,
+      chartArea.top,
+      chartArea.right - chartArea.left,
+      chartArea.bottom - chartArea.top,
+    );
+    ctx.clip();
+
+    // remainder: stack total down to the turnout line
+    ctx.beginPath();
+    ctx.moveTo(x0, yTop);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(xN, yTop);
+    ctx.closePath();
+    ctx.fillStyle = PALE;
+    ctx.fill();
+
+    // turnout: axis floor up to the turnout line
+    ctx.beginPath();
+    ctx.moveTo(x0, yBottom);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(xN, yBottom);
+    ctx.closePath();
+    ctx.fillStyle = BLUE;
+    ctx.fill();
+
+    ctx.restore();
+  },
+};
+
+/** The peak value above the point, with a halo: a 0.8 % band is 48 % of a log
+ *  axis but only ~5 px of a linear one, and the eye should not have to measure. */
+const pcPeak: Plugin<"line"> = {
+  id: "pcPeak",
+  afterDatasetsDraw(chart) {
+    const ds = chart.data.datasets[0] as
+      | ChartDataset<"line", (number | null)[]>
+      | undefined;
+    if (!ds) return;
+    const data = ds.data as (number | null)[];
+
+    let best = -1;
+    let bestV = -Infinity;
+    data.forEach((v, j) => {
+      if (v !== null && v > bestV) {
+        bestV = v;
+        best = j;
+      }
+    });
+    if (best < 0) return;
+
+    const at = chart.getDatasetMeta(0).data[best];
+    if (!at) return;
+
+    const { ctx, chartArea } = chart;
+    const text = tickText(bestV);
+    ctx.save();
+    ctx.font = "600 11px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    const x = Math.min(
+      Math.max(at.x, chartArea.left + 30),
+      chartArea.right - 30,
+    );
+    const y = Math.max(at.y - 7, chartArea.top + 14);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#fff";
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = BLUE;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  },
+};
+
+/* ----- chart */
+
+interface Cfg {
+  data: {
+    labels: string[];
+    datasets: ChartDataset<"line", (number | null)[]>[];
+  };
+  options: ChartOptions<"line">;
 }
 
-function head(labels: readonly string[]): HTMLTableSectionElement {
-  const thead = el("thead");
-  const tr = el("tr");
-  labels.forEach((label, i) => {
-    const th = el("th", i === 0 ? "pc-scope-head" : "pc-num-head", label);
-    (th as HTMLTableCellElement).scope = "col";
-    tr.append(th);
-  });
-  thead.append(tr);
-  return thead as HTMLTableSectionElement;
+interface Opts {
+  readonly xTitle: string;
+  readonly rotate: boolean;
+  readonly maxTicks: number;
+  readonly showY: boolean;
+  readonly floor?: number;
 }
 
-function block(
+/** Floor = one decade below the smallest plotted share, derived per panel so
+ *  a panel whose minimum is 0.07 % is not crushed by a fixed 0.01 % floor. */
+function axisFloor(values: readonly number[]): number {
+  const pos = values.filter((v) => v > 0);
+  if (!pos.length) return 0.01;
+  return Math.pow(10, Math.floor(Math.log10(Math.min(...pos))) - 1);
+}
+
+function build(rows: readonly Row[], o: Opts): Cfg | null {
+  const plotted = rows.map((r) => (r.p === null ? null : r.p * 100));
+  if (!plotted.some((v) => v !== null && v > 0)) return null;
+
+  const floor = o.floor ?? axisFloor(plotted as number[]);
+  const decades: number[] = [];
+  for (
+    let e = Math.round(Math.log10(floor));
+    e <= Math.log10(STACK_TOTAL);
+    e++
+  ) {
+    decades.push(Number(Math.pow(10, e).toPrecision(12)));
+  }
+
+  const dataset: ChartDataset<"line", (number | null)[]> = {
+    label: L(COPY.turnout),
+    data: plotted,
+    borderColor: BLUE,
+    backgroundColor: "transparent", // the area is drawn by pcStack
+    borderWidth: 2,
+    // nine observations across 58 days: without this the series is invisible
+    spanGaps: true,
+    tension: 0,
+    pointRadius: (ctx) => (ctx.raw === null ? 0 : 3),
+    pointBackgroundColor: "#fff",
+    pointBorderColor: BLUE,
+    pointBorderWidth: 1.5,
+    pointHoverRadius: 5,
+    pointHitRadius: 12,
+    fill: false,
+  };
+
+  const options: ChartOptions<"line"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    interaction: { mode: "index", intersect: false },
+    layout: { padding: { top: 16, right: 16, bottom: 0, left: 4 } },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: {
+          maxRotation: o.rotate ? 90 : 0,
+          autoSkip: true,
+          maxTicksLimit: o.maxTicks,
+          font: { size: 10 },
+          color: THEME.muted,
+          padding: 4,
+        },
+        title: {
+          display: Boolean(o.xTitle),
+          text: o.xTitle,
+          color: THEME.label,
+          font: { size: 11 },
+          padding: { top: 4 },
+        },
+      },
+      y: {
+        type: "logarithmic",
+        min: floor,
+        max: STACK_TOTAL,
+        border: { display: false },
+        grid: { color: THEME.axisGrid, drawTicks: false },
+        afterBuildTicks: (axis: Scale) => {
+          axis.ticks = decades.map((value) => ({ value }));
+        },
+        ticks: {
+          display: o.showY,
+          font: { size: 10 },
+          color: THEME.muted,
+          padding: 6,
+          callback: (v) => tickText(Number(v)),
+        },
+        title: {
+          display: o.showY,
+          text: L(COPY.axisY),
+          color: THEME.label,
+          font: { size: 11 },
+          padding: { bottom: 4 },
+        },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+      title: { display: false },
+      tooltip: {
+        backgroundColor: THEME.tooltipBg,
+        titleColor: THEME.tooltipInk,
+        bodyColor: THEME.tooltipInk,
+        borderColor: THEME.grid,
+        borderWidth: 1,
+        callbacks: {
+          title: (items: TooltipItem<"line">[]) =>
+            wrapTooltipLines(
+              rows[items[0]?.dataIndex ?? 0]?.title ?? "",
+              items[0],
+              "title",
+            ),
+          label: (item: TooltipItem<"line">) => {
+            const r = rows[item.dataIndex];
+            if (!r) return "";
+            const lines: string[] = [];
+            if (r.lo !== null)
+              lines.push(fill(L(COPY.ttCount), { v: countBand(r) }));
+            lines.push(fill(L(COPY.ttShare), { v: pctBand(r.plo, r.phi) }));
+            return wrapTooltipLines(lines.join("\n"), item, "body");
+          },
+          footer: (items: TooltipItem<"line">[]) => {
+            const r = rows[items[0]?.dataIndex ?? 0];
+            return r?.note ? wrapTooltipLines(r.note, items[0], "footer") : "";
+          },
+        },
+      },
+    },
+  };
+
+  return {
+    data: { labels: rows.map((r) => r.key), datasets: [dataset] },
+    options,
+  };
+}
+
+/* ----- DOM */
+
+function legendRow(): HTMLElement {
+  const row = el("div", "pc-legend");
+  const chip = (bg: string, text: string, ring: boolean): HTMLElement => {
+    const span = el("span", "pc-chip");
+    const sw = el("span", "pc-swatch");
+    sw.style.background = bg;
+    if (ring) {
+      sw.style.border = `1.5px solid ${BLUE}`;
+      sw.style.background = "#fff";
+      sw.style.borderRadius = "50%";
+    }
+    span.append(sw, document.createTextNode(text));
+    return span;
+  };
+  row.append(
+    chip(BLUE, L(COPY.turnout), false),
+    chip(PALE, `${L(COPY.rest)} ${L(COPY.logNote)}`, false),
+    chip("#fff", L(COPY.measured), true),
+  );
+  return row;
+}
+
+/* render(): the share column and the tooltip both name the base of the rows
+   they describe, so a métropole row never borrows the France-entière label. */
+function render(
+  host: HTMLElement,
   rows: readonly Row[],
+  o: Opts,
   title: string,
-  caption: string,
-  firstCol: string,
   note: string,
-  peakTemplate: string,
-  peakSubTemplate: string,
-): HTMLElement[] {
-  const out: HTMLElement[] = [el("h4", "pc-title", title)];
+  firstCol: string,
+): void {
+  const cfg = build(rows, o);
+  if (!cfg) return;
 
-  const table = el("table", "pc-table");
-  table.append(el("caption", "pc-caption", caption));
-  table.append(
-    head([
-      firstCol,
-      txt("colMinistry"),
-      txt("colOrganisers"),
-      txt("colShare"),
-      txt("colRate"),
-    ]),
-  );
+  const metro = rows.some((r) => r.basis === "metropole");
+  const shareHeader = metro ? L(SHARE.metropole) : L(SHARE.france);
 
-  const tbody = el("tbody");
-  let peak: Row | null = null;
-  let sumLo = 0;
-  let sumHi = 0;
+  const figure = el("figure", "pc-figure");
+  const cap = el("figcaption", "pc-caption");
+  cap.append(el("span", "pc-fig-title", title), legendRow());
 
-  for (const r of rows) {
-    sumLo += r.lo;
-    sumHi += r.hi;
-    if (!peak || r.hi > peak.hi) peak = r;
+  const box = el("div", "pc-canvas");
+  const canvas = el("canvas");
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", title);
+  box.append(canvas);
+  figure.append(cap, box);
 
-    const tr = el("tr");
-    const th = el("th", "pc-scope", r.where);
-    (th as HTMLTableCellElement).scope = "row";
-    tr.append(
-      th,
-      cell(nf().format(r.lo)),
-      cell(nf().format(r.hi)),
-      cell(fmtPctBand(r.pctLo, r.pctHi)),
-      cell(fmtRateBand(r.rateLo, r.rateHi)),
-    );
-    tbody.append(tr);
-  }
-  table.append(tbody);
-
-  /* Totals: person-days. Labelled as such, never as "share of the population
-     that protested". */
-  if (rows.length > 1) {
-    const pop = population(KEY_2026);
-    const tfoot = el("tfoot");
-    const tr = el("tr");
-    const th = el(
-      "th",
-      "pc-scope",
-      fill(txt("totalLabel"), { n: rows.length }),
-    );
-    (th as HTMLTableCellElement).scope = "row";
-    (th as HTMLTableCellElement).colSpan = 2;
-    tr.append(
-      th,
-      cell(`${nf().format(sumLo)} – ${nf().format(sumHi)}`),
-      cell(fmtPctBand(share(sumLo, pop), share(sumHi, pop))),
-      cell(fmtRateBand(per100k(sumLo, pop), per100k(sumHi, pop))),
-    );
-    tfoot.append(tr);
-    table.append(tfoot);
-  }
-
-  /* Headline: the peak. */
-  if (peak) {
-    const box = el("div", "pc-headline");
-    const stat = el("div", "pc-stat");
-    stat.append(
-      el(
-        "span",
-        "pc-num-big",
-        fill(peakTemplate, {
-          date: peak.where,
-          pct: fmtPctBand(peak.pctLo, peak.pctHi),
-        }),
-      ),
-      el(
-        "span",
-        "pc-stat-label",
-        fill(peakSubTemplate, { n: fmtRateBand(peak.rateLo, peak.rateHi) }),
-      ),
-    );
-    box.append(stat);
-    out.push(box);
-  }
-
-  out.push(table, el("p", "pc-note", note));
-  return out;
-}
-
-function daily(): HTMLElement[] {
-  const pop = population(KEY_2026);
-  const cap = fill(txt("capDaily"), {
-    pop: nf().format(denominator(pop) ?? 0),
-  });
-  const note = fill(txt("noteDaily"), {
-    pop: nf().format(denominator(pop) ?? 0),
-    metro: nf().format(pop?.metro ?? 0),
-  });
-  return block(
-    rowsFor(false),
-    txt("titleDaily"),
-    cap,
-    txt("colDate"),
-    note,
-    txt("peakLabel"),
-    txt("peakSub"),
-  );
-}
-
-function weekly(): HTMLElement[] {
-  const pop = population(KEY_2026);
-  const cap = fill(txt("capWeekly"), {
-    pop: nf().format(denominator(pop) ?? 0),
-  });
-  return block(
-    rowsFor(true),
-    txt("titleWeekly"),
-    cap,
-    txt("colWeek"),
-    fill(txt("noteDaily"), {
-      pop: nf().format(denominator(pop) ?? 0),
-      metro: nf().format(pop?.metro ?? 0),
+  figure.append(
+    dataTable({
+      caption: fill(L(COPY.tableCaption), { title }),
+      indexHeader: firstCol,
+      index: rows.map((r) => r.title),
+      columns: [
+        { header: L(COPY.colCount), values: rows.map(countBand) },
+        { header: shareHeader, values: rows.map((r) => pctBand(r.plo, r.phi)) },
+      ],
     }),
-    txt("peakLabel"),
-    txt("peakSub"),
+  );
+
+  // the shared disclosure every other chart on the site uses
+  figure.append(
+    dataTable({
+      caption: fill(L(COPY.tableCaption), { title }),
+      indexHeader: firstCol,
+      index: rows.map((r) => r.title),
+      columns: [
+        { header: L(COPY.colCount), values: rows.map(countBand) },
+        {
+          header: L(COPY.colShare),
+          values: rows.map((r) => pctBand(r.plo, r.phi)),
+        },
+      ],
+    }),
+  );
+  figure.append(el("p", "pc-note", note));
+  host.append(figure);
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const chart = track(
+    new Chart(ctx, {
+      type: "line",
+      data: cfg.data,
+      options: cfg.options,
+      plugins: [pcStack, pcPeak],
+    }),
+  );
+  keyboardChart(chart, {
+    hint: a11y().chartHint,
+    roledescription: a11y().chartRole,
+    readout: (i) => {
+      const r = rows[i];
+      return r
+        ? `${r.title}. ${countBand(r)}. ${pctBand(r.plo, r.phi)}`
+        : String(i + 1);
+    },
+  });
+}
+
+/* ----- sections */
+
+function floorLabel(rows: readonly Row[]): string {
+  const vals = rows.map((r) => (r.p === null ? 0 : r.p * 100));
+  return tickText(axisFloor(vals));
+}
+
+function sectionA(host: HTMLElement): void {
+  const pop = population(KEY_2026);
+  const rows = dailyRows();
+  render(
+    host,
+    rows,
+    { xTitle: L(COPY.axisDate), rotate: true, maxTicks: 25, showY: true },
+    L(COPY.titleA),
+    fill(L(COPY.noteA), {
+      pop: nf().format(denominator(pop) ?? 0),
+      min: floorLabel(rows),
+    }),
+    L(COPY.colDate),
   );
 }
 
-/* ----- section C: one row per movement ----- */
+function sectionB(host: HTMLElement): void {
+  const pop = population(KEY_2026);
+  const rows = weeklyRows();
+  render(
+    host,
+    rows,
+    { xTitle: L(COPY.axisWeek), rotate: false, maxTicks: 12, showY: true },
+    L(COPY.titleB),
+    fill(L(COPY.noteB), {
+      pop: nf().format(denominator(pop) ?? 0),
+      min: floorLabel(rows),
+    }),
+    L(COPY.colWeek),
+  );
+}
 
-function episodes(): HTMLElement[] {
-  const table = el("table", "pc-table");
-  table.append(el("caption", "pc-caption", txt("capEpisodes")));
-  table.append(
-    head([
-      txt("colMovement"),
-      txt("colBase"),
-      txt("colPeak"),
-      txt("colShare"),
-      txt("colRate"),
-    ]),
+/* sectionC(): one shared floor for the whole trellis. A per-panel floor made
+   two points at the same height mean different shares, which is the one thing
+   a trellis must not do — and it is what put 1968 at 40 % while Nahel sat at
+   21 % on a different scale. */
+function sectionC(host: HTMLElement): void {
+  const m = t();
+  const cols = host.clientWidth >= 1180 ? 4 : host.clientWidth >= 620 ? 2 : 1;
+  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+  const panels = EPISODES.map((ep) => ({ ep, rows: episodeRows(ep) }));
+  const floor = axisFloor(
+    panels.flatMap((p) => p.rows.map((r) => (r.p === null ? 0 : r.p * 100))),
   );
 
-  const tbody = el("tbody");
-  for (const ep of EPISODES) {
-    const pop = population(EPISODE_POP[ep.id] ?? "");
-    const pts = seriesData(ep, "p") ?? [];
-
-    let peak: number | null = null;
-    for (const p of pts) if (peak === null || p.y > peak) peak = p.y;
-
-    const tr = el("tr");
-    const th = el("th", "pc-scope", t().episodes[ep.id].short);
-    (th as HTMLTableCellElement).scope = "row";
-
+  panels.forEach(({ ep, rows }, idx) => {
+    const pop = population(popKeyFor(ep.id));
     const base = denominator(pop);
-    /* No France-entière row for 1968: say "métropole", do not quietly
-       substitute it for the national total. */
-    const baseText =
+    const caption =
       base === null
-        ? txt("absent")
-        : `${nf().format(base)}${pop?.france === null ? " · métropole" : ""}`;
+        ? L(COPY.noBase)
+        : fill(L(COPY.base), {
+            n: `${nf().format(base)}${basisOf(pop) === "metro" ? ` · ${L(COPY.metro)}` : ""}`,
+          });
 
-    tr.append(
-      th,
-      cell(baseText, "pc-num pc-base"),
-      cell(peak === null ? "—" : nf().format(Math.round(peak))),
-      cell(fmtPctBand(share(peak ?? 0, pop), share(peak ?? 0, pop))),
-      cell(fmtRateBand(per100k(peak ?? 0, pop), per100k(peak ?? 0, pop))),
+    const panel = el("div", "pc-panel");
+    render(
+      panel,
+      rows,
+      {
+        xTitle: idx >= EPISODES.length - cols ? L(COPY.axisWeekNo) : "",
+        rotate: false,
+        maxTicks: 9,
+        showY: idx % cols === 0,
+        floor,
+      },
+      `${m.episodes[ep.id].short} · ${caption}`,
+      "",
+      L(COPY.colWeek),
     );
-    tbody.append(tr);
-  }
-  table.append(tbody);
+    host.append(panel);
+  });
 
-  return [
-    el("h4", "pc-title", txt("titleEpisodes")),
-    table,
-    el("p", "pc-note", txt("noteEpisodes")),
-  ];
+  const head = el("div", "pc-trellis-head");
+  head.append(el("p", "pc-note", L(COPY.noteC)));
+  host.append(head);
 }
 
-/* ----- mount ----- */
+/* ----- mount */
 
 export function mountPerCapita(): void {
   const a = byId("pc-a");
-  if (a) a.replaceChildren(...daily());
+  if (a) {
+    a.replaceChildren();
+    try {
+      sectionA(a);
+    } catch (e) {
+      console.error("[percapita A]", e);
+    }
+  }
 
   const b = byId("pc-b");
-  if (b) b.replaceChildren(...weekly());
+  if (b) {
+    b.replaceChildren();
+    try {
+      sectionB(b);
+    } catch (e) {
+      console.error("[percapita B]", e);
+    }
+  }
 
   const c = byId("pc-c");
-  if (c) c.replaceChildren(...episodes());
+  if (c) {
+    c.replaceChildren();
+    try {
+      sectionC(c);
+    } catch (e) {
+      console.error("[percapita C]", e);
+    }
+  }
 }

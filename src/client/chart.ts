@@ -52,13 +52,7 @@ import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
 import { fromChart, keyboardChart } from "./a11y.ts";
-import {
-  denominator,
-  fmtPct,
-  KEY_2026,
-  population,
-  share,
-} from "./population.ts";
+import { denominator, KEY_2026, population } from "./population.ts";
 
 Chart.register(
   LineController,

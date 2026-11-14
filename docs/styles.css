@@ -1251,142 +1251,7 @@ section {
   color: var(--ink-4);
 }
 
-/* ---- per-capita block (sections A, B, C) ---- */
-.pc-block {
-  margin-bottom: clamp(18px, 2.4vw, 28px);
-}
-
-.pc-title {
-  margin-bottom: 10px;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-4);
-}
-
-.pc-headline {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: clamp(10px, 1.4vw, 16px);
-  margin-bottom: 14px;
-}
-
-.pc-stat {
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--line-1);
-  border-left: 3px solid var(--accent, #b45309);
-  border-radius: 8px;
-  background: var(--surface-2);
-}
-
-.pc-num-big {
-  display: block;
-  font-size: clamp(1.35rem, 3vw, 1.9rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--ink-1);
-  font-variant-numeric: tabular-nums;
-}
-
-.pc-stat-label {
-  display: block;
-  margin-top: 6px;
-  max-width: 42ch;
-  font-size: var(--fs-2xs);
-  line-height: 1.4;
-  color: var(--ink-3);
-}
-
-.pc-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 14px;
-  font-size: var(--fs-2xs);
-}
-
-.pc-caption {
-  caption-side: top;
-  padding-bottom: 6px;
-  text-align: left;
-  font-size: var(--fs-2xs);
-  line-height: 1.4;
-  color: var(--ink-4);
-}
-
-.pc-table th,
-.pc-table td {
-  padding: 6px 9px 6px 0;
-  vertical-align: top;
-  text-align: left;
-  border-bottom: 1px solid var(--line-1);
-}
-
-.pc-num-head {
-  text-align: right !important;
-  padding-right: 0 !important;
-  font-weight: 600;
-  color: var(--ink-3);
-  white-space: nowrap;
-}
-
-.pc-scope-head {
-  font-weight: 600;
-  color: var(--ink-3);
-}
-
-.pc-scope {
-  font-weight: 600;
-  color: var(--ink-1);
-  max-width: 20ch;
-}
-
-.pc-num {
-  text-align: right;
-  padding-right: 0 !important;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-1);
-  white-space: nowrap;
-}
-
-.pc-base {
-  color: var(--ink-3);
-}
-
-.pc-table tfoot th,
-.pc-table tfoot td {
-  border-bottom: 0;
-  font-weight: 700;
-  color: var(--ink-1);
-}
-
-.pc-note {
-  max-width: 110ch;
-  margin: 0;
-  font-size: var(--fs-2xs);
-  line-height: 1.45;
-  color: var(--ink-4);
-}
-
 @media (max-width: 40rem) {
-  .pc-table thead {
-    display: none;
-  }
-
-  .pc-table tr {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 2px 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--line-1);
-  }
-
-  .pc-table th,
-  .pc-table td {
-    padding: 0;
-    border: 0;
-  }
-
   .cas-table thead {
     display: none;
   }
@@ -1408,4 +1273,142 @@ section {
   .cas-cases-cell {
     grid-column: 1 / -1;
   }
+}
+
+/* ---- per capita (sections A, B, C) ---- */
+.pc-block {
+  margin-bottom: clamp(18px, 2.4vw, 28px);
+}
+.pc-trellis {
+  display: grid;
+  gap: clamp(8px, 1.2vw, 14px);
+}
+.pc-trellis-head {
+  grid-column: 1 / -1;
+}
+.pc-panel {
+  min-width: 0;
+}
+
+.pc-figure {
+  margin: 0;
+}
+
+.pc-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.pc-fig-title {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.pc-legend {
+  display: flex;
+  gap: 12px;
+}
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-2xs);
+  color: var(--ink-4);
+}
+
+.pc-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Chart.js measures the parent: an auto-height parent collapses to 150px. */
+.pc-canvas {
+  position: relative;
+  height: clamp(220px, 28vw, 300px);
+}
+
+.pc-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pc-note {
+  max-width: 110ch;
+  margin: 8px 0 0;
+  font-size: var(--fs-2xs);
+  line-height: 1.45;
+  color: var(--ink-4);
+}
+
+/* ---- chart data tables: <details class="data-table"> ---- */
+/* No rule for this existed, so every chart table rendered with the browser
+   default marker. Mirrors the .about-group / .source-group disclosure. */
+details.data-table > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 2px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  font-size: var(--fs-2xs);
+  color: var(--ink-4);
+}
+
+details.data-table > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.data-table > summary::before {
+  content: "▸";
+  flex: none;
+  width: 1em;
+  font-size: 0.8em;
+  transform: translateY(-0.1em);
+}
+
+details.data-table[open] > summary::before {
+  content: "▾";
+}
+
+details.data-table > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+details.data-table > table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 14px;
+  font-size: var(--fs-2xs);
+}
+
+details.data-table th,
+details.data-table td {
+  padding: 6px 9px 6px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line-1);
+}
+
+details.data-table th[scope="col"] {
+  font-weight: 600;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+details.data-table th[scope="row"] {
+  font-weight: 600;
+  color: var(--ink-1);
 }
