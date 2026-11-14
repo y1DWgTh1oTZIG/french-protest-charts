@@ -75,10 +75,10 @@ const EN_META: LocaleMeta = {
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order.",
     },
     e: {
-      title: "E · Means and medians",
+      title: "E · Median and peak",
       blurb:
-        "Each panel gathers one measure across all seven movements. The filled dot is the mean of the published figures in that series, the open dot the median, and the bar between them is the distance between the two: long where a movement had a few enormous weeks and a quiet rest of the time, short where it was steady throughout. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
-      note: "Computed over every published figure in a series, sparse early weeks included. A movement with no figure for a measure is absent from that panel.",
+        "Each panel gathers one measure across the movements that published it. The dot is the median of the series — the typical week — and the triangle its peak, the largest single figure. The pale bar behind each pair spans the whole series, from its smallest figure to its largest, so a movement that was steady reads as a short bar and one that had a few enormous weeks as a long one. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
+      note: "Each figure is counted once, at the midpoint of its range where one was published. The count of published figures is in the tooltip: with a single figure the median and the peak are the same number.",
     },
   },
   groups: {
@@ -128,10 +128,10 @@ const FR_META: LocaleMeta = {
       note: "Survolez une mesure ou un mouvement pour l’isoler. L’ordre des panneaux suit celui de la légende.",
     },
     e: {
-      title: "E · Moyennes et médianes",
+      title: "E · Médiane et pointe",
       blurb:
-        "Chaque panneau rassemble une mesure pour les sept mouvements. Le point plein est la moyenne des chiffres publiés dans la série, le point creux la médiane, et la barre entre les deux en donne l’écart : long lorsqu’un mouvement a connu quelques semaines énormes et une longue période calme, court lorsqu’il est resté régulier. L’axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
-      note: "Calculées sur l’ensemble des chiffres publiés d’une série, semaines creuses du début comprises. Un mouvement sans chiffre pour une mesure est absent du panneau.",
+        "Chaque panneau rassemble une mesure pour les mouvements qui l’ont publiée. Le point est la médiane de la série — la semaine typique — et le triangle sa pointe, le plus grand chiffre publié. La barre claire derrière chaque paire couvre toute la série, de son plus petit chiffre à son plus grand : un mouvement régulier se lit donc comme une barre courte, un mouvement ayant connu quelques semaines énormes comme une barre longue. L’axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
+      note: "Chaque chiffre est compté une fois, au milieu de sa fourchette lorsqu’une fourchette a été publiée. Le nombre de chiffres publiés figure dans l’infobulle : avec un seul chiffre, la médiane et la pointe sont le même nombre.",
     },
   },
   groups: {
@@ -1487,8 +1487,11 @@ export interface PanelsCopy {
   readonly obs: string;
   readonly valueRange: string;
   readonly itemMeta: string;
-  readonly mean: string;
   readonly median: string;
+  readonly peak: string;
+  readonly range: string;
+  readonly figureCount: string;
+  readonly singleFigure: string;
   /** Caption meta on section E panels. */
   readonly summaryMeta: string;
 }
@@ -1540,9 +1543,13 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       obs: "observations {counts} over {weeks}",
       valueRange: "{lo}–{hi}",
       itemMeta: "range {range} · up to week {n}",
-      mean: "mean",
       median: "median",
-      summaryMeta: "mean and median · {n} movements",
+      peak: "peak",
+      range: "min–max range",
+      figureCount: "{n} published figures",
+      singleFigure:
+        "one published figure — the median and the peak are the same number",
+      summaryMeta: "median and peak · {n} movements",
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1588,10 +1595,15 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       obs: "observations {counts} sur {weeks}",
       valueRange: "{lo}–{hi}",
       itemMeta: "fourchette {range} · jusqu’à la semaine {n}",
-      mean: "moyenne",
       median: "médiane",
-      summaryMeta: "moyenne et médiane · {n} mouvements",
+      peak: "pointe",
+      range: "fourchette min–max",
+      figureCount: "{n} chiffres publiés",
+      singleFigure:
+        "un seul chiffre publié — la médiane et la pointe sont le même nombre",
+      summaryMeta: "médiane et pointe · {n} mouvements",
     },
+
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
       a: { label: "Interpellations", short: "Interpellations" },

@@ -27,9 +27,9 @@ var EN_META = {
       note: "Hover a measure or a movement to isolate it. Panel order matches legend order."
     },
     e: {
-      title: "E \xB7 Means and medians",
-      blurb: "Each panel gathers one measure across all seven movements. The filled dot is the mean of the published figures in that series, the open dot the median, and the bar between them is the distance between the two: long where a movement had a few enormous weeks and a quiet rest of the time, short where it was steady throughout. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
-      note: "Computed over every published figure in a series, sparse early weeks included. A movement with no figure for a measure is absent from that panel."
+      title: "E \xB7 Median and peak",
+      blurb: "Each panel gathers one measure across the movements that published it. The dot is the median of the series \u2014 the typical week \u2014 and the triangle its peak, the largest single figure. The pale bar behind each pair spans the whole series, from its smallest figure to its largest, so a movement that was steady reads as a short bar and one that had a few enormous weeks as a long one. The axis is logarithmic, so a handful of mass marches and a routine week can share a panel.",
+      note: "Each figure is counted once, at the midpoint of its range where one was published. The count of published figures is in the tooltip: with a single figure the median and the peak are the same number."
     }
   },
   groups: {
@@ -71,9 +71,9 @@ var FR_META = {
       note: "Survolez une mesure ou un mouvement pour l\u2019isoler. L\u2019ordre des panneaux suit celui de la l\xE9gende."
     },
     e: {
-      title: "E \xB7 Moyennes et m\xE9dianes",
-      blurb: "Chaque panneau rassemble une mesure pour les sept mouvements. Le point plein est la moyenne des chiffres publi\xE9s dans la s\xE9rie, le point creux la m\xE9diane, et la barre entre les deux en donne l\u2019\xE9cart : long lorsqu\u2019un mouvement a connu quelques semaines \xE9normes et une longue p\xE9riode calme, court lorsqu\u2019il est rest\xE9 r\xE9gulier. L\u2019axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
-      note: "Calcul\xE9es sur l\u2019ensemble des chiffres publi\xE9s d\u2019une s\xE9rie, semaines creuses du d\xE9but comprises. Un mouvement sans chiffre pour une mesure est absent du panneau."
+      title: "E \xB7 M\xE9diane et pointe",
+      blurb: "Chaque panneau rassemble une mesure pour les mouvements qui l\u2019ont publi\xE9e. Le point est la m\xE9diane de la s\xE9rie \u2014 la semaine typique \u2014 et le triangle sa pointe, le plus grand chiffre publi\xE9. La barre claire derri\xE8re chaque paire couvre toute la s\xE9rie, de son plus petit chiffre \xE0 son plus grand : un mouvement r\xE9gulier se lit donc comme une barre courte, un mouvement ayant connu quelques semaines \xE9normes comme une barre longue. L\u2019axe est logarithmique, de sorte que quelques marches de masse et une semaine ordinaire peuvent partager un panneau.",
+      note: "Chaque chiffre est compt\xE9 une fois, au milieu de sa fourchette lorsqu\u2019une fourchette a \xE9t\xE9 publi\xE9e. Le nombre de chiffres publi\xE9s figure dans l\u2019infobulle : avec un seul chiffre, la m\xE9diane et la pointe sont le m\xEAme nombre."
     }
   },
   groups: {
@@ -1074,9 +1074,12 @@ var CATALOGUE = {
       obs: "observations {counts} over {weeks}",
       valueRange: "{lo}\u2013{hi}",
       itemMeta: "range {range} \xB7 up to week {n}",
-      mean: "mean",
       median: "median",
-      summaryMeta: "mean and median \xB7 {n} movements"
+      peak: "peak",
+      range: "min\u2013max range",
+      figureCount: "{n} published figures",
+      singleFigure: "one published figure \u2014 the median and the peak are the same number",
+      summaryMeta: "median and peak \xB7 {n} movements"
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1123,9 +1126,12 @@ var CATALOGUE = {
       obs: "observations {counts} sur {weeks}",
       valueRange: "{lo}\u2013{hi}",
       itemMeta: "fourchette {range} \xB7 jusqu\u2019\xE0 la semaine {n}",
-      mean: "moyenne",
       median: "m\xE9diane",
-      summaryMeta: "moyenne et m\xE9diane \xB7 {n} mouvements"
+      peak: "pointe",
+      range: "fourchette min\u2013max",
+      figureCount: "{n} chiffres publi\xE9s",
+      singleFigure: "un seul chiffre publi\xE9 \u2014 la m\xE9diane et la pointe sont le m\xEAme nombre",
+      summaryMeta: "m\xE9diane et pointe \xB7 {n} mouvements"
     },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
@@ -15422,9 +15428,11 @@ function statsOf(points) {
   let sum = 0;
   for (const v of vs) sum += v;
   const stats = {
+    low: sorted[0],
     high: sorted[n - 1],
     mean: sum / n,
-    median
+    median,
+    count: n
   };
   statsCache.set(points, stats);
   return stats;
@@ -15660,15 +15668,10 @@ function toggleDatasets(host, field, key, hidden) {
   }
 }
 function applyStatVisibility() {
-  const h = legendState("stats", 2);
-  const anyHidden = h[0] || h[1];
   for (const chart of summaryPanels) {
     datasetsOf(chart).forEach((d, i) => {
-      const stat = d.__stat;
-      chart.setDatasetVisibility(
-        i,
-        stat === void 0 ? !anyHidden : !h[stat === "mean" ? 0 : 1]
-      );
+      const s = d.__stat;
+      chart.setDatasetVisibility(i, !(s && statHidden.get(s)));
     });
     chart.update("none");
   }
@@ -15896,8 +15899,9 @@ function mountCrossEpisode(opts) {
     (d) => d.__ep >= 0 && d.__ep < EPISODES.length ? d.__ep : null
   );
 }
-var MEAN_COLOR = "#1f2937";
-var MEDIAN_COLOR = "#6b7280";
+var MEDIAN_COLOR = "#334155";
+var PEAK_COLOR = "#b45309";
+var RANGE_COLOR = "#64748b";
 var summaryPanels = [];
 var activeStat = null;
 function decades(lo, hi) {
@@ -15910,85 +15914,153 @@ function decades(lo, hi) {
   }
   return out;
 }
-function statPoint(ep, i, key, stat) {
+function cellOf(ep, i, key) {
   const pts = seriesData(ep, key);
   if (!pts) return null;
   const st = statsOf(pts);
   if (!st) return null;
-  const v = st[stat];
-  if (!(v > 0)) return null;
+  if (!(st.low > 0)) return null;
   return {
     x: i,
-    y: v,
-    low: v,
-    high: v,
-    flag: "n",
-    base: v,
-    t: t().episodes[ep.id].short
+    t: t().episodes[ep.id].short,
+    n: st.count,
+    min: st.low,
+    median: st.median,
+    max: st.high
   };
 }
-function statDataset(key, stat, label, color2, hollow, points) {
+function statPt(c, which) {
+  const y = which === "median" ? c.median : c.max;
+  return {
+    x: c.x,
+    y,
+    low: c.min,
+    high: c.max,
+    flag: "n",
+    base: c.median,
+    t: c.t,
+    n: c.n,
+    min: c.min,
+    median: c.median,
+    max: c.max
+  };
+}
+function medianDataset(key, label, cells) {
   return {
     type: "line",
     label,
-    data: [...points],
+    data: cells.map((c) => statPt(c, "median")),
     showLine: false,
-    borderColor: color2,
-    backgroundColor: hollow ? THEME.hollow : color2,
-    pointBackgroundColor: hollow ? THEME.hollow : color2,
-    pointBorderColor: color2,
-    pointBorderWidth: 1.75,
+    borderColor: MEDIAN_COLOR,
+    backgroundColor: MEDIAN_COLOR,
+    pointBackgroundColor: MEDIAN_COLOR,
+    pointBorderColor: MEDIAN_COLOR,
+    pointBorderWidth: 1.5,
     pointRadius: 5,
-    pointHoverRadius: 6.5,
+    pointHoverRadius: 7,
     pointHitRadius: 12,
+    pointStyle: "circle",
     __item: key,
     __ep: -1,
-    __color: color2,
-    __stat: stat
+    __color: MEDIAN_COLOR,
+    __stat: "median"
   };
 }
-function gapDataset(key, i, mean, median) {
-  const mk = (y) => ({
-    x: i,
-    y,
-    low: y,
-    high: y,
-    flag: "n",
-    base: y,
-    t: ""
-  });
-  const c = alpha2(MEAN_COLOR, 0.35);
+function peakDataset(key, label, cells) {
   return {
     type: "line",
-    label: "",
-    data: [mk(mean), mk(median)],
-    showLine: true,
-    borderColor: c,
-    backgroundColor: c,
-    borderWidth: 1.5,
+    label,
+    data: cells.map((c) => statPt(c, "peak")),
+    showLine: false,
+    borderColor: PEAK_COLOR,
+    backgroundColor: PEAK_COLOR,
+    pointBackgroundColor: PEAK_COLOR,
+    pointBorderColor: PEAK_COLOR,
+    pointBorderWidth: 1.5,
+    pointRadius: cells.map((c) => c.n < 2 ? 0 : 6),
+    pointHoverRadius: cells.map((c) => c.n < 2 ? 0 : 8),
+    pointHitRadius: cells.map((c) => c.n < 2 ? 0 : 12),
+    pointStyle: "triangle",
+    __item: key,
+    __ep: -1,
+    __color: PEAK_COLOR,
+    __stat: "peak"
+  };
+}
+function rangeDataset(key, label, cells) {
+  return {
+    type: "line",
+    label,
+    data: cells.map((c) => statPt(c, "median")),
+    showLine: false,
+    borderColor: RANGE_COLOR,
+    backgroundColor: alpha2(RANGE_COLOR, 0.2),
     pointRadius: 0,
     pointHoverRadius: 0,
     pointHitRadius: 0,
     __item: key,
-    __ep: i,
-    __color: MEAN_COLOR
+    __ep: -1,
+    __color: RANGE_COLOR,
+    __stat: "range",
+    __bands: cells.map((c) => [c.min, c.max])
   };
 }
-function emphasiseStat(stat) {
+var rangeBand = {
+  id: "rangeBand",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    const idx = chart.data.datasets.findIndex(
+      (d) => d.__bands !== void 0
+    );
+    if (idx < 0) return;
+    const ds = chart.data.datasets[idx];
+    const meta = chart.getDatasetMeta(idx);
+    if (meta.hidden) return;
+    const scale = chart.scales.y;
+    if (!scale) return;
+    const pts = meta.data;
+    const width = 9;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+    ctx.clip();
+    ctx.fillStyle = ds.backgroundColor;
+    for (let j = 0; j < pts.length; j++) {
+      const band = ds.__bands[j];
+      const p = pts[j];
+      if (!band || p.skip) continue;
+      const yHi = scale.getPixelForValue(band[1]);
+      const yLo = scale.getPixelForValue(band[0]);
+      ctx.fillRect(p.x - width / 2, yHi, width, Math.max(yLo - yHi, 2));
+    }
+    ctx.restore();
+  }
+};
+function emphasiseStat(stat, force = false) {
+  if (!force && stat === activeStat) return;
   activeStat = stat;
   for (const chart of summaryPanels) {
     for (const d of datasetsOf(chart)) {
-      if (!d.__stat) continue;
-      const on = stat === null || d.__stat === stat;
-      const c = on ? d.__color : alpha2(d.__color, DIM);
-      const fill2 = d.__stat === "median" && on ? THEME.hollow : c;
-      d.borderColor = c;
-      d.pointBorderColor = c;
-      d.backgroundColor = fill2;
-      d.pointBackgroundColor = fill2;
+      const s = d.__stat;
+      if (!s) continue;
+      const on = stat === null || s === stat;
+      if (s === "range") {
+        d.backgroundColor = alpha2(d.__color, on ? 0.2 : 0.05);
+      } else {
+        const c = on ? d.__color : alpha2(d.__color, DIM);
+        d.borderColor = c;
+        d.pointBorderColor = c;
+        d.backgroundColor = c;
+        d.pointBackgroundColor = c;
+      }
     }
     chart.update("none");
   }
+}
+var statHidden = /* @__PURE__ */ new Map();
+function setStatHidden(stat, hidden) {
+  statHidden.set(stat, hidden);
+  applyStatVisibility();
 }
 function mountSummary() {
   const host = document.getElementById("summary");
@@ -16002,56 +16074,26 @@ function mountSummary() {
   const cols = columns(host);
   host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
   SERIES2.forEach((series, panelIndex) => {
-    const rows = EPISODES.map((ep, i) => {
-      const mean = statPoint(ep, i, series.key, "mean");
-      const median = statPoint(ep, i, series.key, "median");
-      return mean && median ? { mean, median } : null;
+    const cells = [];
+    EPISODES.forEach((ep, i) => {
+      const c = cellOf(ep, i, series.key);
+      if (c) cells.push(c);
     });
+    if (!cells.length) return;
     const values = [];
-    for (const r of rows) {
-      if (r) values.push(r.mean.y, r.median.y);
-    }
-    if (!values.length) return;
+    for (const c of cells) values.push(c.min, c.max);
     const lo = Math.min(...values) * 0.8;
     const hi = Math.max(...values) * 1.3;
     const { figure, canvas } = panelFigure(
       m.items[series.key].short,
-      fill(m.panels.summaryMeta, { n: EPISODES.length })
+      fill(m.panels.summaryMeta, { n: cells.length })
     );
     host.append(figure);
-    const datasets = rows.map(
-      (r, i) => r ? gapDataset(series.key, i, r.mean.y, r.median.y) : gapDataset(series.key, i, 1, 1)
-    );
-    datasets.length = 0;
-    rows.forEach((r, i) => {
-      if (r) datasets.push(gapDataset(series.key, i, r.mean.y, r.median.y));
-    });
-    const meanPts = [];
-    const medianPts = [];
-    for (const r of rows) {
-      if (r) {
-        meanPts.push(r.mean);
-        medianPts.push(r.median);
-      }
-    }
-    datasets.push(
-      statDataset(
-        series.key,
-        "mean",
-        m.panels.mean,
-        MEAN_COLOR,
-        false,
-        meanPts
-      ),
-      statDataset(
-        series.key,
-        "median",
-        m.panels.median,
-        MEDIAN_COLOR,
-        true,
-        medianPts
-      )
-    );
+    const datasets = [
+      rangeDataset(series.key, m.panels.range, cells),
+      medianDataset(series.key, m.panels.median, cells),
+      peakDataset(series.key, m.panels.peak, cells)
+    ];
     const chart = track(
       new Chart(canvas, {
         type: "line",
@@ -16133,56 +16175,65 @@ function mountSummary() {
                     item,
                     "body"
                   );
+                },
+                afterBody: (items) => {
+                  const first = items[0];
+                  if (!first) return [];
+                  const p = first.raw;
+                  const hovered = first.dataset.__stat;
+                  const lines = [];
+                  if (hovered !== "median" && p.n > 1)
+                    lines.push(
+                      `${m.panels.median}: ${nf().format(Math.round(p.median))}`
+                    );
+                  if (hovered !== "peak" && p.n > 1)
+                    lines.push(
+                      `${m.panels.peak}: ${nf().format(Math.round(p.max))}`
+                    );
+                  lines.push(
+                    `${m.panels.range}: ${nf().format(Math.round(p.min))}\u2013${nf().format(Math.round(p.max))}`
+                  );
+                  lines.push(
+                    p.n > 1 ? fill(m.panels.figureCount, { n: p.n }) : m.panels.singleFigure
+                  );
+                  return lines.map((l) => wrapTooltipLines(l, first, "body"));
                 }
               }
             }
+          },
+          onHover: (_e, els) => {
+            const d = els[0]?.dataset;
+            emphasiseStat(d?.__stat ?? null);
           }
         },
-        plugins: []
+        plugins: [rangeBand]
       })
     );
     summaryPanels.push(chart);
   });
   legend(legendHost, "stats", [
     {
-      text: m.panels.mean,
-      color: MEAN_COLOR,
-      on: () => emphasiseStat("mean"),
-      off: () => emphasiseStat(null),
-      hide: (hidden) => {
-        legendState("stats", 2)[0] = hidden;
-        applyStatVisibility();
-      }
+      text: m.panels.range,
+      color: alpha2(RANGE_COLOR, 0.45),
+      on: () => emphasiseStat("range", true),
+      off: () => emphasiseStat(null, true),
+      hide: (hidden) => setStatHidden("range", hidden)
     },
     {
       text: m.panels.median,
       color: MEDIAN_COLOR,
-      on: () => emphasiseStat("median"),
-      off: () => emphasiseStat(null),
-      hide: (hidden) => {
-        legendState("stats", 2)[1] = hidden;
-        applyStatVisibility();
-      }
+      on: () => emphasiseStat("median", true),
+      off: () => emphasiseStat(null, true),
+      hide: (hidden) => setStatHidden("median", hidden)
+    },
+    {
+      text: m.panels.peak,
+      color: PEAK_COLOR,
+      on: () => emphasiseStat("peak", true),
+      off: () => emphasiseStat(null, true),
+      hide: (hidden) => setStatHidden("peak", hidden)
     }
   ]);
-  for (const chart of summaryPanels) {
-    const canvas = chart.canvas;
-    canvas.addEventListener("pointermove", (ev) => {
-      const els = chart.getElementsAtEventForMode(
-        ev,
-        "nearest",
-        { intersect: true },
-        true
-      );
-      const d = els.length ? datasetsOf(chart)[els[0].datasetIndex] : void 0;
-      emphasiseStat(d?.__stat ?? null);
-    });
-    canvas.addEventListener("pointerleave", () => emphasiseStat(null));
-  }
-  wireLegendSync(host, "stats", (d) => {
-    const s = d.__stat;
-    return s === "mean" ? 0 : s === "median" ? 1 : null;
-  });
 }
 
 // src/client/lang.ts
