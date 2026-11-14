@@ -69,6 +69,29 @@
      · weekly forces injured: 300–305 · 108 · 247 · 267 · 116–159 · 53–112 ✓;
      · forces injured, movement total = 1,664–2,130;
      · policing cost = DEPLOYMENT × RATE = €54.3M–€629.9M.
+
+   ── Fourth pass, 14 Nov 2026: people on strike ────────────────────────────
+   New metric, strikers, for chart 1 of sections A and B only. No authority
+   published a national HEADCOUNT of strikers: the two national action days
+   published participation RATES by fonction publique. The series is therefore
+   derived ("e") and the tooltip states the arithmetic.
+
+   The rates are rates on the FONCTION PUBLIQUE D'ÉTAT (2,500,000 agents).
+   Education staff are state civil servants and sit INSIDE that base, so the
+   education rate is carried as the largest COMPONENT, never added to it:
+     29 Sep: 10% x 2.5M = 250,000   (education 11.47% x 1M = 114,700, subset)
+     5 Nov:  9.89%-11% x 2.5M = 247,250-275,000
+             (education 12.77% x 1M = 127,700, subset)
+   Adding 114,700 to 250,000 would count the same teachers twice.
+
+   NOT INCLUDED: local authorities 4.60% and public hospitals 3.93% (5 Nov) —
+   no published workforce size; the CGT's "nearly 1.6M on strike AND in the
+   demonstrations" — two populations in one figure, and the same 1.6M already
+   bounds the turnout band for 5 Nov; SNES-FSU 52%, 1st-degree 17.54%, 15.81%
+   of teachers — sub-scopes of the education figure already counted.
+
+   Weekly figure is a PEAK, never a sum: a person on strike three days is one
+   person.
 */
 
 import {
@@ -254,6 +277,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        life-schools staff; 13.71% of teachers). */
     "2026-09-29": {
       turnout: { low: 206_000, high: 300_000, q: "p" },
+      strikers: { low: 250_000, high: 250_000, q: "e" },
       arrests: { low: 440, high: 440 },
       protesterInjured: { low: 31, high: 31, q: "p" },
       blockades: { low: 45, high: 45 },
@@ -359,10 +383,17 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
       blockades: { low: 891, high: 1_800, q: "x" },
     },
 
-    /* Thu 8 Oct — "Acte IV": 71,500 ministry / 130,000+ CGT; Paris 24,500.
-       Anchor of the 1–8 Oct Île-de-France damage increment (€6M). */
+    /* Thu 8 Oct — Act IV. Education ministry: 0.82% weighted all staff
+       (teachers 0.99%, 1st degree 0.10%, 2nd degree 1.67%, vie scolaire
+       2.33%, other staff 0.45%), excluding Toulouse, Nantes and Corse.
+       The lowest rate of the whole sequence, in the middle of the
+       mobilisation — the school action had drained by 8 Oct. */
     "2026-10-08": {
       turnout: { low: 71_500, high: 130_000 },
+      /* Education ministry 0.82% weighted; no function-wide rate that day,
+         so the education rate stands in for the civil service on the same
+         2,500,000-agent base: 20,500. Flagged "e" — the proxy runs low. */
+      strikers: { low: 20_500, high: 20_500, q: "e" },
       damagesCost: { low: 6, high: 6, q: "e" },
       blockades: { low: 224, high: 224, q: "x" },
     },
@@ -411,6 +442,8 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        was Normandy, and it was published on 12 October. */
     "2026-10-13": {
       turnout: { low: 161_500, high: 480_000 },
+      /* 3.71% weighted education rate as proxy: 3.71% x 2,500,000 = 92,750. */
+      strikers: { low: 92_750, high: 92_750, q: "e" },
       forcesInjured: { low: 40, high: 40 },
       blockades: { low: 214, high: 214, q: "x" },
     },
@@ -506,6 +539,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        Nuñez. Not a ministry count. */
     "2026-11-05": {
       turnout: { low: 575_000, high: 1_600_000 },
+      strikers: { low: 247_250, high: 275_000, q: "e" },
       arrests: { low: 448, high: 642 },
       forcesInjured: { low: 53, high: 112 },
       protesterInjured: { low: 18, high: 18, q: "f" },
@@ -526,6 +560,12 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        ~50 Île-de-France schools disrupted with mortar fire; Rennes 2
        evacuated; Brest rally; Guadeloupe: lycée blocked at Baie-Mahault. */
     "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } },
+
+    "2026-11-10": {
+      /* Education strike + student march. 1.55% weighted rate as proxy:
+         1.55% x 2,500,000 = 38,750. */
+      strikers: { low: 38_750, high: 38_750, q: "e" },
+    },
   };
 
 export const DEPLOYMENT: Readonly<Record<string, Obs>> = {
@@ -627,6 +667,15 @@ function projectDaily(key: MetricKey): Series {
     };
   });
 }
+
+/* Every strike point is a published RATE turned into a head count, so the
+   stock projector would hollow all of them (isDetached("e") is true) and
+   split the series into a line plus an empty points-only twin. Striking is a
+   different population from marching, not a doubt about the figure: one
+   solid line, with the "modelled" suffix in the tooltip. */
+const strikers = projectDaily("strikers").map(
+  (p): Pt => ({ ...p, detach: false }),
+);
 
 function projectPolicingDaily(): Series {
   return DATES.map((date) => {
@@ -875,6 +924,7 @@ function aggregateBlockades(): Series {
 
 export const DAILY: Readonly<Record<string, Series>> = {
   turnout: projectDaily("turnout"),
+  strikers,
   arrests: projectDaily("arrests"),
   forcesInjured: projectDaily("forcesInjured"),
   forcesInjuredStock: projectForcesStock(),
@@ -885,8 +935,14 @@ export const DAILY: Readonly<Record<string, Series>> = {
   policingCumulative: projectPolicingCumulative(),
 };
 
+/* A strike is a level, so the weekly figure is the week's peak — never a sum.
+   The "w" flag is remapped to "e" so the weekly tooltip still says "modelled";
+   `detach` is left alone so the point stays solid. */
 export const WEEKLY: Readonly<Record<string, Series>> = {
   turnout: aggregate("turnout", "max"),
+  strikers: aggregate("strikers", "max").map(
+    (p): Pt => (p.q === "w" ? { ...p, q: "e" } : p),
+  ),
   arrests: aggregate("arrests", "sum"),
   forcesInjured: aggregate("forcesInjured", "sum"),
   protesterInjured: aggregate("protesterInjured", "sum"),

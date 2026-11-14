@@ -14,8 +14,10 @@ export type Quality = Flag;
 /** A single figure, or a published range. */
 export type Band = number | [number, number];
 
+// MetricKey only. NOT METRICS/METRIC_OF — sections C/D/E stay four-measure.
 export type MetricKey =
   | "turnout"
+  | "strikers"
   | "arrests"
   | "forcesInjured"
   | "forcesInjuredStock"

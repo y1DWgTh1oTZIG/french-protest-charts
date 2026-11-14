@@ -55,12 +55,12 @@ const EN_META: LocaleMeta = {
     a: {
       title: "A · Daily counts, 15 September – 11 November 2026",
       blurb:
-        "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lycée was in session.",
+        "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lycée was in session. The strike series is derived from participation rates: no authority published a national headcount of strikers.",
     },
     b: {
       title: "B · Weekly aggregates",
       blurb:
-        "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic — the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lycée is blocked on several consecutive days.",
+        "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic — the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lycée is blocked on several consecutive days. People on strike is a level, so the weekly figure is the peak of the week, never a sum.",
     },
     c: {
       title: "C · One panel per movement",
@@ -108,12 +108,12 @@ const FR_META: LocaleMeta = {
     a: {
       title: "A · Décomptes quotidiens, 15 septembre – 11 novembre 2026",
       blurb:
-        "Un marqueur par jour où un chiffre a été publié. Les jours sans chiffre restent vides plutôt qu’interpolés ; les lacunes d’une courbe sont en pointillés. La courbe des blocages de lycées est en pointillés pendant les vacances de la Toussaint, aucun lycée n’étant en cours.",
+        "Un marqueur par jour où un chiffre a été publié. Les jours sans chiffre restent vides plutôt qu’interpolés ; les lacunes d’une courbe sont en pointillés. La courbe des blocages de lycées est en pointillés pendant les vacances de la Toussaint, aucun lycée n’étant en cours. La série des personnes en grève est dérivée de taux de participation : aucune autorité n’a publié de décompte national des grévistes.",
     },
     b: {
       title: "B · Agrégats hebdomadaires",
       blurb:
-        "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d’interpellations ne sont pas la même statistique — l’infobulle précise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un même lycée est bloqué plusieurs jours de suite.",
+        "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d’interpellations ne sont pas la même statistique — l’infobulle précise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un même lycée est bloqué plusieurs jours de suite. Les personnes en grève sont un niveau, non un flux : le chiffre hebdomadaire en est la pointe de la semaine, jamais une somme.",
     },
     c: {
       title: "C · Un panneau par mouvement",
@@ -586,7 +586,7 @@ const CHART_EN: ChartCopy = {
     "2026-09-28":
       "The movement goes national — actions in Marseille, Lille, the Rhône, the Var and the Alpes-Maritimes.",
     "2026-09-29":
-      "Act I. The crowd figure counts the public-service cortège the school actions joined, not a student crowd.",
+      "Act I. The crowd figure counts the public-service cortège the school actions joined, not a student crowd. The strike series starts here: 250,000 state civil servants, derived from the government's 10% rate.",
     "2026-09-30":
       "The second day of Act I: 625 interpellations and 83 security forces injured. The Education ministry counted 356 establishments concerned; no count of fully blocked schools was published that day.",
     "2026-10-01":
@@ -621,7 +621,7 @@ const CHART_EN: ChartCopy = {
     "2026-11-04":
       "In the Rhône, seven establishments ran in remote mode; no lycée was reported blocked.",
     "2026-11-05":
-      "Turnout band runs from 575 000 to 1.6 million — the band is the disagreement, not an error bar.",
+      "Turnout band runs from 575 000 to 1.6 million — the band is the disagreement, not an error bar. The strike point is derived from the government's rates: 9.89–11% of state civil servants.",
     "2026-11-06":
       "In the Rhône, 16 lycées and two colleges saw incidents, and a lycée in Lyon's 8th arrondissement was blocked when it was cleared.",
     "2026-11-09":
@@ -653,6 +653,8 @@ const CHART_EN: ChartCopy = {
     "2026-09-29": {
       turnout:
         "Counts the public-service cortège the school actions joined (206 000 ministry / 300 000 CGT), not a student crowd.",
+      strikers:
+        "Derived, not counted. 10% of the 2,500,000 state civil servants on strike (government figure), giving 250,000. Education is the largest component, not an addend: 11.47% of education staff (ministry weighted average — 12.74% second degree, 27.39% life-school staff; 13.71% of teachers) is 114,700 of the same civil service and is already inside the 250,000. Union claims (>40% of first-degree staff, >40% in Lyon and Créteil) are regional and are not used as a national ceiling.",
       protesterInjured:
         "Students and education staff injured that day, counted by the Education ministry.",
       blockades:
@@ -701,6 +703,8 @@ const CHART_EN: ChartCopy = {
     "2026-10-08": {
       damagesCost:
         "Anchor of the 1–8 October Île-de-France damage increment. The same €6M is published for 6 October and is not counted twice.",
+      strikers:
+        "Derived, not counted. The Education ministry published a weighted participation rate of 0.82% for education staff; no function-wide rate was published that day, so the education rate stands in for the civil service on the same 2,500,000-agent base: 20,500. The proxy is known to run low — where both were published, education was 11.47% against about 10% for the civil service (29 Sept) and 12.77% against 10.46% (5 Nov).",
       blockades:
         "Wider measure: 224 establishments closed (ministry); more than 150 still perturbed (franceinfo). The 224 figure is the benchmark the ministry quotes back on 13 October.",
       forcesInjuredStock:
@@ -728,6 +732,8 @@ const CHART_EN: ChartCopy = {
     "2026-10-13": {
       blockades:
         "Wider measure: 214 establishments closed, 94.2% of lycées open — against 224 on 8 October. The ministry called the movement 'en recul'.",
+      strikers:
+        "Derived, not counted. 3.71% weighted education participation (ministry), used as a proxy for the civil service on the 2,500,000-agent base: 92,750. Education's own rates that day: 4.52% of teachers, 10.31% of life-schools staff. The ministry's figure excludes Toulouse, La Réunion (school holidays since 10 October), Guadeloupe, Martinique and Guyana (time difference).",
     },
     "2026-10-14": {
       forcesInjuredStock: "Running total: 937 injured (Nuñez).",
@@ -770,6 +776,8 @@ const CHART_EN: ChartCopy = {
         "Education ministry: 48 schools blocked. The USL counted nearly 500.",
     },
     "2026-11-05": {
+      strikers:
+        "Derived, not counted. The government put 9.89% of state civil servants on strike at midday and 11% by the end of the day, on 2,500,000 agents: 247,250 to 275,000 — the band is the timing of the count, not an error bar. The Education ministry's own weighted rate was 12.77% (19.14% in the first degree, 25.65% for life-schools staff): a component of that total, never an addition to it.",
       forcesInjured: "The day's own figure: 53 at 18:00, 112 on consolidation.",
       forcesInjuredStock:
         "The ministry's final running total: 1,580 injured since the start of the movement. It reconciles exactly with the published daily increments — 1,144 (17 October) + 267 (24 October) + 116 (31 October) + 53 (5 November) = 1,580.",
@@ -779,6 +787,10 @@ const CHART_EN: ChartCopy = {
     },
     "2026-11-09": {
       arrests: "Regional prefecture figures only — Bordeaux, Lyon, Strasbourg.",
+    },
+    "2026-11-10": {
+      strikers:
+        "Derived, not counted. 1.55% weighted education participation (ministry), used as a proxy for the civil service on the 2,500,000-agent base: 38,750. Education's own rates: 1.60% of teachers, 7.01% of life-schools staff. The ministry's figure covers the metropolitan academies only.",
     },
   },
   deployNotes: {
@@ -827,6 +839,10 @@ const CHART_EN: ChartCopy = {
       label: "Protesters",
       detached: "Protesters (detached figure)",
     },
+    strikersDaily: {
+      label: "People on strike",
+      detached: "People on strike (modelled)",
+    },
     blockadesDaily: {
       label: "Schools blocked",
       detached: "Schools blocked (regional count)",
@@ -860,6 +876,10 @@ const CHART_EN: ChartCopy = {
       label: "Protesters (weekly peak)",
       detached: "Protesters (regional week)",
     },
+    strikersWeekly: {
+      label: "People on strike (weekly peak)",
+      detached: "People on strike (modelled)",
+    },
     blockadesWeekly: {
       label: "Schools blocked (weekly peak)",
       detached: "Schools blocked (regional week)",
@@ -879,10 +899,10 @@ const CHART_EN: ChartCopy = {
   },
   charts: {
     protestersDaily: {
-      title: "Protesters and blocked schools, daily",
+      title: "Protesters, people on strike and blocked schools, daily",
       subtitle:
-        "Crowd counts on the left axis, school blockades on the right. The dotted line is the Toussaint holiday",
-      y: "Protesters",
+        "Crowd counts and people on strike on the left axis, school blockades on the right. People on strike is derived from published participation rates — no authority published a headcount. The dotted line is the Toussaint holiday. Three of the five strike points are derived.",
+      y: "People in the street or on strike",
       yRight: "Schools blocked or closed",
     },
     enforcementDaily: {
@@ -897,10 +917,10 @@ const CHART_EN: ChartCopy = {
       y: "€ millions",
     },
     protestersWeekly: {
-      title: "Protesters and blocked schools, weekly peak",
+      title: "Protesters, people on strike and blocked schools, weekly peak",
       subtitle:
-        "Peak day of each week, not a weekly sum — the same lycée is blocked on several consecutive days",
-      y: "Protesters (peak day)",
+        "Peak day of each week, not a weekly sum — the same lycée is blocked on several consecutive days, and a person on strike for three days is still one person",
+      y: "People (peak day)",
       yRight: "Schools blocked or closed (peak)",
     },
     enforcementWeekly: {
@@ -936,7 +956,7 @@ const CHART_FR: ChartCopy = {
     "2026-09-28":
       "Le mouvement prend une dimension nationale — actions à Marseille, Lille, dans le Rhône, le Var et les Alpes-Maritimes.",
     "2026-09-29":
-      "Acte I. Le chiffre de foule compte le cortège de la fonction publique rejoint par les actions lycée, pas une foule étudiante.",
+      "Acte I. Le chiffre de foule compte le cortège de la fonction publique rejoint par les actions lycée, pas une foule étudiante. La série des personnes en grève commence ici : 250 000 agents de la fonction publique d’État, dérivés du taux de 10 % annoncé par le gouvernement.",
     "2026-09-30":
       "Deuxième jour de l’acte I : 625 interpellations et 83 blessés des forces de l’ordre. Le ministère de l’Éducation compte 356 établissements concernés ; aucun décompte de lycées entièrement bloqués n’a été publié ce jour-là.",
     "2026-10-01":
@@ -965,7 +985,7 @@ const CHART_FR: ChartCopy = {
     "2026-11-04":
       "Dans le Rhône, sept établissements ont fait cours à distance ; aucun lycée n’est signalé comme bloqué.",
     "2026-11-05":
-      "La fourchette de foule va de 575 000 à 1,6 million — la fourchette est la divergence, pas une barre d’erreur.",
+      "La fourchette de foule va de 575 000 à 1,6 million — la fourchette est la divergence, pas une barre d’erreur. Le point de grève est dérivé des taux gouvernementaux : 9,89–11 % des agents de la fonction publique d’État.",
     "2026-11-06":
       "Dans le Rhône, incidents dans 16 lycées et deux collèges, et un lycée du 8e arrondissement de Lyon bloqué lors de son évacuation.",
     "2026-11-09":
@@ -998,6 +1018,8 @@ const CHART_FR: ChartCopy = {
     "2026-09-29": {
       turnout:
         "Compte le cortège de la fonction publique rejoint par les actions lycée (206 000 ministère / 300 000 CGT), pas une foule étudiante.",
+      strikers:
+        "Chiffre dérivé, non compté. 10 % des 2 500 000 agents de la fonction publique d’État en grève (chiffre gouvernemental), soit 250 000. L’Éducation en est la principale composante, non un supplément : 11,47 % des personnels de l’Éducation (moyenne pondérée du ministère — 12,74 % dans le second degré, 27,39 % pour la vie scolaire ; 13,71 % des enseignants) représentent 114 700 agents de la même fonction publique d’État, déjà compris dans ces 250 000. Les revendications syndicales (plus de 40 % des personnels du premier degré, plus de 40 % à Lyon et à Créteil) sont régionales et ne servent pas de plafond national.",
       protesterInjured:
         "Élèves et personnels de l’éducation blessés ce jour-là, comptés par le ministère de l’Éducation.",
       blockades:
@@ -1109,6 +1131,8 @@ const CHART_FR: ChartCopy = {
         "Ministère de l’Éducation : 48 lycées bloqués. L’USL en compte près de 500.",
     },
     "2026-11-05": {
+      strikers:
+        "Chiffre dérivé, non compté. 9,89 % des agents de la fonction publique d’État à la mi-journée, puis 11 % plus tard, sur 2 500 000 agents : de 247 250 à 275 000 — la fourchette est celle de l’heure du comptage, non une barre d’erreur. Éducation : 12,77 % des personnels (ministère, hors académie de Toulouse) = 127 700, une composante de ce total. Exclus : collectivités territoriales 4,60 % et hôpitaux publics 3,93 % (aucun effectif publié), les 52 % de la SNES-FSU (périmètre plus étroit), et le « près d’1,6 million en grève et dans les manifestations » de la CGT, qui recouvre deux populations et borne déjà la fourchette de foule ci-dessus.",
       protesterInjured: "Publié comme plancher : « au moins ». ",
       blockades:
         "Matignon à 10 h : 81 établissements bloqués (2,2 %). L’USL compte 1 000 lycées « à l’arrêt » — bloqués ou fermés administrativement, donc une borne haute. Le ministère de l’Éducation compte 33 % d’établissements perturbés.",
@@ -1168,6 +1192,10 @@ const CHART_FR: ChartCopy = {
       label: "Manifestants",
       detached: "Manifestants (chiffre écarté de la courbe)",
     },
+    strikersDaily: {
+      label: "Personnes en grève",
+      detached: "Personnes en grève (chiffre modélisé)",
+    },
     blockadesDaily: {
       label: "Lycées bloqués",
       detached: "Lycées bloqués (décompte régional)",
@@ -1204,6 +1232,10 @@ const CHART_FR: ChartCopy = {
       label: "Manifestants (pointe hebdomadaire)",
       detached: "Manifestants (semaine régionale)",
     },
+    strikersWeekly: {
+      label: "Personnes en grève (pointe hebdomadaire)",
+      detached: "Personnes en grève (chiffre modélisé)",
+    },
     blockadesWeekly: {
       label: "Lycées bloqués (pointe hebdomadaire)",
       detached: "Lycées bloqués (semaine régionale)",
@@ -1223,10 +1255,10 @@ const CHART_FR: ChartCopy = {
   },
   charts: {
     protestersDaily: {
-      title: "Manifestants et lycées bloqués, par jour",
+      title: "Manifestants, personnes en grève et lycées bloqués, par jour",
       subtitle:
-        "Foules sur l’axe de gauche, blocages de lycées sur l’axe de droite. La ligne en pointillés est les vacances de la Toussaint",
-      y: "Manifestants",
+        "Foules et personnes en grève sur l’axe de gauche, blocages de lycées sur l’axe de droite. Les personnes en grève sont dérivées de taux de participation publiés — aucune autorité n’a publié de décompte. La ligne en pointillés correspond aux vacances de la Toussaint",
+      y: "Personnes dans la rue ou en grève",
       yRight: "Lycées bloqués ou fermés",
     },
     enforcementDaily: {
@@ -1241,10 +1273,11 @@ const CHART_FR: ChartCopy = {
       y: "Millions d’€",
     },
     protestersWeekly: {
-      title: "Manifestants et lycées bloqués, pointe hebdomadaire",
+      title:
+        "Manifestants, personnes en grève et lycées bloqués, pointe hebdomadaire",
       subtitle:
-        "Jour de pointe de chaque semaine, pas une somme hebdomadaire — un même lycée est bloqué plusieurs jours de suite",
-      y: "Manifestants (jour de pointe)",
+        "Jour de pointe de chaque semaine, non une somme hebdomadaire — un même lycée est bloqué plusieurs jours de suite, et une personne en grève trois jours reste une personne",
+      y: "Personnes (jour de pointe)",
       yRight: "Lycées bloqués ou fermés (pointe)",
     },
     enforcementWeekly: {

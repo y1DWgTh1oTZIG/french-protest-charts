@@ -10,11 +10,11 @@ var EN_META = {
   sections: {
     a: {
       title: "A \xB7 Daily counts, 15 September \u2013 11 November 2026",
-      blurb: "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lyc\xE9e was in session."
+      blurb: "One marker per day on which something was published. Days with no figure stay empty rather than interpolated; gaps in a line are dashed. The school-blockade line is dotted across the Toussaint holiday, when no lyc\xE9e was in session. The strike series is derived from participation rates: no authority published a national headcount of strikers."
     },
     b: {
       title: "B \xB7 Weekly aggregates",
-      blurb: "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lyc\xE9e is blocked on several consecutive days."
+      blurb: "Weeks run Monday to Sunday. A peak-day crowd and a summed weekly arrest count are not the same statistic \u2014 the tooltip says which is which. The weekly blockade figure is a peak, never a sum: the same lyc\xE9e is blocked on several consecutive days. People on strike is a level, so the weekly figure is the peak of the week, never a sum."
     },
     c: {
       title: "C \xB7 One panel per movement",
@@ -54,11 +54,11 @@ var FR_META = {
   sections: {
     a: {
       title: "A \xB7 D\xE9comptes quotidiens, 15 septembre \u2013 11 novembre 2026",
-      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s. La courbe des blocages de lyc\xE9es est en pointill\xE9s pendant les vacances de la Toussaint, aucun lyc\xE9e n\u2019\xE9tant en cours."
+      blurb: "Un marqueur par jour o\xF9 un chiffre a \xE9t\xE9 publi\xE9. Les jours sans chiffre restent vides plut\xF4t qu\u2019interpol\xE9s ; les lacunes d\u2019une courbe sont en pointill\xE9s. La courbe des blocages de lyc\xE9es est en pointill\xE9s pendant les vacances de la Toussaint, aucun lyc\xE9e n\u2019\xE9tant en cours. La s\xE9rie des personnes en gr\xE8ve est d\xE9riv\xE9e de taux de participation : aucune autorit\xE9 n\u2019a publi\xE9 de d\xE9compte national des gr\xE9vistes."
     },
     b: {
       title: "B \xB7 Agr\xE9gats hebdomadaires",
-      blurb: "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite."
+      blurb: "Les semaines vont du lundi au dimanche. Une foule de jour de pointe et un total hebdomadaire d\u2019interpellations ne sont pas la m\xEAme statistique \u2014 l\u2019infobulle pr\xE9cise laquelle. Le chiffre hebdomadaire des blocages est une pointe, jamais une somme : un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite. Les personnes en gr\xE8ve sont un niveau, non un flux : le chiffre hebdomadaire en est la pointe de la semaine, jamais une somme."
     },
     c: {
       title: "C \xB7 Un panneau par mouvement",
@@ -337,7 +337,7 @@ var CHART_EN = {
   dayNotes: {
     "2026-09-25": "Paris-area figure only: 21 interpellations by midday, announced by the Pr\xE9fecture de Police.",
     "2026-09-28": "The movement goes national \u2014 actions in Marseille, Lille, the Rh\xF4ne, the Var and the Alpes-Maritimes.",
-    "2026-09-29": "Act I. The crowd figure counts the public-service cort\xE8ge the school actions joined, not a student crowd.",
+    "2026-09-29": "Act I. The crowd figure counts the public-service cort\xE8ge the school actions joined, not a student crowd. The strike series starts here: 250,000 state civil servants, derived from the government's 10% rate.",
     "2026-09-30": "The second day of Act I: 625 interpellations and 83 security forces injured. The Education ministry counted 356 establishments concerned; no count of fully blocked schools was published that day.",
     "2026-10-01": "Act II, the peak of the first week. Arrests and injuries published with no turnout figure for the day.",
     "2026-10-02": "735 establishments still perturbed, and urban violence near 158 of them.",
@@ -355,7 +355,7 @@ var CHART_EN = {
     "2026-10-31": "No protester-injury figure was published for this day. Toussaint holiday \u2014 inter-union mobilisation.",
     "2026-11-01": "Last day of the Toussaint holiday.",
     "2026-11-04": "In the Rh\xF4ne, seven establishments ran in remote mode; no lyc\xE9e was reported blocked.",
-    "2026-11-05": "Turnout band runs from 575 000 to 1.6 million \u2014 the band is the disagreement, not an error bar.",
+    "2026-11-05": "Turnout band runs from 575 000 to 1.6 million \u2014 the band is the disagreement, not an error bar. The strike point is derived from the government's rates: 9.89\u201311% of state civil servants.",
     "2026-11-06": "In the Rh\xF4ne, 16 lyc\xE9es and two colleges saw incidents, and a lyc\xE9e in Lyon's 8th arrondissement was blocked when it was cleared.",
     "2026-11-09": "In the Rh\xF4ne, no lyc\xE9e was blocked: 14 ran in remote mode and 11 were reported as affected. A zero cannot be plotted on a logarithmic axis, so it is recorded here rather than as a point.",
     "2026-11-10": "In the Rh\xF4ne, about ten establishments were affected."
@@ -379,6 +379,7 @@ var CHART_EN = {
     },
     "2026-09-29": {
       turnout: "Counts the public-service cort\xE8ge the school actions joined (206 000 ministry / 300 000 CGT), not a student crowd.",
+      strikers: "Derived, not counted. 10% of the 2,500,000 state civil servants on strike (government figure), giving 250,000. Education is the largest component, not an addend: 11.47% of education staff (ministry weighted average \u2014 12.74% second degree, 27.39% life-school staff; 13.71% of teachers) is 114,700 of the same civil service and is already inside the 250,000. Union claims (>40% of first-degree staff, >40% in Lyon and Cr\xE9teil) are regional and are not used as a national ceiling.",
       protesterInjured: "Students and education staff injured that day, counted by the Education ministry.",
       blockades: "Education ministry at the time of its balance: 45 schools blocked out of 338 concerned. Le Monde counted actions at nearly 410 establishments."
     },
@@ -410,6 +411,7 @@ var CHART_EN = {
     },
     "2026-10-08": {
       damagesCost: "Anchor of the 1\u20138 October \xCEle-de-France damage increment. The same \u20AC6M is published for 6 October and is not counted twice.",
+      strikers: "Derived, not counted. The Education ministry published a weighted participation rate of 0.82% for education staff; no function-wide rate was published that day, so the education rate stands in for the civil service on the same 2,500,000-agent base: 20,500. The proxy is known to run low \u2014 where both were published, education was 11.47% against about 10% for the civil service (29 Sept) and 12.77% against 10.46% (5 Nov).",
       blockades: "Wider measure: 224 establishments closed (ministry); more than 150 still perturbed (franceinfo). The 224 figure is the benchmark the ministry quotes back on 13 October.",
       forcesInjuredStock: "Running total: 761 injured (Nu\xF1ez). The published increments reconcile with it \u2014 715 on 5 October plus 43 on 6 October is 758."
     },
@@ -427,7 +429,8 @@ var CHART_EN = {
       blockades: "Rh\xF4ne prefecture only: 19 of the 27 establishments affected were lyc\xE9es (six universities, two colleges). \xCEle-de-France counted nearly 80 lyc\xE9es perturbed the same day."
     },
     "2026-10-13": {
-      blockades: "Wider measure: 214 establishments closed, 94.2% of lyc\xE9es open \u2014 against 224 on 8 October. The ministry called the movement 'en recul'."
+      blockades: "Wider measure: 214 establishments closed, 94.2% of lyc\xE9es open \u2014 against 224 on 8 October. The ministry called the movement 'en recul'.",
+      strikers: "Derived, not counted. 3.71% weighted education participation (ministry), used as a proxy for the civil service on the 2,500,000-agent base: 92,750. Education's own rates that day: 4.52% of teachers, 10.31% of life-schools staff. The ministry's figure excludes Toulouse, La R\xE9union (school holidays since 10 October), Guadeloupe, Martinique and Guyana (time difference)."
     },
     "2026-10-14": {
       forcesInjuredStock: "Running total: 937 injured (Nu\xF1ez)."
@@ -460,6 +463,7 @@ var CHART_EN = {
       blockades: "Education ministry: 48 schools blocked. The USL counted nearly 500."
     },
     "2026-11-05": {
+      strikers: "Derived, not counted. The government put 9.89% of state civil servants on strike at midday and 11% by the end of the day, on 2,500,000 agents: 247,250 to 275,000 \u2014 the band is the timing of the count, not an error bar. The Education ministry's own weighted rate was 12.77% (19.14% in the first degree, 25.65% for life-schools staff): a component of that total, never an addition to it.",
       forcesInjured: "The day's own figure: 53 at 18:00, 112 on consolidation.",
       forcesInjuredStock: "The ministry's final running total: 1,580 injured since the start of the movement. It reconciles exactly with the published daily increments \u2014 1,144 (17 October) + 267 (24 October) + 116 (31 October) + 53 (5 November) = 1,580.",
       protesterInjured: 'Published as a floor: "at least this many".',
@@ -467,6 +471,9 @@ var CHART_EN = {
     },
     "2026-11-09": {
       arrests: "Regional prefecture figures only \u2014 Bordeaux, Lyon, Strasbourg."
+    },
+    "2026-11-10": {
+      strikers: "Derived, not counted. 1.55% weighted education participation (ministry), used as a proxy for the civil service on the 2,500,000-agent base: 38,750. Education's own rates: 1.60% of teachers, 7.01% of life-schools staff. The ministry's figure covers the metropolitan academies only."
     }
   },
   deployNotes: {
@@ -512,6 +519,10 @@ var CHART_EN = {
       label: "Protesters",
       detached: "Protesters (detached figure)"
     },
+    strikersDaily: {
+      label: "People on strike",
+      detached: "People on strike (modelled)"
+    },
     blockadesDaily: {
       label: "Schools blocked",
       detached: "Schools blocked (regional count)"
@@ -545,6 +556,10 @@ var CHART_EN = {
       label: "Protesters (weekly peak)",
       detached: "Protesters (regional week)"
     },
+    strikersWeekly: {
+      label: "People on strike (weekly peak)",
+      detached: "People on strike (modelled)"
+    },
     blockadesWeekly: {
       label: "Schools blocked (weekly peak)",
       detached: "Schools blocked (regional week)"
@@ -564,9 +579,9 @@ var CHART_EN = {
   },
   charts: {
     protestersDaily: {
-      title: "Protesters and blocked schools, daily",
-      subtitle: "Crowd counts on the left axis, school blockades on the right. The dotted line is the Toussaint holiday",
-      y: "Protesters",
+      title: "Protesters, people on strike and blocked schools, daily",
+      subtitle: "Crowd counts and people on strike on the left axis, school blockades on the right. People on strike is derived from published participation rates \u2014 no authority published a headcount. The dotted line is the Toussaint holiday. Three of the five strike points are derived.",
+      y: "People in the street or on strike",
       yRight: "Schools blocked or closed"
     },
     enforcementDaily: {
@@ -580,9 +595,9 @@ var CHART_EN = {
       y: "\u20AC millions"
     },
     protestersWeekly: {
-      title: "Protesters and blocked schools, weekly peak",
-      subtitle: "Peak day of each week, not a weekly sum \u2014 the same lyc\xE9e is blocked on several consecutive days",
-      y: "Protesters (peak day)",
+      title: "Protesters, people on strike and blocked schools, weekly peak",
+      subtitle: "Peak day of each week, not a weekly sum \u2014 the same lyc\xE9e is blocked on several consecutive days, and a person on strike for three days is still one person",
+      y: "People (peak day)",
       yRight: "Schools blocked or closed (peak)"
     },
     enforcementWeekly: {
@@ -614,7 +629,7 @@ var CHART_FR = {
   dayNotes: {
     "2026-09-25": "Chiffre de la r\xE9gion parisienne uniquement : 21 interpellations \xE0 midi, annonc\xE9es par la pr\xE9fecture de police.",
     "2026-09-28": "Le mouvement prend une dimension nationale \u2014 actions \xE0 Marseille, Lille, dans le Rh\xF4ne, le Var et les Alpes-Maritimes.",
-    "2026-09-29": "Acte I. Le chiffre de foule compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e, pas une foule \xE9tudiante.",
+    "2026-09-29": "Acte I. Le chiffre de foule compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e, pas une foule \xE9tudiante. La s\xE9rie des personnes en gr\xE8ve commence ici : 250 000 agents de la fonction publique d\u2019\xC9tat, d\xE9riv\xE9s du taux de 10 % annonc\xE9 par le gouvernement.",
     "2026-09-30": "Deuxi\xE8me jour de l\u2019acte I : 625 interpellations et 83 bless\xE9s des forces de l\u2019ordre. Le minist\xE8re de l\u2019\xC9ducation compte 356 \xE9tablissements concern\xE9s ; aucun d\xE9compte de lyc\xE9es enti\xE8rement bloqu\xE9s n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0.",
     "2026-10-01": "Acte II, la pointe de la premi\xE8re semaine. Interpellations et bless\xE9s publi\xE9s sans chiffre de foule pour la journ\xE9e.",
     "2026-10-02": "735 \xE9tablissements encore perturb\xE9s, et des violences urbaines pr\xE8s de 158 d\u2019entre eux.",
@@ -629,7 +644,7 @@ var CHART_FR = {
     "2026-10-31": "Aucun chiffre de bless\xE9s parmi les manifestants n\u2019a \xE9t\xE9 publi\xE9 ce jour-l\xE0. Vacances de la Toussaint \u2014 mobilisation interprofessionnelle.",
     "2026-11-01": "Dernier jour des vacances de la Toussaint.",
     "2026-11-04": "Dans le Rh\xF4ne, sept \xE9tablissements ont fait cours \xE0 distance ; aucun lyc\xE9e n\u2019est signal\xE9 comme bloqu\xE9.",
-    "2026-11-05": "La fourchette de foule va de 575 000 \xE0 1,6 million \u2014 la fourchette est la divergence, pas une barre d\u2019erreur.",
+    "2026-11-05": "La fourchette de foule va de 575 000 \xE0 1,6 million \u2014 la fourchette est la divergence, pas une barre d\u2019erreur. Le point de gr\xE8ve est d\xE9riv\xE9 des taux gouvernementaux : 9,89\u201311 % des agents de la fonction publique d\u2019\xC9tat.",
     "2026-11-06": "Dans le Rh\xF4ne, incidents dans 16 lyc\xE9es et deux coll\xE8ges, et un lyc\xE9e du 8e arrondissement de Lyon bloqu\xE9 lors de son \xE9vacuation.",
     "2026-11-09": "Dans le Rh\xF4ne, aucun lyc\xE9e n\u2019est bloqu\xE9 : 14 fonctionnent \xE0 distance et 11 sont signal\xE9s comme touch\xE9s. Un z\xE9ro ne peut pas \xEAtre port\xE9 sur un axe logarithmique, il est donc consign\xE9 ici et non comme point.",
     "2026-11-10": "Dans le Rh\xF4ne, une dizaine d\u2019\xE9tablissements sont touch\xE9s."
@@ -653,6 +668,7 @@ var CHART_FR = {
     },
     "2026-09-29": {
       turnout: "Compte le cort\xE8ge de la fonction publique rejoint par les actions lyc\xE9e (206 000 minist\xE8re / 300 000 CGT), pas une foule \xE9tudiante.",
+      strikers: "Chiffre d\xE9riv\xE9, non compt\xE9. 10 % des 2 500 000 agents de la fonction publique d\u2019\xC9tat en gr\xE8ve (chiffre gouvernemental), soit 250 000. L\u2019\xC9ducation en est la principale composante, non un suppl\xE9ment : 11,47 % des personnels de l\u2019\xC9ducation (moyenne pond\xE9r\xE9e du minist\xE8re \u2014 12,74 % dans le second degr\xE9, 27,39 % pour la vie scolaire ; 13,71 % des enseignants) repr\xE9sentent 114 700 agents de la m\xEAme fonction publique d\u2019\xC9tat, d\xE9j\xE0 compris dans ces 250 000. Les revendications syndicales (plus de 40 % des personnels du premier degr\xE9, plus de 40 % \xE0 Lyon et \xE0 Cr\xE9teil) sont r\xE9gionales et ne servent pas de plafond national.",
       protesterInjured: "\xC9l\xE8ves et personnels de l\u2019\xE9ducation bless\xE9s ce jour-l\xE0, compt\xE9s par le minist\xE8re de l\u2019\xC9ducation.",
       blockades: "Minist\xE8re de l\u2019\xC9ducation au moment de son bilan : 45 lyc\xE9es bloqu\xE9s sur 338 concern\xE9s. Le Monde recense des actions dans pr\xE8s de 410 \xE9tablissements."
     },
@@ -729,6 +745,7 @@ var CHART_FR = {
       blockades: "Minist\xE8re de l\u2019\xC9ducation : 48 lyc\xE9es bloqu\xE9s. L\u2019USL en compte pr\xE8s de 500."
     },
     "2026-11-05": {
+      strikers: "Chiffre d\xE9riv\xE9, non compt\xE9. 9,89 % des agents de la fonction publique d\u2019\xC9tat \xE0 la mi-journ\xE9e, puis 11 % plus tard, sur 2 500 000 agents : de 247 250 \xE0 275 000 \u2014 la fourchette est celle de l\u2019heure du comptage, non une barre d\u2019erreur. \xC9ducation : 12,77 % des personnels (minist\xE8re, hors acad\xE9mie de Toulouse) = 127 700, une composante de ce total. Exclus : collectivit\xE9s territoriales 4,60 % et h\xF4pitaux publics 3,93 % (aucun effectif publi\xE9), les 52 % de la SNES-FSU (p\xE9rim\xE8tre plus \xE9troit), et le \xAB pr\xE8s d\u20191,6 million en gr\xE8ve et dans les manifestations \xBB de la CGT, qui recouvre deux populations et borne d\xE9j\xE0 la fourchette de foule ci-dessus.",
       protesterInjured: "Publi\xE9 comme plancher : \xAB au moins \xBB. ",
       blockades: "Matignon \xE0 10 h : 81 \xE9tablissements bloqu\xE9s (2,2 %). L\u2019USL compte 1 000 lyc\xE9es \xAB \xE0 l\u2019arr\xEAt \xBB \u2014 bloqu\xE9s ou ferm\xE9s administrativement, donc une borne haute. Le minist\xE8re de l\u2019\xC9ducation compte 33 % d\u2019\xE9tablissements perturb\xE9s.",
       forcesInjured: "Le compte du jour : 53 \xE0 18 h, 112 apr\xE8s consolidation.",
@@ -781,6 +798,10 @@ var CHART_FR = {
       label: "Manifestants",
       detached: "Manifestants (chiffre \xE9cart\xE9 de la courbe)"
     },
+    strikersDaily: {
+      label: "Personnes en gr\xE8ve",
+      detached: "Personnes en gr\xE8ve (chiffre mod\xE9lis\xE9)"
+    },
     blockadesDaily: {
       label: "Lyc\xE9es bloqu\xE9s",
       detached: "Lyc\xE9es bloqu\xE9s (d\xE9compte r\xE9gional)"
@@ -817,6 +838,10 @@ var CHART_FR = {
       label: "Manifestants (pointe hebdomadaire)",
       detached: "Manifestants (semaine r\xE9gionale)"
     },
+    strikersWeekly: {
+      label: "Personnes en gr\xE8ve (pointe hebdomadaire)",
+      detached: "Personnes en gr\xE8ve (chiffre mod\xE9lis\xE9)"
+    },
     blockadesWeekly: {
       label: "Lyc\xE9es bloqu\xE9s (pointe hebdomadaire)",
       detached: "Lyc\xE9es bloqu\xE9s (semaine r\xE9gionale)"
@@ -836,9 +861,9 @@ var CHART_FR = {
   },
   charts: {
     protestersDaily: {
-      title: "Manifestants et lyc\xE9es bloqu\xE9s, par jour",
-      subtitle: "Foules sur l\u2019axe de gauche, blocages de lyc\xE9es sur l\u2019axe de droite. La ligne en pointill\xE9s est les vacances de la Toussaint",
-      y: "Manifestants",
+      title: "Manifestants, personnes en gr\xE8ve et lyc\xE9es bloqu\xE9s, par jour",
+      subtitle: "Foules et personnes en gr\xE8ve sur l\u2019axe de gauche, blocages de lyc\xE9es sur l\u2019axe de droite. Les personnes en gr\xE8ve sont d\xE9riv\xE9es de taux de participation publi\xE9s \u2014 aucune autorit\xE9 n\u2019a publi\xE9 de d\xE9compte. La ligne en pointill\xE9s correspond aux vacances de la Toussaint",
+      y: "Personnes dans la rue ou en gr\xE8ve",
       yRight: "Lyc\xE9es bloqu\xE9s ou ferm\xE9s"
     },
     enforcementDaily: {
@@ -852,9 +877,9 @@ var CHART_FR = {
       y: "Millions d\u2019\u20AC"
     },
     protestersWeekly: {
-      title: "Manifestants et lyc\xE9es bloqu\xE9s, pointe hebdomadaire",
-      subtitle: "Jour de pointe de chaque semaine, pas une somme hebdomadaire \u2014 un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite",
-      y: "Manifestants (jour de pointe)",
+      title: "Manifestants, personnes en gr\xE8ve et lyc\xE9es bloqu\xE9s, pointe hebdomadaire",
+      subtitle: "Jour de pointe de chaque semaine, non une somme hebdomadaire \u2014 un m\xEAme lyc\xE9e est bloqu\xE9 plusieurs jours de suite, et une personne en gr\xE8ve trois jours reste une personne",
+      y: "Personnes (jour de pointe)",
       yRight: "Lyc\xE9es bloqu\xE9s ou ferm\xE9s (pointe)"
     },
     enforcementWeekly: {
@@ -13765,6 +13790,7 @@ var FACTS = {
      life-schools staff; 13.71% of teachers). */
   "2026-09-29": {
     turnout: { low: 206e3, high: 3e5, q: "p" },
+    strikers: { low: 25e4, high: 25e4, q: "e" },
     arrests: { low: 440, high: 440 },
     protesterInjured: { low: 31, high: 31, q: "p" },
     blockades: { low: 45, high: 45 }
@@ -13863,10 +13889,17 @@ var FACTS = {
     damagesCost: { low: 6, high: 6, q: "c" },
     blockades: { low: 891, high: 1800, q: "x" }
   },
-  /* Thu 8 Oct — "Acte IV": 71,500 ministry / 130,000+ CGT; Paris 24,500.
-     Anchor of the 1–8 Oct Île-de-France damage increment (€6M). */
+  /* Thu 8 Oct — Act IV. Education ministry: 0.82% weighted all staff
+     (teachers 0.99%, 1st degree 0.10%, 2nd degree 1.67%, vie scolaire
+     2.33%, other staff 0.45%), excluding Toulouse, Nantes and Corse.
+     The lowest rate of the whole sequence, in the middle of the
+     mobilisation — the school action had drained by 8 Oct. */
   "2026-10-08": {
     turnout: { low: 71500, high: 13e4 },
+    /* Education ministry 0.82% weighted; no function-wide rate that day,
+       so the education rate stands in for the civil service on the same
+       2,500,000-agent base: 20,500. Flagged "e" — the proxy runs low. */
+    strikers: { low: 20500, high: 20500, q: "e" },
     damagesCost: { low: 6, high: 6, q: "e" },
     blockades: { low: 224, high: 224, q: "x" }
   },
@@ -13912,6 +13945,8 @@ var FACTS = {
      was Normandy, and it was published on 12 October. */
   "2026-10-13": {
     turnout: { low: 161500, high: 48e4 },
+    /* 3.71% weighted education rate as proxy: 3.71% x 2,500,000 = 92,750. */
+    strikers: { low: 92750, high: 92750, q: "e" },
     forcesInjured: { low: 40, high: 40 },
     blockades: { low: 214, high: 214, q: "x" }
   },
@@ -14000,6 +14035,7 @@ var FACTS = {
      Nuñez. Not a ministry count. */
   "2026-11-05": {
     turnout: { low: 575e3, high: 16e5 },
+    strikers: { low: 247250, high: 275e3, q: "e" },
     arrests: { low: 448, high: 642 },
     forcesInjured: { low: 53, high: 112 },
     protesterInjured: { low: 18, high: 18, q: "f" },
@@ -14017,7 +14053,12 @@ var FACTS = {
   /* Mon 9 Nov — regional only: Bègles 4, Lyon 8, Strasbourg 5 = 17.
      ~50 Île-de-France schools disrupted with mortar fire; Rennes 2
      evacuated; Brest rally; Guadeloupe: lycée blocked at Baie-Mahault. */
-  "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } }
+  "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } },
+  "2026-11-10": {
+    /* Education strike + student march. 1.55% weighted rate as proxy:
+       1.55% x 2,500,000 = 38,750. */
+    strikers: { low: 38750, high: 38750, q: "e" }
+  }
 };
 var DEPLOYMENT = {
   /* September deployment is an ASSUMPTION, on the same basis as the early
@@ -14086,6 +14127,9 @@ function projectDaily(key) {
     };
   });
 }
+var strikers = projectDaily("strikers").map(
+  (p) => ({ ...p, detach: false })
+);
 function projectPolicingDaily() {
   return DATES.map((date) => {
     const dep = DEPLOYMENT[date];
@@ -14264,6 +14308,7 @@ function aggregateBlockades() {
 }
 var DAILY = {
   turnout: projectDaily("turnout"),
+  strikers,
   arrests: projectDaily("arrests"),
   forcesInjured: projectDaily("forcesInjured"),
   forcesInjuredStock: projectForcesStock(),
@@ -14275,6 +14320,9 @@ var DAILY = {
 };
 var WEEKLY = {
   turnout: aggregate("turnout", "max"),
+  strikers: aggregate("strikers", "max").map(
+    (p) => p.q === "w" ? { ...p, q: "e" } : p
+  ),
   arrests: aggregate("arrests", "sum"),
   forcesInjured: aggregate("forcesInjured", "sum"),
   protesterInjured: aggregate("protesterInjured", "sum"),
@@ -14887,6 +14935,22 @@ var DEF = {
     axis: RIGHT,
     log: true
   },
+  strikersDaily: {
+    data: DAILY.strikers,
+    color: "#0f766e",
+    unit: "count",
+    radius: 4.5,
+    width: 2,
+    style: "star"
+  },
+  strikersWeekly: {
+    data: WEEKLY.strikers,
+    color: "#0f766e",
+    unit: "count",
+    radius: 5,
+    width: 2,
+    style: "star"
+  },
   arrestsDaily: {
     data: DAILY.arrests,
     color: "#b91c1c",
@@ -15010,7 +15074,7 @@ var CHARTS = [
     id: "chart-protesters",
     copy: "protestersDaily",
     weekly: false,
-    series: ["protestersDaily", "blockadesDaily"]
+    series: ["protestersDaily", "strikersDaily", "blockadesDaily"]
   },
   {
     id: "chart-enforcement",
@@ -15033,7 +15097,7 @@ var CHARTS = [
     id: "chart-protesters-weekly",
     copy: "protestersWeekly",
     weekly: true,
-    series: ["protestersWeekly", "blockadesWeekly"]
+    series: ["protestersWeekly", "strikersWeekly", "blockadesWeekly"]
   },
   {
     id: "chart-enforcement-weekly",
@@ -17604,6 +17668,17 @@ var GROUPS = [
     }
   },
   {
+    id: "strikes",
+    title: {
+      en: "The 2026 movement \u2014 participation in the strikes",
+      fr: "Le mouvement de 2026 \u2014 participation aux gr\xE8ves"
+    },
+    blurb: {
+      en: "Basis of the \u2018people on strike\u2019 series on chart 1 of sections A and B. No authority published a national headcount of strikers: what was published, on the two national action days, were participation rates for the fonction publique, applied here to its 2,500,000 agents. Education staff are inside that base and are reported as a component, never added to it. The CGT's \u201Cnearly 1.6 million on strike and in the demonstrations\u201D is deliberately unused: it counts strikers and marchers at once, and already bounds the turnout band for 5 November.",
+      fr: "Base de la s\xE9rie \xAB personnes en gr\xE8ve \xBB du graphique 1 des sections A et B. Aucune autorit\xE9 n\u2019a publi\xE9 de d\xE9compte national des gr\xE9vistes : ce qui a \xE9t\xE9 publi\xE9, les deux journ\xE9es nationales d\u2019action, sont des taux de participation dans la fonction publique, appliqu\xE9s ici \xE0 ses 2 500 000 agents. Les personnels de l\u2019\xC9ducation sont inclus dans cette base et figurent comme composante, jamais en suppl\xE9ment. Le \xAB pr\xE8s d\u20191,6 million en gr\xE8ve et dans les manifestations \xBB de la CGT n\u2019est pas utilis\xE9 : il compte gr\xE9vistes et manifestants ensemble et borne d\xE9j\xE0 la fourchette de foule du 5 novembre."
+    }
+  },
+  {
     id: "blockades",
     title: {
       en: "The 2026 movement \u2014 school blockades and the school calendar",
@@ -17714,6 +17789,62 @@ var GROUPS = [
   }
 ];
 var SOURCES = [
+  /* ---------------------- 2026 — strikes */
+  src(
+    "liberation-29sept-strike",
+    "strikes",
+    "Lib\xE9ration \u2014 \xAB Journ\xE9e de mobilisation \xBB (direct du 29 septembre 2026)",
+    "https://www.liberation.fr/economie/social/en-direct-greve-du-29-septembre-suivez-la-mobilisation-dans-la-fonction-publique-ce-mardi-20260929_BFTDSESTTRBQHGN3EAA2SVR4MM/",
+    both(
+      "the government figure of about 10% of state civil servants on strike, the term behind the 29 September point.",
+      "le chiffre gouvernemental d\u2019environ 10 % d\u2019agents de la fonction publique d\u2019\xC9tat en gr\xE8ve, \xE0 l\u2019origine du point du 29 septembre."
+    ),
+    "2026-09-29"
+  ),
+  src(
+    "education-29sept-strike",
+    "strikes",
+    "Minist\xE8re de l\u2019\xC9ducation nationale \u2014 \xAB Mouvement social du mardi 29 septembre 2026 \xBB",
+    "https://www.education.gouv.fr/mouvement-social-du-mardi-29-septembre-2026-506092",
+    both(
+      "11.47% of education staff (weighted; 12.74% second degree, 27.39% life-school staff, 13.71% of teachers) \u2014 the largest component of the strike total, not an addend.",
+      "11,47 % des personnels de l\u2019\xC9ducation (moyenne pond\xE9r\xE9e ; 12,74 % second degr\xE9, 27,39 % vie scolaire, 13,71 % des enseignants) \u2014 la principale composante du total, non un suppl\xE9ment."
+    ),
+    "2026-09-29"
+  ),
+  src(
+    "bbc-5nov-strike",
+    "strikes",
+    "BBC News \u2014 \xAB French protests see numbers surge as unions join strikes over high cost of living \xBB",
+    "https://www.bbc.com/news/articles/ckx2qzv835pgo",
+    both(
+      "5 November rates: 9.89% of civil servants, 4.6% of local-authority staff, 3.93% of hospital staff \u2014 and the ~2.5 million state civil service the percentage is taken on.",
+      "taux du 5 novembre : 9,89 % des fonctionnaires, 4,6 % des agents territoriaux, 3,93 % des hospitaliers \u2014 et les ~2,5 millions d\u2019agents de la fonction publique d\u2019\xC9tat servant de base au pourcentage."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "laclepublique-5nov-strike",
+    "strikes",
+    "La R\xE9publique \u2014 \xAB Gr\xE8ve du 5 novembre : r\xE9sultats, co\xFBt et bilan en France \xBB",
+    "https://laclepublique.fr/national/articles/2026/2026-11-05-bilan-mobilisation-sociale/",
+    both(
+      "the 11% end-of-day civil-service rate that closes the 5 November band, education's 12.77% excluding Toulouse, and the CGT's one-rail-worker-in-three claim (one sector, not plotted).",
+      "les 11 % de fin de journ\xE9e qui ferment la fourchette du 5 novembre, les 12,77 % de l\u2019\xC9ducation hors Toulouse, et la revendication CGT d\u2019un cheminot sur trois (un seul secteur, non trac\xE9)."
+    ),
+    "2026-11-05"
+  ),
+  src(
+    "cgt-1-6m-strike",
+    "strikes",
+    "CGT \u2014 \xAB Nous \xE9tions pr\xE8s d\u20191,6 million en gr\xE8ve et dans les manifestations \xBB",
+    "https://www.cgt.fr/comm-de-presse/nous-etions-pres-d16-million-en-greve-et-dans-les-manifestations-un-nouveau-cap-franchi-pour-gagner",
+    both(
+      "the combined claim. Deliberately not plotted: it covers strikers and marchers in one number, and the same 1.6 million is already the turnout ceiling for that day.",
+      "la revendication combin\xE9e. Volontairement non trac\xE9e : elle couvre gr\xE9vistes et manifestants en un seul chiffre, et le m\xEAme 1,6 million borne d\xE9j\xE0 la foule de ce jour."
+    ),
+    "2026-11-05"
+  ),
   /* ---------------------- 2026 — school blockades and the school calendar */
   src(
     "service-public-vacances",

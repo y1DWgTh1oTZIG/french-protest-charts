@@ -110,6 +110,22 @@ const DEF = {
     axis: RIGHT,
     log: true,
   },
+  strikersDaily: {
+    data: DAILY.strikers,
+    color: "#0f766e",
+    unit: "count",
+    radius: 4.5,
+    width: 2,
+    style: "star",
+  },
+  strikersWeekly: {
+    data: WEEKLY.strikers,
+    color: "#0f766e",
+    unit: "count",
+    radius: 5,
+    width: 2,
+    style: "star",
+  },
   arrestsDaily: {
     data: DAILY.arrests,
     color: "#b91c1c",
@@ -264,7 +280,7 @@ export const CHARTS: readonly ChartSpec[] = [
     id: "chart-protesters",
     copy: "protestersDaily",
     weekly: false,
-    series: ["protestersDaily", "blockadesDaily"],
+    series: ["protestersDaily", "strikersDaily", "blockadesDaily"],
   },
   {
     id: "chart-enforcement",
@@ -283,11 +299,12 @@ export const CHARTS: readonly ChartSpec[] = [
     weekly: false,
     series: ["damagesDaily", "policingDaily", "policingCumulative"],
   },
+
   {
     id: "chart-protesters-weekly",
     copy: "protestersWeekly",
     weekly: true,
-    series: ["protestersWeekly", "blockadesWeekly"],
+    series: ["protestersWeekly", "strikersWeekly", "blockadesWeekly"],
   },
   {
     id: "chart-enforcement-weekly",
