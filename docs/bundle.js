@@ -202,27 +202,27 @@ var numFmt;
 var cptFmt;
 var eurFmt;
 var dateFmt;
-function buildFormats(tag2) {
-  numFmt = new Intl.NumberFormat(tag2, { maximumFractionDigits: 0 });
-  cptFmt = new Intl.NumberFormat(tag2, {
+function buildFormats(tag3) {
+  numFmt = new Intl.NumberFormat(tag3, { maximumFractionDigits: 0 });
+  cptFmt = new Intl.NumberFormat(tag3, {
     notation: "compact",
     compactDisplay: "short",
     maximumFractionDigits: 1
   });
-  eurFmt = new Intl.NumberFormat(tag2, { maximumFractionDigits: 1 });
+  eurFmt = new Intl.NumberFormat(tag3, { maximumFractionDigits: 1 });
   dateFmt = {
-    long: new Intl.DateTimeFormat(tag2, {
+    long: new Intl.DateTimeFormat(tag3, {
       day: "numeric",
       month: "short",
       year: "numeric",
       timeZone: "UTC"
     }),
-    short: new Intl.DateTimeFormat(tag2, {
+    short: new Intl.DateTimeFormat(tag3, {
       day: "numeric",
       month: "short",
       timeZone: "UTC"
     }),
-    day: new Intl.DateTimeFormat(tag2, { day: "numeric", timeZone: "UTC" })
+    day: new Intl.DateTimeFormat(tag3, { day: "numeric", timeZone: "UTC" })
   };
 }
 buildFormats(localeMeta(current).tag);
@@ -251,10 +251,10 @@ var dsLang = null;
 function refreshDates() {
   if (dsLang === current) return;
   dsLang = current;
-  const tag2 = localeMeta(current).tag;
-  dsLong = new Intl.DateTimeFormat(tag2, DATE_LONG);
-  dsShort = new Intl.DateTimeFormat(tag2, DATE_SHORT);
-  dsDay = new Intl.DateTimeFormat(tag2, DAY_ONLY);
+  const tag3 = localeMeta(current).tag;
+  dsLong = new Intl.DateTimeFormat(tag3, DATE_LONG);
+  dsShort = new Intl.DateTimeFormat(tag3, DATE_SHORT);
+  dsDay = new Intl.DateTimeFormat(tag3, DAY_ONLY);
 }
 function toDate(value2) {
   if (value2 instanceof Date)
@@ -1438,9 +1438,9 @@ function catalogueFor(forLang) {
       if (typeof prop !== "string" || prop in target || PASSTHROUGH.has(prop)) {
         return Reflect.get(target, prop, receiver);
       }
-      const tag2 = `${forLang}:${prop}`;
-      if (!warned.has(tag2)) {
-        warned.add(tag2);
+      const tag3 = `${forLang}:${prop}`;
+      if (!warned.has(tag3)) {
+        warned.add(tag3);
         console.warn(
           `[i18n] catalogue branch "${prop}" is missing (${forLang})`
         );
@@ -14286,10 +14286,10 @@ function noteText(ref) {
     case "obs":
       return m.obsNotes[ref.date]?.[ref.metric] ?? "";
     case "policing": {
-      const head = ref.low === ref.high ? nf().format(ref.low) : `${nf().format(ref.low)}\u2013${nf().format(ref.high)}`;
+      const head2 = ref.low === ref.high ? nf().format(ref.low) : `${nf().format(ref.low)}\u2013${nf().format(ref.high)}`;
       const note2 = m.deployNotes[ref.date];
       return fill(note2 ? m.policingDay : m.policingDayPlain, {
-        head,
+        head: head2,
         low: nf().format(RATE.low),
         high: nf().format(RATE.high),
         note: note2 ?? ""
@@ -14447,12 +14447,12 @@ function dataTable(spec) {
   const cap = document.createElement("caption");
   cap.className = "sr-only";
   cap.textContent = spec.caption;
-  const head = table.createTHead().insertRow();
+  const head2 = table.createTHead().insertRow();
   for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = h;
-    head.append(th);
+    head2.append(th);
   }
   const body = table.createTBody();
   spec.index.forEach((label, i) => {
@@ -14568,6 +14568,85 @@ function keyboardChart(chart, opts) {
     ev.preventDefault();
   });
   canvas.addEventListener("blur", () => paint(null));
+}
+
+// src/client/population.ts
+var POPULATION = {
+  "1968": { at: "1968-01-01", france: null, metro: 49723072 },
+  "2006": { at: "2006-01-01", france: 63186117, metro: 61399733 },
+  "2018": { at: "2018-01-01", france: 66992e3, metro: 64844e3 },
+  "2019": { at: "2019-01-01", france: 67258e3, metro: 65097e3 },
+  "2023": { at: "2023-01-01", france: 68405e3, metro: 66165815 },
+  "2025": { at: "2025-01-01", france: 68852e3, metro: 66579e3 },
+  "2026": {
+    at: "2026-01-01",
+    france: 69082e3,
+    metro: 66793e3,
+    aged15_64: 42514e3,
+    active: 318e5
+    // 2025 annual average: the 2026 release is not out
+  }
+};
+var KEY_2026 = "2026";
+var EPISODE_POP = {
+  may68: "1968",
+  cpe: "2006",
+  gj: "2018",
+  nahel: "2023",
+  pensions: "2023",
+  bt: "2025",
+  students26: "2026"
+};
+var population = (key) => POPULATION[key] ?? null;
+function denominator(pop, basis = "france") {
+  if (!pop) return null;
+  const v = pop[basis];
+  return typeof v === "number" && v > 0 ? v : null;
+}
+function share(count, pop, basis = "france") {
+  const d = denominator(pop, basis);
+  return d === null ? null : count / d;
+}
+function per100k(count, pop, basis = "france") {
+  const s = share(count, pop, basis);
+  return s === null ? null : s * 1e5;
+}
+var tag = "";
+var pctFmt = new Intl.NumberFormat("fr-FR", {
+  style: "percent",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+var intFmt = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+function sync() {
+  const next = localeMeta().tag;
+  if (next === tag) return;
+  tag = next;
+  pctFmt = new Intl.NumberFormat(next, {
+    style: "percent",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  intFmt = new Intl.NumberFormat(next, { maximumFractionDigits: 0 });
+}
+function fmtPct(p) {
+  sync();
+  return p === null ? "\u2014" : pctFmt.format(p);
+}
+function fmtRate(v) {
+  sync();
+  return v === null ? "\u2014" : intFmt.format(Math.round(v));
+}
+function fmtPctBand(lo, hi) {
+  if (lo === null || hi === null) return "\u2014";
+  const a = fmtPct(lo);
+  return Math.abs(hi - lo) < 1e-9 ? a : `${a} \u2013 ${fmtPct(hi)}`;
+}
+function fmtRateBand(lo, hi) {
+  if (lo === null || hi === null) return "\u2014";
+  const a = fmtRate(lo);
+  const b = fmtRate(hi);
+  return a === b ? a : `${a} \u2013 ${b}`;
 }
 
 // src/client/chart.ts
@@ -14702,8 +14781,8 @@ var DEF = {
     style: "triangle"
   }
 };
-function visiblePoints(dataKey, weekly = false) {
-  const series = weekly ? WEEKLY[dataKey] : DAILY[dataKey];
+function visiblePoints(dataKey, weekly2 = false) {
+  const series = weekly2 ? WEEKLY[dataKey] : DAILY[dataKey];
   if (!series) return [];
   let mask = null;
   for (const def of Object.values(DEF)) {
@@ -14756,9 +14835,9 @@ var CHARTS = [
     series: ["arrestsWeekly", "forcesWeekly", "protestersInjuredWeekly"]
   }
 ];
-function view(weekly) {
+function view(weekly2) {
   const c = t().chart;
-  return weekly ? {
+  return weekly2 ? {
     labels: WEEKS.map(
       (w) => fmtWeek(w.key, w.end) + (w.touchesEdge ? c.edgeMark : "")
     ),
@@ -14782,7 +14861,7 @@ function view(weekly) {
 }
 var DAILY_GAP = 7;
 var WEEKLY_GAP = 1;
-function datasetsFor(id, weekly) {
+function datasetsFor(id, weekly2) {
   const def = DEF[id];
   if (!def) throw new Error(`chart.ts: no DEF entry for series "${id}"`);
   if (!def.data) throw new Error(`chart.ts: series "${id}" has no data`);
@@ -14805,6 +14884,7 @@ function datasetsFor(id, weekly) {
     data: plot((p) => !p.detach),
     yAxisID: axis,
     unit: def.unit,
+    perCapita: id === "protestersDaily" || id === "protesterWeekly",
     errorBars: bands((p) => !p.detach),
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
@@ -14825,7 +14905,7 @@ function datasetsFor(id, weekly) {
     spanGaps: false,
     connectors: {
       series: def.data,
-      slots: weekly ? WEEKLY_GAP : DAILY_GAP,
+      slots: weekly2 ? WEEKLY_GAP : DAILY_GAP,
       holiday
     }
   };
@@ -14837,6 +14917,7 @@ function datasetsFor(id, weekly) {
       data: plot((p) => p.detach),
       yAxisID: axis,
       unit: def.unit,
+      perCapita: id === "protestersDaily" || id === "protestersWeekly",
       showLine: false,
       detachedOnly: true,
       errorBars: bands((p) => p.detach),
@@ -15083,6 +15164,21 @@ var spanMark = {
 function fmt(v, unit) {
   return unit === "eurM" ? fill(t().chart.eurM, { v: eurM().format(v) }) : nf().format(Math.round(v));
 }
+var RATE2 = {
+  en: "= {pct} of the population ({pop} residents)",
+  fr: "= {pct} de la population ({pop} habitants)"
+};
+function rateLine(band, v) {
+  const pop = population(KEY_2026);
+  const lo = share(band?.[0] ?? v, pop);
+  const hi = share(band?.[1] ?? v, pop);
+  if (lo === null || hi === null) return null;
+  const pct = hi - lo < 1e-9 ? fmtPct(lo) : `${fmtPct(lo)} \u2013 ${fmtPct(hi)}`;
+  return fill(bi(RATE2), {
+    pct,
+    pop: nf().format(denominator(pop) ?? 0)
+  });
+}
 var tickFormat = (unit) => (v) => unit === "eurM" ? fill(t().chart.eurM, { v: nf().format(v) }) : compact().format(v);
 function tooltipCallbacks(v) {
   const m = t().chart;
@@ -15104,8 +15200,11 @@ function tooltipCallbacks(v) {
         value: fmt(item.parsed.y ?? 0, unit)
       });
       const body = base + suffixFor(ds.quality?.[item.dataIndex], detached);
+      const rate = ds.perCapita ? rateLine(ds.errorBars?.[item.dataIndex], item.parsed.y ?? 0) : null;
+      const full = rate ? `${body}
+${rate}` : body;
       return wrapTooltipLines(
-        note2 ? fill(m.tooltipNote, { base: body, note: note2 }) : body,
+        note2 ? fill(m.tooltipNote, { base: full, note: note2 }) : full,
         item,
         "body"
       );
@@ -17211,7 +17310,7 @@ function renderAbout(host = document.getElementById("about")) {
 
 // src/client/page.ts
 var $ = (id) => document.getElementById(id);
-function tag(name, className, text) {
+function tag2(name, className, text) {
   const el2 = document.createElement(name);
   if (className) el2.className = className;
   if (text !== void 0) el2.textContent = text;
@@ -17220,9 +17319,9 @@ function tag(name, className, text) {
 function header(id, s, level = 2) {
   const host = $(id);
   if (!host) return;
-  const h = tag(level === 3 ? "h3" : "h2", "sec-title", s.title);
+  const h = tag2(level === 3 ? "h3" : "h2", "sec-title", s.title);
   h.id = `${id}-title`;
-  host.replaceChildren(h, tag("p", "sec-blurb", s.blurb));
+  host.replaceChildren(h, tag2("p", "sec-blurb", s.blurb));
 }
 function note(id, text) {
   const host = $(id);
@@ -17491,6 +17590,17 @@ var SOURCES = [
       "le cas de contr\xF4le d\xE9partemental : pic de 130 \xE0 Privas, 120 \xE0 Annonay, 60 \xE0 Tournon-sur-Rh\xF4ne et 600 \xE0 Aubenas (lyc\xE9ens inclus), aucun \xE9tablissement bloqu\xE9, aucune violence ni d\xE9gradation, deux proc\xE9dures pour outrages, plus de cent policiers mobilis\xE9s. \xC0 lire face \xE0 l\u2019agr\xE9gat national : une journ\xE9e peut \xEAtre charg\xE9e dans un d\xE9partement et calme ailleurs."
     ),
     "2026-10-13"
+  ),
+  src(
+    "insee-population-1er-janvier",
+    "official",
+    "INSEE \u2014 \xAB Population au 1er janvier \xBB",
+    "https://www.insee.fr/fr/statistiques",
+    both(
+      "the denominators used for every per-capita figure: France enti\xE8re and France m\xE9tropolitaine at 1 January, 1968 to 2026. The 2026 figures are provisional and the series is revised annually; the version used here is the January 2026 release. No France-enti\xE8re figure exists for 1968 in this release, so May 68 is read against metropolitan France alone.",
+      "les d\xE9nominateurs de tous les chiffres rapport\xE9s \xE0 la population : France enti\xE8re et France m\xE9tropolitaine au 1er janvier, de 1968 \xE0 2026. Les chiffres de 2026 sont provisoires et la s\xE9rie est r\xE9vis\xE9e chaque ann\xE9e ; la version utilis\xE9e ici est celle de janvier 2026. Aucun chiffre pour la France enti\xE8re n\u2019existe pour 1968 dans cette version : Mai 68 est donc rapport\xE9 \xE0 la seule France m\xE9tropolitaine."
+    ),
+    "2026-01-01"
   ),
   /* 17 Oct 2026 — the injury series for that day. Read as a stack, not a list:
      the ministry figure (forces only) at the bottom, encyclopaedic / militant
@@ -19375,9 +19485,9 @@ function sourceItem(s) {
 function sourceGroup(id, summary, body) {
   const details = el("details", "source-group");
   details.dataset.group = id;
-  const head = el("summary", "group-summary");
-  head.append(...summary);
-  details.append(head, ...body);
+  const head2 = el("summary", "group-summary");
+  head2.append(...summary);
+  details.append(head2, ...body);
   return details;
 }
 function renderSources(host = document.getElementById("sources")) {
@@ -19533,13 +19643,13 @@ function bestValue(obs) {
   for (const o of obs) if (!best || o.v > best.v) best = o;
   return best;
 }
-function dailyRows(weekly) {
-  const specs = weekly ? WEEKLY_SPECS : DAILY_SPECS;
+function dailyRows(weekly2) {
+  const specs = weekly2 ? WEEKLY_SPECS : DAILY_SPECS;
   return specs.map((spec) => {
-    const pts = visiblePoints(spec.data, weekly);
+    const pts = visiblePoints(spec.data, weekly2);
     const obs = pts.map((p) => ({
       v: p.v,
-      where: weekly ? fmtWeek(WEEKS[p.i].key, WEEKS[p.i].end) : fmtDate(DATES[p.i])
+      where: weekly2 ? fmtWeek(WEEKS[p.i].key, WEEKS[p.i].end) : fmtDate(DATES[p.i])
     }));
     const st = meanMedian(obs.map((o) => o.v));
     const first = obs.length ? obs[0].v : 0;
@@ -19591,7 +19701,7 @@ function episodeRows(maxX) {
 function fmtValue(v, unit) {
   return unit === "eurM" ? fill(t().kpi.eurM, { v: eurM().format(v) }) : compact().format(v);
 }
-function fmtPct(ratio) {
+function fmtPct2(ratio) {
   const x = ratio * 100;
   if (x >= 1e3) return `${nf().format(Math.round(x))}%`;
   if (x >= 10) return `${Math.round(x)}%`;
@@ -19611,7 +19721,7 @@ function ratioCell(r, label, template, unit) {
     value: fmtValue(r.obs.v, unit),
     base: fmtValue(r.base, unit)
   });
-  return kpiRow(label, fmtPct(r.pct), `${r.obs.where} \xB7 ${against}`);
+  return kpiRow(label, fmtPct2(r.pct), `${r.obs.where} \xB7 ${against}`);
 }
 function card(row, largestLabel) {
   const k = t().kpi;
@@ -19696,7 +19806,7 @@ function cell(c, extra = "") {
   const { text, cls } = cellText(c);
   return el("td", extra ? `${cls} ${extra}` : cls, text);
 }
-function share(light, total) {
+function share2(light, total) {
   if (light.s !== "n" || total.s !== "n" || total.v <= 0) return null;
   return light.v / total.v;
 }
@@ -19712,7 +19822,7 @@ function severityTable(rows, caption) {
   const table = el("table", "cas-table");
   table.append(el("caption", "cas-caption", caption));
   const thead = el("thead");
-  const head = el("tr");
+  const head2 = el("tr");
   const labels = [
     c.colScope,
     c.colTotal,
@@ -19724,9 +19834,9 @@ function severityTable(rows, caption) {
   labels.forEach((label, i) => {
     const th = el("th", i === 0 ? "cas-scope-head" : "cas-num-head", label);
     th.scope = "col";
-    head.append(th);
+    head2.append(th);
   });
-  thead.append(head);
+  thead.append(head2);
   table.append(thead);
   const tbody = el("tbody");
   for (const row of rows) {
@@ -19737,7 +19847,7 @@ function severityTable(rows, caption) {
     tr.append(cell(row.total));
     tr.append(cell(row.serious));
     tr.append(cell(row.light));
-    const p = share(row.light, row.total);
+    const p = share2(row.light, row.total);
     const td = el("td", "cas-share");
     if (p === null) {
       td.append(el("span", "cas-absent", "\u2014"));
@@ -19754,7 +19864,7 @@ function severityTable(rows, caption) {
 function headline() {
   const c = t().casualties;
   const top = SEVERITY_LEVELS[0];
-  const p = share(top.light, top.total);
+  const p = share2(top.light, top.total);
   const wrap = el("div", "cas-headline");
   const left = el("div", "cas-head-stat");
   left.append(
@@ -19781,13 +19891,13 @@ function causeTable(rows, caption) {
   const table = el("table", "cas-table cas-cause");
   table.append(el("caption", "cas-caption", caption));
   const thead = el("thead");
-  const head = el("tr");
+  const head2 = el("tr");
   [c.colSide, c.colCircumstance, c.colCount, c.colCases].forEach((label, i) => {
     const th = el("th", i < 2 ? "cas-scope-head" : "cas-num-head", label);
     th.scope = "col";
-    head.append(th);
+    head2.append(th);
   });
-  thead.append(head);
+  thead.append(head2);
   table.append(thead);
   const tbody = el("tbody");
   for (const row of rows) {
@@ -19816,13 +19926,13 @@ function resolutionTable() {
   const table = el("table", "cas-table cas-resolution");
   table.append(el("caption", "cas-caption", c.capResolution));
   const thead = el("thead");
-  const head = el("tr");
+  const head2 = el("tr");
   [c.colQuestion, c.colWindow, c.colWeekly].forEach((label, i) => {
     const th = el("th", i === 2 ? "cas-num-head" : "cas-scope-head", label);
     th.scope = "col";
-    head.append(th);
+    head2.append(th);
   });
-  thead.append(head);
+  thead.append(head2);
   table.append(thead);
   const tbody = el("tbody");
   for (const row of c.resolution) {
@@ -19859,6 +19969,275 @@ function mountCasualties() {
   }
 }
 
+// src/client/percapita.ts
+var COPY = {
+  titleDaily: {
+    en: "Turnout as a share of the population",
+    fr: "La foule rapport\xE9e \xE0 la population"
+  },
+  titleWeekly: {
+    en: "Weekly peak as a share of the population",
+    fr: "Pointe hebdomadaire rapport\xE9e \xE0 la population"
+  },
+  titleEpisodes: {
+    en: "Peak turnout of each movement, as a share of its population",
+    fr: "Pointe de chaque mouvement rapport\xE9e \xE0 sa population"
+  },
+  capDaily: {
+    en: "Turnout by day against France enti\xE8re, {pop} residents at 1 January 2026. The band runs from the ministry count to the organiser count.",
+    fr: "Foule par jour rapport\xE9e \xE0 la France enti\xE8re, {pop} habitants au 1er janvier 2026. La fourchette va du d\xE9compte minist\xE9riel au d\xE9compte syndical."
+  },
+  capWeekly: {
+    en: "The peak day of each week against France enti\xE8re, {pop} residents at 1 January 2026. A peak, not a sum: the same person is counted once per day.",
+    fr: "Le jour de pointe de chaque semaine rapport\xE9 \xE0 la France enti\xE8re, {pop} habitants au 1er janvier 2026. Une pointe, pas une somme : une m\xEAme personne est compt\xE9e une fois par jour."
+  },
+  capEpisodes: {
+    en: "The highest weekly turnout in each movement, against the population of that year. The figure plotted is the midpoint of the published band; the band is given in the last column.",
+    fr: "La foule hebdomadaire la plus \xE9lev\xE9e de chaque mouvement, rapport\xE9e \xE0 la population de l\u2019ann\xE9e. Le chiffre retenu est le milieu de la fourchette publi\xE9e ; la fourchette figure en derni\xE8re colonne."
+  },
+  colDate: { en: "Date", fr: "Date" },
+  colWeek: { en: "Week", fr: "Semaine" },
+  colMinistry: { en: "Ministry", fr: "Minist\xE8re" },
+  colOrganisers: { en: "Organisers", fr: "Organisateurs" },
+  colShare: { en: "Share of population", fr: "Part de la population" },
+  colRate: { en: "Per 100 000", fr: "Pour 100 000" },
+  colMovement: { en: "Movement", fr: "Mouvement" },
+  colBase: { en: "Population", fr: "Population" },
+  colPeak: { en: "Peak", fr: "Pointe" },
+  colBand: { en: "Published band", fr: "Fourchette publi\xE9e" },
+  peakLabel: {
+    en: "Peak day \xB7 {date} \xB7 {pct}",
+    fr: "Jour de pointe \xB7 {date} \xB7 {pct}"
+  },
+  peakSub: {
+    en: "{n} residents in 100 000 were in the street \u2014 the upper bound of the day.",
+    fr: "{n} habitants sur 100 000 \xE9taient dans la rue \u2014 la borne haute du jour."
+  },
+  totalLabel: {
+    en: "Person-days \xB7 {n} counted days",
+    fr: "Jours-manifestation \xB7 {n} jours compt\xE9s"
+  },
+  totalSub: {
+    en: "These are attendances, not people: the same person marched more than once, so this is not the share of the population that protested.",
+    fr: "Ce sont des pr\xE9sences, pas des personnes : une m\xEAme personne a d\xE9fil\xE9 plusieurs fois, ce n\u2019est donc pas la part de la population qui a manifest\xE9."
+  },
+  noteDaily: {
+    en: "France enti\xE8re, {pop} residents at 1 January 2026 (INSEE, provisional). Metropolitan France would give {metro}. The 29 September band is a floor: it counts the public-service cort\xE8ge, with no student crowd counted separately. The 5 November and 17 October upper bounds are organiser claims, not counts.",
+    fr: "France enti\xE8re, {pop} habitants au 1er janvier 2026 (INSEE, chiffre provisoire). La France m\xE9tropolitaine donnerait {metro}. La fourchette du 29 septembre est un plancher : elle compte le cort\xE8ge de la fonction publique, sans foule \xE9tudiante distincte. Les bornes hautes des 17 octobre et 5 novembre sont des chiffres syndicaux, pas des d\xE9comptes."
+  },
+  noteEpisodes: {
+    en: "May 68 is read against metropolitan France only: no France-enti\xE8re figure exists for 1968 in this vintage, and its 49 723 072 is a resident estimate, not a census count. Its turnout band is a scholarly reconstruction, so the rate is approximate. A rate adds arithmetic precision to a numerator that may not have it \u2014 read it as a magnitude.",
+    fr: "Mai 68 est rapport\xE9 \xE0 la France m\xE9tropolitaine seulement : aucun chiffre pour la France enti\xE8re n\u2019existe pour 1968 dans cette version, et ses 49 723 072 sont une estimation de population, non un d\xE9compte censitaire. Sa fourchette de foule est une reconstruction savante : le taux est donc approximatif. Un taux ajoute une pr\xE9cision arithm\xE9tique \xE0 un num\xE9rateur qui n\u2019en a peut-\xEAtre pas \u2014 \xE0 lire comme un ordre de grandeur."
+  },
+  absent: { en: "no denominator", fr: "pas de d\xE9nominateur" }
+};
+var txt2 = (k) => bi(COPY[k]);
+function rowsFor(weekly2) {
+  const pop = population(KEY_2026);
+  const series = weekly2 ? WEEKLY.turnout : DAILY.turnout;
+  const out = [];
+  series.forEach((p, i) => {
+    if (!p || p.v === null) return;
+    const lo = p.band?.[0] ?? p.v;
+    const hi = p.band?.[1] ?? p.v;
+    let where;
+    if (weekly2) {
+      const w = WEEKS[i];
+      if (!w) return;
+      where = fmtWeek(w.key, w.end);
+    } else {
+      if (!DATES[i]) return;
+      where = fmtDate(DATES[i]);
+    }
+    out.push({
+      where,
+      lo,
+      hi,
+      pctLo: share(lo, pop),
+      pctHi: share(hi, pop),
+      rateLo: per100k(lo, pop),
+      rateHi: per100k(hi, pop)
+    });
+  });
+  return out;
+}
+function cell2(text, cls = "pc-num") {
+  return el("td", cls, text);
+}
+function head(labels) {
+  const thead = el("thead");
+  const tr = el("tr");
+  labels.forEach((label, i) => {
+    const th = el("th", i === 0 ? "pc-scope-head" : "pc-num-head", label);
+    th.scope = "col";
+    tr.append(th);
+  });
+  thead.append(tr);
+  return thead;
+}
+function block3(rows, title, caption, firstCol, note2, peakTemplate, peakSubTemplate) {
+  const out = [el("h4", "pc-title", title)];
+  const table = el("table", "pc-table");
+  table.append(el("caption", "pc-caption", caption));
+  table.append(
+    head([
+      firstCol,
+      txt2("colMinistry"),
+      txt2("colOrganisers"),
+      txt2("colShare"),
+      txt2("colRate")
+    ])
+  );
+  const tbody = el("tbody");
+  let peak = null;
+  let sumLo = 0;
+  let sumHi = 0;
+  for (const r of rows) {
+    sumLo += r.lo;
+    sumHi += r.hi;
+    if (!peak || r.hi > peak.hi) peak = r;
+    const tr = el("tr");
+    const th = el("th", "pc-scope", r.where);
+    th.scope = "row";
+    tr.append(
+      th,
+      cell2(nf().format(r.lo)),
+      cell2(nf().format(r.hi)),
+      cell2(fmtPctBand(r.pctLo, r.pctHi)),
+      cell2(fmtRateBand(r.rateLo, r.rateHi))
+    );
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  if (rows.length > 1) {
+    const pop = population(KEY_2026);
+    const tfoot = el("tfoot");
+    const tr = el("tr");
+    const th = el(
+      "th",
+      "pc-scope",
+      fill(txt2("totalLabel"), { n: rows.length })
+    );
+    th.scope = "row";
+    th.colSpan = 2;
+    tr.append(
+      th,
+      cell2(`${nf().format(sumLo)} \u2013 ${nf().format(sumHi)}`),
+      cell2(fmtPctBand(share(sumLo, pop), share(sumHi, pop))),
+      cell2(fmtRateBand(per100k(sumLo, pop), per100k(sumHi, pop)))
+    );
+    tfoot.append(tr);
+    table.append(tfoot);
+  }
+  if (peak) {
+    const box = el("div", "pc-headline");
+    const stat = el("div", "pc-stat");
+    stat.append(
+      el(
+        "span",
+        "pc-num-big",
+        fill(peakTemplate, {
+          date: peak.where,
+          pct: fmtPctBand(peak.pctLo, peak.pctHi)
+        })
+      ),
+      el(
+        "span",
+        "pc-stat-label",
+        fill(peakSubTemplate, { n: fmtRateBand(peak.rateLo, peak.rateHi) })
+      )
+    );
+    box.append(stat);
+    out.push(box);
+  }
+  out.push(table, el("p", "pc-note", note2));
+  return out;
+}
+function daily() {
+  const pop = population(KEY_2026);
+  const cap = fill(txt2("capDaily"), {
+    pop: nf().format(denominator(pop) ?? 0)
+  });
+  const note2 = fill(txt2("noteDaily"), {
+    pop: nf().format(denominator(pop) ?? 0),
+    metro: nf().format(pop?.metro ?? 0)
+  });
+  return block3(
+    rowsFor(false),
+    txt2("titleDaily"),
+    cap,
+    txt2("colDate"),
+    note2,
+    txt2("peakLabel"),
+    txt2("peakSub")
+  );
+}
+function weekly() {
+  const pop = population(KEY_2026);
+  const cap = fill(txt2("capWeekly"), {
+    pop: nf().format(denominator(pop) ?? 0)
+  });
+  return block3(
+    rowsFor(true),
+    txt2("titleWeekly"),
+    cap,
+    txt2("colWeek"),
+    fill(txt2("noteDaily"), {
+      pop: nf().format(denominator(pop) ?? 0),
+      metro: nf().format(pop?.metro ?? 0)
+    }),
+    txt2("peakLabel"),
+    txt2("peakSub")
+  );
+}
+function episodes() {
+  const table = el("table", "pc-table");
+  table.append(el("caption", "pc-caption", txt2("capEpisodes")));
+  table.append(
+    head([
+      txt2("colMovement"),
+      txt2("colBase"),
+      txt2("colPeak"),
+      txt2("colShare"),
+      txt2("colRate")
+    ])
+  );
+  const tbody = el("tbody");
+  for (const ep of EPISODES) {
+    const pop = population(EPISODE_POP[ep.id] ?? "");
+    const pts = seriesData(ep, "p") ?? [];
+    let peak = null;
+    for (const p of pts) if (peak === null || p.y > peak) peak = p.y;
+    const tr = el("tr");
+    const th = el("th", "pc-scope", t().episodes[ep.id].short);
+    th.scope = "row";
+    const base = denominator(pop);
+    const baseText = base === null ? txt2("absent") : `${nf().format(base)}${pop?.france === null ? " \xB7 m\xE9tropole" : ""}`;
+    tr.append(
+      th,
+      cell2(baseText, "pc-num pc-base"),
+      cell2(peak === null ? "\u2014" : nf().format(Math.round(peak))),
+      cell2(fmtPctBand(share(peak ?? 0, pop), share(peak ?? 0, pop))),
+      cell2(fmtRateBand(per100k(peak ?? 0, pop), per100k(peak ?? 0, pop)))
+    );
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  return [
+    el("h4", "pc-title", txt2("titleEpisodes")),
+    table,
+    el("p", "pc-note", txt2("noteEpisodes"))
+  ];
+}
+function mountPerCapita() {
+  const a = byId("pc-a");
+  if (a) a.replaceChildren(...daily());
+  const b = byId("pc-b");
+  if (b) b.replaceChildren(...weekly());
+  const c = byId("pc-c");
+  if (c) c.replaceChildren(...episodes());
+}
+
 // src/client/main.ts
 function trellisHosts() {
   const episodeHost = byId("trellis-episodes");
@@ -19880,6 +20259,7 @@ function render() {
   mountCharts();
   mountKpis();
   mountCasualties();
+  mountPerCapita();
   const hosts = trellisHosts();
   if (hosts) {
     try {

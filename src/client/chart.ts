@@ -36,6 +36,7 @@ import {
 import { byId } from "./dom.ts";
 import {
   a11y,
+  bi,
   compact,
   eurM,
   fill,
@@ -51,6 +52,13 @@ import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
 import { fromChart, keyboardChart } from "./a11y.ts";
+import {
+  denominator,
+  fmtPct,
+  KEY_2026,
+  population,
+  share,
+} from "./population.ts";
 
 Chart.register(
   LineController,
@@ -351,6 +359,8 @@ interface ProtestDataset extends ChartDataset<"line", (number | null)[]> {
   quality?: (Flag | null)[];
   notes?: (NoteRef | null)[];
   unit?: Unit;
+  /** Print the rate under the count: turnout series only. */
+  perCapita?: boolean;
   /** hidden from the legend — the points-only twin of a line series */
   detachedOnly?: boolean;
   connectors?: ConnectorSpec;
@@ -413,6 +423,7 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
     data: plot((p) => !p.detach),
     yAxisID: axis,
     unit: def.unit,
+    perCapita: id === "protestersDaily" || id === "protesterWeekly",
     errorBars: bands((p) => !p.detach),
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
@@ -447,6 +458,7 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
       data: plot((p) => p.detach),
       yAxisID: axis,
       unit: def.unit,
+      perCapita: id === "protestersDaily" || id === "protestersWeekly",
       showLine: false,
       detachedOnly: true,
       errorBars: bands((p) => p.detach),
@@ -761,6 +773,28 @@ function fmt(v: number, unit: Unit): string {
     : nf().format(Math.round(v));
 }
 
+/** "= 0.80% of the population (69 082 000 residents)". Null denominator → no
+ *  line at all, never a silent substitution. */
+const RATE = {
+  en: "= {pct} of the population ({pop} residents)",
+  fr: "= {pct} de la population ({pop} habitants)",
+};
+
+function rateLine(
+  band: [number, number] | undefined,
+  v: number,
+): string | null {
+  const pop = population(KEY_2026);
+  const lo = share(band?.[0] ?? v, pop);
+  const hi = share(band?.[1] ?? v, pop);
+  if (lo === null || hi === null) return null;
+  const pct = hi - lo < 1e-9 ? fmtPct(lo) : `${fmtPct(lo)} – ${fmtPct(hi)}`;
+  return fill(bi(RATE), {
+    pct,
+    pop: nf().format(denominator(pop) ?? 0),
+  });
+}
+
 const tickFormat =
   (unit: Unit) =>
   (v: number): string =>
@@ -795,10 +829,13 @@ function tooltipCallbacks(v: View) {
           });
 
       const body = base + suffixFor(ds.quality?.[item.dataIndex], detached);
-      // tooltipNote already carries a \n between base and note; wrapText keeps
-      // that break as a blank-free paragraph split, then folds each paragraph.
+      // The rate is a second paragraph, so it survives the wrap intact.
+      const rate = ds.perCapita
+        ? rateLine(ds.errorBars?.[item.dataIndex], item.parsed.y ?? 0)
+        : null;
+      const full = rate ? `${body}\n${rate}` : body;
       return wrapTooltipLines(
-        note ? fill(m.tooltipNote, { base: body, note }) : body,
+        note ? fill(m.tooltipNote, { base: full, note }) : full,
         item,
         "body",
       );

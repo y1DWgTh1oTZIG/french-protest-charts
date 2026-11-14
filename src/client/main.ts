@@ -29,6 +29,7 @@ import { announce } from "./a11y.ts";
 import { initTheme } from "./theme.ts";
 import { mountKpis } from "./kpis.ts";
 import { mountCasualties } from "./casualties.ts";
+import { mountPerCapita } from "./percapita.ts";
 
 function trellisHosts(): TrellisHosts | null {
   const episodeHost = byId("trellis-episodes");
@@ -51,6 +52,7 @@ export function render(): void {
   mountCharts();
   mountKpis();
   mountCasualties();
+  mountPerCapita();
   const hosts = trellisHosts();
   if (hosts) {
     try {

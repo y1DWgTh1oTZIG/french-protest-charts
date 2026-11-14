@@ -334,6 +334,17 @@ export const SOURCES: readonly Source[] = [
     ),
     "2026-10-13",
   ),
+  src(
+    "insee-population-1er-janvier",
+    "official",
+    "INSEE — « Population au 1er janvier »",
+    "https://www.insee.fr/fr/statistiques",
+    both(
+      "the denominators used for every per-capita figure: France entière and France métropolitaine at 1 January, 1968 to 2026. The 2026 figures are provisional and the series is revised annually; the version used here is the January 2026 release. No France-entière figure exists for 1968 in this release, so May 68 is read against metropolitan France alone.",
+      "les dénominateurs de tous les chiffres rapportés à la population : France entière et France métropolitaine au 1er janvier, de 1968 à 2026. Les chiffres de 2026 sont provisoires et la série est révisée chaque année ; la version utilisée ici est celle de janvier 2026. Aucun chiffre pour la France entière n’existe pour 1968 dans cette version : Mai 68 est donc rapporté à la seule France métropolitaine.",
+    ),
+    "2026-01-01",
+  ),
   /* 17 Oct 2026 — the injury series for that day. Read as a stack, not a list:
      the ministry figure (forces only) at the bottom, encyclopaedic / militant
      tallies above it, the medical register as the documented floor. */
