@@ -238,27 +238,17 @@ const DEF = {
  * the reader cannot see as a marker is neither a "largest day" nor an item in
  * a mean. Delete the two mask lines below to count it like any other point.
  */
-export function visiblePoints(
-  dataKey: string,
-  weekly = false,
-): { i: number; v: number }[] {
-  const series = weekly ? WEEKLY[dataKey] : DAILY[dataKey];
-  if (!series) return [];
+/** Points that actually render: non-null value, non-zero mask entry.
+ *  The id names the series, so no daily/weekly switch and no DEF scan. */
+export function visiblePoints(id: SeriesId): { i: number; v: number }[] {
+  const def = DEF[id];
+  if (!def?.data) return [];
 
-  let mask: readonly number[] | null = null;
-  for (const def of Object.values(DEF)) {
-    const d = def as unknown as {
-      data?: Series;
-      pointRadius?: number | number[];
-    };
-    if (d.data !== series) continue;
-    if (Array.isArray(d.pointRadius)) mask = d.pointRadius;
-  }
-
+  const mask = def.pointRadius;
   const out: { i: number; v: number }[] = [];
-  series.forEach((p, i) => {
+  def.data.forEach((p, i) => {
     if (p.v === null) return;
-    if (mask && mask[i] === 0) return;
+    if (mask?.[i] === 0) return;
     out.push({ i, v: p.v });
   });
   return out;
@@ -722,18 +712,6 @@ const spanMark: Plugin<"line"> = {
           Math.PI * 2,
         );
         ctx.fill();
-        ctx.stroke();
-      } else {
-        const top = y - BRACE_LIFT;
-        const c = BRACE_CURL;
-        ctx.setLineDash([]);
-        ctx.moveTo(x0, top + c);
-        ctx.quadraticCurveTo(x0, top, x0 + c, top);
-        ctx.lineTo(mid - c, top);
-        ctx.quadraticCurveTo(mid, top, mid, top - c);
-        ctx.quadraticCurveTo(mid, top, mid + c, top);
-        ctx.lineTo(x1 - c, top);
-        ctx.quadraticCurveTo(x1, top, x1, top + c);
         ctx.stroke();
       }
 

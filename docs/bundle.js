@@ -1,4 +1,6 @@
 // src/client/i18n.ts
+var UTC = { timeZone: "UTC" };
+var dates;
 var EN_META = {
   tag: "en-GB",
   label: "English",
@@ -201,7 +203,6 @@ function plural(a, b, c) {
 var numFmt;
 var cptFmt;
 var eurFmt;
-var dateFmt;
 function buildFormats(tag3) {
   numFmt = new Intl.NumberFormat(tag3, { maximumFractionDigits: 0 });
   cptFmt = new Intl.NumberFormat(tag3, {
@@ -210,52 +211,25 @@ function buildFormats(tag3) {
     maximumFractionDigits: 1
   });
   eurFmt = new Intl.NumberFormat(tag3, { maximumFractionDigits: 1 });
-  dateFmt = {
+  dates = {
     long: new Intl.DateTimeFormat(tag3, {
       day: "numeric",
       month: "short",
       year: "numeric",
-      timeZone: "UTC"
+      ...UTC
     }),
     short: new Intl.DateTimeFormat(tag3, {
       day: "numeric",
       month: "short",
-      timeZone: "UTC"
+      ...UTC
     }),
-    day: new Intl.DateTimeFormat(tag3, { day: "numeric", timeZone: "UTC" })
+    day: new Intl.DateTimeFormat(tag3, { day: "numeric", ...UTC })
   };
 }
 buildFormats(localeMeta(current).tag);
 var nf = () => numFmt;
 var compact = () => cptFmt;
 var eurM = () => eurFmt;
-var DATE_LONG = {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC"
-};
-var DATE_SHORT = {
-  day: "numeric",
-  month: "short",
-  timeZone: "UTC"
-};
-var DAY_ONLY = {
-  day: "numeric",
-  timeZone: "UTC"
-};
-var dsLong = new Intl.DateTimeFormat(EN_META.tag, DATE_LONG);
-var dsShort = new Intl.DateTimeFormat(EN_META.tag, DATE_SHORT);
-var dsDay = new Intl.DateTimeFormat(EN_META.tag, DAY_ONLY);
-var dsLang = null;
-function refreshDates() {
-  if (dsLang === current) return;
-  dsLang = current;
-  const tag3 = localeMeta(current).tag;
-  dsLong = new Intl.DateTimeFormat(tag3, DATE_LONG);
-  dsShort = new Intl.DateTimeFormat(tag3, DATE_SHORT);
-  dsDay = new Intl.DateTimeFormat(tag3, DAY_ONLY);
-}
 function toDate(value2) {
   if (value2 instanceof Date)
     return Number.isNaN(value2.getTime()) ? null : value2;
@@ -271,25 +245,23 @@ function firstOfMonth(s, d) {
   return current === "fr" && d.getUTCDate() === 1 ? s.replace(/^1\b/, "1er") : s;
 }
 function fmtDate(value2) {
-  refreshDates();
   const d = toDate(value2);
-  return d ? firstOfMonth(dsLong.format(d), d) : "\u2014";
+  return d ? firstOfMonth(dates.long.format(d), d) : "\u2014";
 }
 function fmtDayMonth(value2) {
-  refreshDates();
   const d = toDate(value2);
-  return d ? firstOfMonth(dsShort.format(d), d) : "\u2014";
+  return d ? firstOfMonth(dates.short.format(d), d) : "\u2014";
 }
 function fmtWeek(start, end) {
-  refreshDates();
   const a = toDate(start);
   if (!a) return "\u2014";
-  if (end === void 0) return firstOfMonth(dsShort.format(a), a);
+  if (end === void 0) return firstOfMonth(dates.short.format(a), a);
   const b = toDate(end);
-  if (!b) return firstOfMonth(dsShort.format(a), a);
+  if (!b) return firstOfMonth(dates.short.format(a), a);
   const sameYear = a.getUTCFullYear() === b.getUTCFullYear();
   const sameMonth = sameYear && a.getUTCMonth() === b.getUTCMonth();
-  if (sameMonth) return `${firstOfMonth(dsDay.format(a), a)}\u2013${fmtDayMonth(b)}`;
+  if (sameMonth)
+    return `${firstOfMonth(dates.day.format(a), a)}\u2013${fmtDayMonth(b)}`;
   if (sameYear) return `${fmtDayMonth(a)} \u2013 ${fmtDayMonth(b)}`;
   return `${fmtDayMonth(a)} ${a.getUTCFullYear()} \u2013 ${fmtDayMonth(b)} ${b.getUTCFullYear()}`;
 }
@@ -1619,6 +1591,1329 @@ var A11Y = {
 };
 var a11y = () => A11Y[current];
 
+// src/client/a11y.ts
+var live = null;
+var timer = 0;
+function region() {
+  if (live?.isConnected) return live;
+  live = document.getElementById("a11y-live");
+  if (!live) {
+    live = document.createElement("p");
+    live.id = "a11y-live";
+    live.className = "sr-only";
+    live.setAttribute("role", "status");
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("aria-atomic", "true");
+    document.body.append(live);
+  }
+  return live;
+}
+function announce(text) {
+  const r = region();
+  r.textContent = "";
+  window.clearTimeout(timer);
+  timer = window.setTimeout(() => r.textContent = text, 120);
+}
+var txt = (v) => {
+  if (v == null) return "\u2014";
+  if (typeof v === "number") return nf().format(Math.round(v));
+  if (typeof v === "object") {
+    const p = v;
+    if (typeof p.low === "number" && typeof p.high === "number")
+      return p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
+    for (const n of [p.v, p.y])
+      if (typeof n === "number") return nf().format(Math.round(n));
+  }
+  return String(v);
+};
+function dataTable(spec) {
+  const details = document.createElement("details");
+  details.className = "data-table";
+  const summary = document.createElement("summary");
+  summary.textContent = spec.caption;
+  const table = document.createElement("table");
+  const cap = document.createElement("caption");
+  cap.className = "sr-only";
+  cap.textContent = spec.caption;
+  const head = table.createTHead().insertRow();
+  for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = h;
+    head.append(th);
+  }
+  const body = table.createTBody();
+  spec.index.forEach((label, i) => {
+    const tr = body.insertRow();
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = label;
+    tr.append(th);
+    for (const c of spec.columns)
+      tr.insertCell().textContent = c.values[i] ?? "\u2014";
+  });
+  table.append();
+  details.append(summary, table);
+  return details;
+}
+function fromChart(chart, opts) {
+  const data = chart.data;
+  const sets = data.datasets.filter(
+    (d) => opts.include?.(d) ?? true
+  );
+  const labels = (data.labels ?? []).map(String);
+  const n = labels.length || Math.max(
+    0,
+    ...sets.map((d) => (d.data ?? []).length)
+  );
+  return dataTable({
+    caption: opts.caption,
+    indexHeader: opts.indexHeader,
+    index: Array.from(
+      { length: n },
+      (_, i) => opts.indexOf?.(sets[0], i) ?? labels[i] ?? String(i + 1)
+    ),
+    columns: sets.map((d) => {
+      const ds = d;
+      return {
+        header: String(ds.label ?? ""),
+        values: Array.from({ length: n }, (_, i) => txt(ds.data?.[i]))
+      };
+    })
+  });
+}
+function readout(chart, i) {
+  const label = chart.data.labels?.[i] ?? "";
+  const parts = chart.data.datasets.filter((d) => !d.detachedOnly).map((d) => {
+    const ds = d;
+    return `${ds.label}: ${txt(ds.data?.[i])}`;
+  });
+  return [label, ...parts].join(". ");
+}
+var seq = 0;
+function keyboardChart(chart, opts) {
+  const canvas = chart.canvas;
+  const n = chart.data.labels?.length ?? 0;
+  if (!n) return;
+  const hintId = canvas.id ? `kbd-${canvas.id}` : `kbd-chart-${++seq}`;
+  if (!document.getElementById(hintId)) {
+    const hint = document.createElement("p");
+    hint.id = hintId;
+    hint.className = "sr-only";
+    hint.textContent = opts.hint;
+    canvas.after(hint);
+  }
+  canvas.tabIndex = 0;
+  canvas.setAttribute("aria-roledescription", opts.roledescription);
+  const ids = new Set(
+    (canvas.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
+  );
+  ids.add(hintId);
+  canvas.setAttribute("aria-describedby", [...ids].join(" "));
+  const speak = opts.readout ?? ((i) => readout(chart, i));
+  let at = -1;
+  const paint = (next) => {
+    if (next === null || next < 0 || next >= n) {
+      at = -1;
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      chart.update("none");
+      return;
+    }
+    at = next;
+    const els = chart.data.datasets.map((_, datasetIndex) => ({
+      datasetIndex,
+      index: at
+    }));
+    const pt = chart.getDatasetMeta(0).data[at];
+    chart.setActiveElements(els);
+    chart.tooltip.setActiveElements(els, { x: pt?.x ?? 0, y: pt?.y ?? 0 });
+    chart.update("none");
+    announce(speak(at));
+  };
+  canvas.addEventListener("keydown", (ev) => {
+    switch (ev.key) {
+      case "ArrowRight":
+      case "ArrowUp":
+        paint(at < 0 ? 0 : Math.min(n - 1, at + 1));
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        paint(at < 0 ? n - 1 : Math.max(0, at - 1));
+        break;
+      case "Home":
+        paint(0);
+        break;
+      case "End":
+        paint(n - 1);
+        break;
+      case "Escape":
+        paint(null);
+        break;
+      default:
+        return;
+    }
+    ev.preventDefault();
+  });
+  canvas.addEventListener("blur", () => paint(null));
+}
+
+// src/client/canvas.ts
+var VARS = {
+  ink: "--chart-ink",
+  label: "--chart-label",
+  muted: "--chart-muted",
+  grid: "--chart-grid",
+  axisGrid: "--chart-axis-grid",
+  hollow: "--chart-hollow",
+  tooltipBg: "--chart-tooltip-bg",
+  tooltipInk: "--chart-tooltip-ink",
+  series1: "--chart-series-1",
+  series2: "--chart-series-2",
+  series3: "--chart-series-3",
+  series4: "--chart-series-4",
+  series5: "--chart-series-5",
+  series6: "--chart-series-6",
+  series7: "--chart-series-7"
+};
+var FALLBACK = {
+  ink: "#111827",
+  label: "#4b5563",
+  muted: "#6b7280",
+  grid: "#e5e5e5",
+  axisGrid: "rgba(17, 24, 39, 0.06)",
+  hollow: "#ffffff",
+  tooltipBg: "rgba(17, 24, 39, 0.92)",
+  tooltipInk: "#ffffff",
+  series1: "#5C97C5",
+  series2: "#357AB0",
+  series3: "#2A6B9C",
+  series4: "#1B5C92",
+  series5: "#124A78",
+  series6: "#0A3A63",
+  series7: "#062844"
+};
+var ctx2d = document.createElement("canvas").getContext("2d");
+function normalise(css, fallback) {
+  if (!ctx2d) return fallback;
+  ctx2d.fillStyle = fallback;
+  ctx2d.fillStyle = css;
+  return typeof ctx2d.fillStyle === "string" ? ctx2d.fillStyle : fallback;
+}
+var cache = null;
+function read() {
+  const out = {};
+  const probe2 = document.createElement("span");
+  probe2.setAttribute("aria-hidden", "true");
+  probe2.style.cssText = "position:absolute;width:0;height:0;visibility:hidden";
+  (document.body ?? document.documentElement).append(probe2);
+  for (const key of Object.keys(VARS)) {
+    probe2.style.color = `var(${VARS[key]})`;
+    out[key] = normalise(getComputedStyle(probe2).color, FALLBACK[key]);
+  }
+  probe2.remove();
+  return out;
+}
+var value = (key) => (cache ??= read(), cache[key]);
+var SERIES = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7"
+].map((k) => value(k));
+function refreshTheme() {
+  cache = null;
+}
+var THEME = {
+  get ink() {
+    return value("ink");
+  },
+  get label() {
+    return value("label");
+  },
+  get muted() {
+    return value("muted");
+  },
+  get grid() {
+    return value("grid");
+  },
+  get axisGrid() {
+    return value("axisGrid");
+  },
+  get hollow() {
+    return value("hollow");
+  },
+  get tooltipBg() {
+    return value("tooltipBg");
+  },
+  get tooltipInk() {
+    return value("tooltipInk");
+  },
+  dim: 0.45
+  // was 0.18 — ≈1.3:1 against both modes (WCAG 1.4.1)
+};
+var SERIES_KEYS = [
+  "series1",
+  "series2",
+  "series3",
+  "series4",
+  "series5",
+  "series6",
+  "series7"
+];
+function seriesColor(i) {
+  const last = SERIES_KEYS.length - 1;
+  return value(SERIES_KEYS[Math.min(Math.max(i, 0), last)]);
+}
+var DASHES = [
+  [],
+  [6, 3],
+  [2, 3],
+  [8, 3, 2, 3],
+  [1.5, 3],
+  [10, 4],
+  [4, 3]
+];
+var RAMP = DASHES.map((dash, i) => ({
+  get color() {
+    return seriesColor(i);
+  },
+  dash
+}));
+function alpha(hex2, a) {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex2);
+  if (!m) throw new Error(`alpha() expects #rrggbb, got "${hex2}"`);
+  const n = Number.parseInt(m[1], 16);
+  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
+}
+function segIndex(ctx, which) {
+  const given = which === 0 ? ctx.p0DataIndex : ctx.p1DataIndex;
+  if (typeof given === "number" && Number.isFinite(given)) {
+    return Math.round(given);
+  }
+  const pt = which === 0 ? ctx.p0 : ctx.p1;
+  const parsed = pt?.parsed?.x;
+  if (typeof parsed === "number" && Number.isInteger(parsed)) return parsed;
+  const px = pt?.x;
+  const axis = ctx.chart?.options?.indexAxis === "y" ? "y" : "x";
+  const scale = ctx.chart?.scales?.[axis];
+  if (typeof px === "number" && typeof scale?.getValueForPixel === "function") {
+    const v = scale.getValueForPixel(px);
+    if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
+  }
+  return void 0;
+}
+var gapSegment = (slots = 1, dash = [6, 4]) => ({
+  borderDash: (ctx) => {
+    const i0 = segIndex(ctx, 0);
+    const i1 = segIndex(ctx, 1);
+    if (i0 === void 0 || i1 === void 0) return void 0;
+    return Math.abs(i1 - i0) > slots + 0.01 ? dash : void 0;
+  }
+});
+var live2 = /* @__PURE__ */ new Set();
+var track = (chart) => (live2.add(chart), chart);
+function destroyAll() {
+  for (const chart of live2) {
+    try {
+      chart.destroy();
+    } catch (err) {
+      console.error("[chart] destroy failed", err);
+    }
+  }
+  live2.clear();
+}
+
+// src/client/model.ts
+var METRICS = ["p", "a", "f", "i"];
+var METRIC_OF = {
+  p: "turnout",
+  a: "arrests",
+  f: "forcesInjured",
+  i: "protesterInjured"
+};
+var DETACHED = /* @__PURE__ */ new Set(["r", "p", "e", "c"]);
+var isDetached = (q) => q != null && q !== "n" && DETACHED.has(q);
+var bandOf = (b) => typeof b === "number" ? [b, b] : b;
+var midOf = (b) => {
+  const [lo, hi] = bandOf(b);
+  return (lo + hi) / 2;
+};
+
+// src/client/data.ts
+var NIL = { v: null, band: null, q: null, note: null, detach: false };
+var START = "2026-09-15";
+var END = "2026-11-11";
+var utc = (s) => /* @__PURE__ */ new Date(`${s}T00:00:00Z`);
+var iso = (d) => d.toISOString().slice(0, 10);
+var addDays = (isoDate, n) => {
+  const d = /* @__PURE__ */ new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+var mondayOf = (isoDate) => {
+  const d = /* @__PURE__ */ new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7);
+  return d.toISOString().slice(0, 10);
+};
+function eachDay(start, end) {
+  const out = [];
+  const stop = utc(end);
+  for (const d = utc(start); d <= stop; d.setUTCDate(d.getUTCDate() + 1))
+    out.push(iso(d));
+  return out;
+}
+var DATES = eachDay(START, END);
+var WEEKS = (() => {
+  const byKey = /* @__PURE__ */ new Map();
+  for (const d of DATES) {
+    const k = mondayOf(d);
+    const list = byKey.get(k);
+    if (list) list.push(d);
+    else byKey.set(k, [d]);
+  }
+  return [...byKey].sort(([a], [b]) => a.localeCompare(b)).map(([key, dates2]) => {
+    const end = addDays(key, 6);
+    return { key, end, dates: dates2, touchesEdge: key < START || end > END };
+  });
+})();
+var HOLIDAY_START = "2026-10-18";
+var HOLIDAY_END = "2026-11-01";
+var weekTouchesHoliday = (weekStart) => weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
+var FACTS = {
+  /* ── School blockades ─────────────────────────────────────────────────
+         Metric: establishments where pupils could not attend normally —
+         blocked, or closed by decision. Band = official count (floor) to
+         union count (ceiling); the union's "à l'arrêt" also counts
+         administratively closed schools, so the ceiling is an upper bound.
+  
+         "x" = a wider measure than blockades (établissements perturbés,
+         cours suspendus, établissements fermés) — the only figure published
+         that day. "r" = regional count. "f" = publisher said "more than".
+  
+         Days with no published count stay empty. During the Toussaint
+         holiday (17 Oct – 1 Nov) no lycée was in session, so the metric did
+         not exist: those days are empty and the connector is dotted.       */
+  /* ── The movement's first fortnight ─────────────────────────────────────
+         The wave began after the rentrée: teachers and parents had been on
+         strike in Mayotte since 31 August (lycée Nord d'Acoua, blocked for
+         five weeks); in mainland France the lycée Théodore-Monod at Le Rheu
+         was blocked on 7 September, the lycée Queneau at Villeneuve-d'Ascq on
+         14 September and the lycée Victor-Hugo at Caen on 15 September. The
+         window opens on 15 September at the user's request, so the 7 and 14
+         September blockades fall outside it.
+  
+         NONE of 15–27 September carries a published turnout, arrest, injury or
+         damage figure, so the week of 14–20 September is empty rather than
+         estimated. The one exception is the Paris area on 25 September. */
+  "2026-09-15": { blockades: { low: 1, high: 1 } },
+  "2026-09-19": { blockades: { low: 1, high: 1 } },
+  "2026-09-23": { blockades: { low: 10, high: 10, q: "r" } },
+  /* Fri 25 Sep — the Île-de-France centre of gravity: ~60 franciliens
+     lycées disrupted over 24–25 Sep, mainly Seine-Saint-Denis and
+     Val-de-Marne (Saint-Denis, Sarcelles, Gonesse, Stains, Saint-Ouen,
+     Rosny-sous-Bois, La Courneuve); the Créteil rectorat counted a
+     "grosse dizaine" of new blockades that day.
+     21 interpellations by noon by the Préfecture de Police, in connection
+     with the Paris-area mobilisations — PARIS ONLY, hence "r". The
+     rectorat noted gatherings, crowd movements and material damage
+     without quantifying them. */
+  "2026-09-25": {
+    arrests: { low: 21, high: 21, q: "r" }
+  },
+  /* Mon 28 Sep — the movement goes national: actions in Marseille, Lille,
+     the Rhône, the Var and the Alpes-Maritimes. Interior Ministry: 180
+     establishments perturbed, 27 of them totally blocked, 164
+     interpellations that day.
+     First serious injury of the movement: a 14-year-old hit in the face
+     by a police projectile at the lycée professionnel Château-d'Epluches,
+     Saint-Ouen-l'Aumône (Val-d'Oise); the IGPN was seized. Flagged "f":
+     one documented casualty is a minimum, not a count. */
+  "2026-09-28": {
+    arrests: { low: 164, high: 164 },
+    protesterInjured: { low: 1, high: 1, q: "f" },
+    blockades: { low: 27, high: 27 }
+  },
+  /* Tue 29 Sep — national public-service mobilisation day, which the USL
+     called students to join; it is the movement's Act I.
+     Education ministry, end of day: 416 establishments touched since the
+     morning, 338 still affected, 45 blocked; Le Monde counted actions at
+     nearly 410 establishments; the USL claimed 400 blocked out of ~3,700
+     in France. 440 interpellations, two thirds of them leading to a garde
+     à vue, "essentially for degradations and attacks on officers"
+     (Nuñez, BFM-TV).
+     Turnout: the intersyndicale demonstration drew 206,000 (ministry) /
+     300,000 (CGT) nationwide and 30,000 / 70,000 in Paris, across 170+
+     demonstrations. The students marched with it, so the figure is
+     carried here — but it counts the public-service cortèges, not a
+     student crowd, for which no national count exists. Flagged "p".
+     The Education ministry counted 31 injured students and staff that
+     day. Strike rate: 11.47% weighted (12.74% second degree, 27.39%
+     life-schools staff; 13.71% of teachers). */
+  "2026-09-29": {
+    turnout: { low: 206e3, high: 3e5, q: "p" },
+    strikers: { low: 25e4, high: 25e4, q: "e" },
+    arrests: { low: 440, high: 440 },
+    protesterInjured: { low: 31, high: 31, q: "p" },
+    blockades: { low: 45, high: 45 }
+  },
+  /* Wed 30 Sep — 356 establishments perturbed; 625 interpellations that
+     day, which with 440 on the 29th makes the two-day total 1,065.
+     83 police and gendarmes injured.
+     The Education ministry's stock since the start of the blockades
+     reaches 119 injured students and staff (85 students, 34 staff) — a
+     cumulative level, hence "c". */
+  "2026-09-30": {
+    arrests: { low: 625, high: 625 },
+    protesterInjured: { low: 119, high: 119, q: "c" }
+  },
+  /* Thu 1 Oct — Acte II. More than 900 actions and blockages; AFP's police
+         returns counted 340 actions in the morning and 169 blockades, ending
+         the day at 900 actions including 400 closures; the Union étudiante
+         claimed 640 lycées and ~30 campuses blocked, a figure the authorities
+         do not confirm. Marseille: 18 high schools totally blocked, 3
+         partially, ~40 in Bouches-du-Rhône; Aix-en-Provence ~600 students;
+         Metz 6; Brest most; Épinal 2; Perpignan 11 interpellations and one
+         student injured. No national turnout figure was published.
+  
+         FIX 5: arrests 1,949 are THAT DAY ("1 949 interpellations ce jeudi"),
+         not a stock; the only stock is 6,059 "depuis le 28 septembre" on
+         5 Oct. The day was the peak of the first week.
+  
+         FIX 7: forces injured are bracketed [83, 300] — 83 is the
+         government level at the Wednesday cut-off (it is the same 83 that
+         appears in the 318-injury total of 1 Oct) and ~300 is Nuñez's
+         Thursday figure ("quelque 300 policiers et gendarmes blessés en
+         intervention jeudi"). The band spans a cumulative level and a daily
+         flow, so it is flagged "e" and the 83 is not counted twice.
+  
+         FIX 6: 235 = 170 students + 65 education staff, cumulative at the
+         1 Oct cut-off; the previous 119–235 band was two vintages of this
+         same series. Flagged "c".
+  
+         Damage: the hall of the lycée Nelson-Mandela in Nantes was destroyed
+         by a fire (several classrooms unusable for weeks), as was the main
+         entrance and a 35-classroom block at the lycée Henri-Moissan in
+         Meaux; the façade of the lycée Lumière in Lyon was burnt; in
+         Seine-Maritime two headteachers were hurt (Petit-Quevilly, Rouen) and
+         the prefecture counted eight injured and several intrusions. The €1M
+         cell is a local estimate from the original research and is a subset
+         of the larger Île-de-France and IFRAP totals, hence "c". */
+  "2026-10-01": {
+    arrests: { low: 1949, high: 1949 },
+    forcesInjured: { low: 300, high: 305, q: "e" },
+    protesterInjured: { low: 235, high: 235, q: "c" },
+    damagesCost: { low: 1, high: 1, q: "c" },
+    blockades: { low: 222, high: 640 }
+  },
+  /* Fri 2 Oct — 1,747 interpellations that day and "more than 5,000 since
+     Monday" (the daily series gives 4,925); 735 establishments perturbed,
+     30% fewer than the day before, with urban violence near 158 of them
+     (projectiles, attacks on officers, teachers, journalists and
+     passers-by). A young police lieutenant was assaulted in Paris's 20th
+     arrondissement. Geffray: 65 education staff injured since the start
+     of the movement, 40 of them headteachers. */
+  "2026-10-02": {
+    arrests: { low: 1747, high: 1747 },
+    blockades: { low: 400, high: 400, q: "f" }
+  },
+  /* Sat 3 Oct — the ministry's stock "6,059 interpellations since
+     28 September" (5 Oct) minus 984 on Monday 5 Oct leaves 5,075 through
+     Sunday 4 Oct; the daily figures for 28 Sep–2 Oct sum to 4,925. The
+     difference, 150, is the weekend of 3–4 October. It is a two-day total
+     derived by subtraction, not a Saturday figure — flagged "e" and
+     carried on the Saturday, with the derivation in this comment. */
+  "2026-10-03": {
+    arrests: { low: 150, high: 150, q: "e" },
+    blockades: { low: 735, high: 735, q: "x" }
+  },
+  /* Mon 5 Oct — 984 interpellations and 65 forces injured that day.
+     Stocks published the same day: 6,059 interpellations since 28 Sep;
+     715 police and gendarmes injured since the start of the movement;
+     Matignon: 215 students and 85 education staff injured since the
+     start, 34 of them headteachers. */
+  "2026-10-05": {
+    arrests: { low: 984, high: 984 },
+    forcesInjured: { low: 65, high: 65 },
+    blockades: { low: 400, high: 500, q: "x" }
+  },
+  /* Tue 6 Oct — "Acte III", first national school/student day.
+     256,000 ministry / 450,000 organisers; Paris 56,000 / 100,000.
+     488 interpellations and 43 forces injured that day; 215 students
+     injured since mid-September. The €6M is the Île-de-France damage
+     increment for the 1–8 Oct run and is therefore a subset, not an
+     increment unique to 6 Oct. Flagged "c"; the anchor of the run is
+     8 Oct. */
+  "2026-10-06": {
+    turnout: { low: 256e3, high: 45e4 },
+    arrests: { low: 488, high: 488 },
+    forcesInjured: { low: 43, high: 43 },
+    damagesCost: { low: 6, high: 6, q: "c" },
+    blockades: { low: 891, high: 1800, q: "x" }
+  },
+  /* Thu 8 Oct — Act IV. Education ministry: 0.82% weighted all staff
+     (teachers 0.99%, 1st degree 0.10%, 2nd degree 1.67%, vie scolaire
+     2.33%, other staff 0.45%), excluding Toulouse, Nantes and Corse.
+     The lowest rate of the whole sequence, in the middle of the
+     mobilisation — the school action had drained by 8 Oct. */
+  "2026-10-08": {
+    turnout: { low: 71500, high: 13e4 },
+    /* Education ministry 0.82% weighted; no function-wide rate that day,
+       so the education rate stands in for the civil service on the same
+       2,500,000-agent base: 20,500. Flagged "e" — the proxy runs low. */
+    strikers: { low: 20500, high: 20500, q: "e" },
+    damagesCost: { low: 6, high: 6, q: "e" },
+    blockades: { low: 224, high: 224, q: "x" }
+  },
+  /* Sat 10 Oct — national cumulative damage stock: "déjà estimées à
+     30 millions d'euros en France" since mid-September (CNEWS's own
+     compilation of regional figures — no ministry published a national
+     tally). Pannekoucke's parallel AURA estimate of €25–30M is NOT
+     included, so this is neither a floor nor additive with the regional
+     figures. Flagged "c": a stock, never summed with flows. */
+  "2026-10-10": {
+    damagesCost: { low: 30, high: 30, q: "c" },
+    blockades: { low: 40, high: 40, q: "f" }
+  },
+  /* Mon 12 Oct — three regional prefecture figures, all regional:
+       · Rhône: 27 établissements touchés (19 lycées, 6 universités,
+         2 collèges), 13 interpellations.
+       · Bas-Rhin/Strasbourg: 13 interpellations (préfecture), incl. 4
+         for preparing incendiary devices, 3 for mortar fire.
+     Two prefectures published 13 independently, so 13 is a FLOOR for the
+     day, not the day's regional total. NOT Paris — the old note was
+     wrong.
+     FIX 13 (third pass): the €1.5M moved here from 13 Oct. It is
+     NORMANDY (Hervé Morin, Conseil régional de Normandie, 12 Oct) and
+     it is a CUMULATIVE stock since mid-September — "atteint d'ores et
+     déjà 30 millions d'euros, dont 1,5 million en Normandie" — so the
+     flag moves from "e" to "c". Île-de-France's own revised total the
+     same day was €8.5M (110+ lycées, ~120 portails/sas out of service).
+     Both regional stocks are components of the €30M national stock and
+     must never be added to it.
+     The 3 injured are an Île-de-France figure and count education and
+     local-authority staff, not protesters: 1 proviseur, 1 parent
+     d'élève, 1 agent de la Région. */
+  "2026-10-12": {
+    arrests: { low: 13, high: 13, q: "r" },
+    protesterInjured: { low: 3, high: 3, q: "r" },
+    damagesCost: { low: 1.5, high: 1.5, q: "c" },
+    blockades: { low: 19, high: 19, q: "r" }
+  },
+  /* Tue 13 Oct — "Acte V": 214 high schools closed (94.2% open), 161,500
+     ministry / 480,000 youth intersyndicate (41,500 Paris), 40 police
+     and gendarmes injured.
+     FIX 13 (third pass): the €1.5M cell is GONE from this date — it
+     was Normandy, and it was published on 12 October. */
+  "2026-10-13": {
+    turnout: { low: 161500, high: 48e4 },
+    /* 3.71% weighted education rate as proxy: 3.71% x 2,500,000 = 92,750. */
+    strikers: { low: 92750, high: 92750, q: "e" },
+    forcesInjured: { low: 40, high: 40 },
+    blockades: { low: 214, high: 214, q: "x" }
+  },
+  /* Sat 17 Oct — the peak of the episode.
+         110 → 430 → 441 actions; ~60,000 officers deployed.
+         550,000 ministry / 800,000 organisers; Paris 110,000.
+         Arrests 2,397 initial → 2,628 consolidated (2,513 gardes à vue;
+         108 in Paris). Forces injured 997 initial → 1,144 consolidated,
+         7 serious. One civilian death: Christophe M., 59, Paris.
+  
+         FIX 2 (first pass): no official protester-injury count exists. The
+         low bound is Laurent Thines's serious-injury register (54 seriously
+         injured — 5 eye, 5 cranio-facial, 2 amputations, 42 other — plus the
+         1 death, i.e. 55); the high bound is a reasoned ceiling from
+         Toulouse's 130+ street-medics treatments (~13 treated per serious
+         case) against 54 serious cases nationally. Wikipedia's "400+ civilians"
+         is an uncited infobox line and sits below the partial nine-city sum
+         (~204 across Bordeaux, Clermont-Ferrand, Dijon, Metz, Nancy, Rouen,
+         Strasbourg, Avignon, Toulouse), so it is a floor, not a ceiling.
+         Flagged "e": derived, drawn hollow.
+  
+         Damages: IFRAP conditional estimate for the 17–18 Oct weekend,
+         €244M low / €463M central / €866M high for MATERIAL damage; the
+         €294M–€1.1bn variant includes lost turnover and is a different measure.
+         IFRAP excludes marginal order-maintenance and curfew costs. */
+  "2026-10-17": {
+    turnout: { low: 55e4, high: 8e5 },
+    arrests: { low: 2397, high: 2628 },
+    forcesInjured: { low: 207, high: 207, q: "e" },
+    protesterInjured: { low: 55, high: 1e3, q: "e" },
+    damagesCost: { low: 244, high: 866, q: "e" }
+  },
+  /* Sun 18 Oct — Paris curfew only, 108 interpellations.
+     FIX 3 (first pass): the €1.8–5M damage figure is a subset of the
+     17–18 Oct IFRAP weekend total, so it is flagged "c" and cannot be
+     added to it.
+     FIX 11 (third pass): "r", not "p" — the figure is Paris-only, and
+     "p" now means partial coverage. */
+  "2026-10-18": {
+    arrests: { low: 108, high: 108, q: "r" },
+    damagesCost: { low: 1.8, high: 5, q: "c" }
+  },
+  /* Tue 20 Oct — regional only: 13 interpellations overnight in Guadeloupe
+     (Basse-Terre, Saint-François, Goyave, Vieux-Habitants, Gosier). */
+  "2026-10-20": { arrests: { low: 13, high: 13, q: "r" } },
+  /* Sat 24 Oct — 289 actions, 70,000 officers, Centaure AFVs, water cannons,
+     14 aerial cameras in Paris. 410,000 ministry / 800,000+ CGT;
+     Paris 110,000 (préfecture) / 250,000 (CGT).
+     Arrests 1,314 initial → 1,435 final (142 Paris, 126 GàV).
+     Forces injured 53 at 7:30 a.m. — the ministry's own communiqué calls
+     this "provisoire" — then 267 on consolidation (Nuñez, 26 Oct), with
+     150 civilians injured, 3 seriously. 75 fire interventions.
+     La Réunion: ~80 Saint-Denis, 300 Saint-Pierre. Mayotte: Tsingoni.
+     FIX 4 (first pass): the national damage cell below replaces the earlier
+     local derivation. CCI France's 27 Oct tally — 2,488 shops hit after the
+     17th plus 50 after the 24th, 1,161 heavily damaged, 643 still shut —
+     puts the cost of the degradations at over €1bn on the IFRAP estimate,
+     for the 17–24 Oct period as a whole. That is a SUPERSET of the 17 Oct
+     cell, so it is flagged "c" and is never added to it. */
+  "2026-10-24": {
+    turnout: { low: 41e4, high: 8e5 },
+    arrests: { low: 1314, high: 1435 },
+    forcesInjured: { low: 267, high: 267 },
+    protesterInjured: { low: 150, high: 150 },
+    damagesCost: { low: 1e3, high: 1e3, q: "c" }
+  },
+  /* Sat 31 Oct — 291 actions → 227 consolidated.
+     320,000 ministry / ~500,000 youth organisations; Paris 70,000.
+     Arrests 565 at 21h → 779 cumulative (incl. 214 on the Halloween night).
+     Forces injured 116 by 21h + 43 that night = 159.
+     515 fires handled; 36 shops degraded, 3 pillaged — no cost figure. */
+  "2026-10-31": {
+    turnout: { low: 32e4, high: 5e5 },
+    arrests: { low: 565, high: 779 },
+    forcesInjured: { low: 116, high: 159 },
+    damagesCost: { low: 0.4, high: 3.3, q: "e" }
+  },
+  "2026-11-02": { blockades: { low: 41, high: 41 } },
+  "2026-11-03": { blockades: { low: 48, high: 500 } },
+  /* Thu 5 Nov — national strike day, 193 actions.
+     575,000 ministry (definitive) / 1.6M CGT; Paris 65,000 / 350,000.
+     Arrests 448 at 18h → 642 updated. Forces injured 53 at 18h → 112.
+     86 fire interventions. Marseille: 17 schools blocked, ~40 interpellations,
+     13 police wounded.
+     Protester injuries = 18, a FLOOR: the 18 who instructed lawyers to sue
+     Nuñez. Not a ministry count. */
+  "2026-11-05": {
+    turnout: { low: 575e3, high: 16e5 },
+    strikers: { low: 247250, high: 275e3, q: "e" },
+    arrests: { low: 448, high: 642 },
+    forcesInjured: { low: 53, high: 112 },
+    protesterInjured: { low: 18, high: 18, q: "f" },
+    blockades: { low: 81, high: 1e3 }
+  },
+  /* Sat 7 Nov — 141 actions; ~70,000 officers, 25 blindés, 15 water-cannon
+     trucks; ~40,000 preventive checks; Caen campus dispersed by 50 CRS.
+     146,000 ministry / 250,000 youth intersyndicate; Paris 46,000 / 75,000.
+     Arrests 232 at 18h → 360+ at 19h.
+     Security-force casualties acknowledged but no number published. */
+  "2026-11-07": {
+    turnout: { low: 146e3, high: 25e4 },
+    arrests: { low: 350, high: 360 }
+  },
+  /* Mon 9 Nov — regional only: Bègles 4, Lyon 8, Strasbourg 5 = 17.
+     ~50 Île-de-France schools disrupted with mortar fire; Rennes 2
+     evacuated; Brest rally; Guadeloupe: lycée blocked at Baie-Mahault. */
+  "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } },
+  "2026-11-10": {
+    /* Education strike + student march. 1.55% weighted rate as proxy:
+       1.55% x 2,500,000 = 38,750. */
+    strikers: { low: 38750, high: 38750, q: "e" }
+  }
+};
+var DEPLOYMENT = {
+  /* September deployment is an ASSUMPTION, on the same basis as the early
+     October cells: no official headcount exists for these days. The band
+     spans the marginal cost of one CRS company-day to the Sainte-Soline
+     all-in benchmark. It is an order-of-magnitude placeholder for the
+     policing-cost series, not a measurement. */
+  "2026-09-28": { low: 5e3, high: 2e4, q: "e" },
+  "2026-09-29": { low: 5e3, high: 2e4, q: "e" },
+  "2026-09-30": { low: 5e3, high: 2e4, q: "e" },
+  "2026-10-01": { low: 5e3, high: 2e4, q: "e" },
+  "2026-10-02": { low: 1e4, high: 3e4, q: "e" },
+  "2026-10-05": { low: 1e4, high: 3e4, q: "e" },
+  "2026-10-06": { low: 5e3, high: 2e4, q: "e" },
+  "2026-10-08": { low: 5e3, high: 2e4, q: "e" },
+  /* 12 Oct: three cities at once — Île-de-France (~80 lycées perturbed),
+     Lyon/Rhône (27 établissements), Strasbourg. No headcount published:
+     the only concrete data is "une dizaine de camions de gendarmes
+     mobiles" at the Strasbourg schools and several CRS/police vans at
+     porte Dorée, Paris. */
+  "2026-10-12": { low: 2e3, high: 8e3, q: "e" },
+  "2026-10-13": { low: 5e3, high: 2e4, q: "e" },
+  "2026-10-17": {
+    low: 6e4,
+    high: 6e4
+  },
+  "2026-10-18": { low: 2e3, high: 8e3, q: "e" },
+  "2026-10-24": { low: 7e4, high: 7e4 },
+  "2026-10-31": { low: 7e4, high: 7e4 },
+  "2026-11-05": { low: 7e4, high: 7e4 },
+  "2026-11-07": { low: 7e4, high: 7e4 }
+};
+var FORCES_STOCK = {
+  "2026-09-30": { low: 83, high: 83 },
+  "2026-10-05": { low: 715, high: 715 },
+  "2026-10-08": { low: 761, high: 761 },
+  "2026-10-14": { low: 937, high: 937 },
+  "2026-10-17": { low: 997, high: 1144 },
+  "2026-11-05": { low: 1580, high: 1580 }
+};
+var FORCES_STOCK_DERIVED = {
+  "2026-10-01": { low: 383, high: 388 },
+  // 83 (30 Sep) + 300–305 (1 Oct)
+  "2026-10-24": { low: 1411, high: 1411 },
+  // 1,144 (17 Oct) + 267
+  "2026-10-31": { low: 1527, high: 1570 }
+  // + 116–159
+};
+var RATE = { low: 136, high: 1133 };
+var round2 = (v) => Number.isInteger(v) ? v : Math.round(v * 100) / 100;
+var costBand = (dep) => [
+  dep.low * RATE.low / 1e6,
+  dep.high * RATE.high / 1e6
+];
+function projectDaily(key) {
+  return DATES.map((date) => {
+    const obs = FACTS[date]?.[key];
+    if (!obs) return NIL;
+    const q = obs.q ?? "n";
+    return {
+      v: round2((obs.low + obs.high) / 2),
+      band: [obs.low, obs.high],
+      q,
+      note: { k: "obs", date, metric: key },
+      detach: isDetached(q)
+    };
+  });
+}
+var strikers = projectDaily("strikers").map(
+  (p) => ({ ...p, detach: false })
+);
+function projectPolicingDaily() {
+  return DATES.map((date) => {
+    const dep = DEPLOYMENT[date];
+    if (!dep) return NIL;
+    const [lo, hi] = costBand(dep);
+    const q = dep.q ?? "n";
+    return {
+      v: round2((lo + hi) / 2),
+      band: [round2(lo), round2(hi)],
+      q,
+      note: { k: "policing", low: dep.low, high: dep.high, date },
+      detach: isDetached(q)
+    };
+  });
+}
+function projectPolicingCumulative() {
+  let lo = 0;
+  let hi = 0;
+  let days = 0;
+  let started = false;
+  return DATES.map((date) => {
+    const dep = DEPLOYMENT[date];
+    if (dep) {
+      const [a, b] = costBand(dep);
+      lo += a;
+      hi += b;
+      days++;
+      started = true;
+    }
+    if (!started) return NIL;
+    return {
+      v: round2((lo + hi) / 2),
+      band: [round2(lo), round2(hi)],
+      q: "e",
+      note: { k: "cumulative", days, added: Boolean(dep) },
+      detach: false
+      // always a line; its band is shaded, not barred
+    };
+  });
+}
+function projectForcesStock() {
+  return DATES.map((date) => {
+    const pub = FORCES_STOCK[date];
+    if (pub) {
+      return {
+        v: round2((pub.low + pub.high) / 2),
+        band: [pub.low, pub.high],
+        q: "c",
+        note: { k: "obs", date, metric: "forcesInjuredStock" },
+        detach: false
+      };
+    }
+    const der = FORCES_STOCK_DERIVED[date];
+    if (der) {
+      return {
+        v: round2((der.low + der.high) / 2),
+        band: [der.low, der.high],
+        q: "e",
+        note: { k: "obs", date, metric: "forcesInjuredStock" },
+        detach: false
+      };
+    }
+    return NIL;
+  });
+}
+function aggregate(key, op) {
+  return WEEKS.map((week) => {
+    const cells = [];
+    for (const d of week.dates) {
+      const obs = FACTS[d]?.[key];
+      if (!obs) continue;
+      cells.push({ date: d, obs, q: obs.q ?? "n" });
+    }
+    if (!cells.length) return NIL;
+    const last = cells[cells.length - 1];
+    const othersHigh = Math.max(
+      ...cells.filter((c) => c !== last).map((c) => c.obs.high),
+      Number.NEGATIVE_INFINITY
+    );
+    if (last.q === "c" && last.obs.high >= othersHigh) {
+      return {
+        v: round2((last.obs.low + last.obs.high) / 2),
+        band: [round2(last.obs.low), round2(last.obs.high)],
+        q: "c",
+        note: { k: "obs", date: last.date, metric: key },
+        detach: isDetached("c")
+      };
+    }
+    const regional = cells.filter((c) => c.q === "r");
+    const subsets = cells.filter((c) => c.q === "c");
+    const flows = cells.filter((c) => c.q !== "c" && c.q !== "r");
+    const regionalOnly = flows.length === 0 && regional.length > 0;
+    let pool = regionalOnly ? regional : flows;
+    if (!pool.length) {
+      if (!subsets.length) return NIL;
+      pool = [
+        subsets.reduce((best, x) => x.obs.high > best.obs.high ? x : best)
+      ];
+    }
+    let low;
+    let high;
+    let value2;
+    let peak;
+    if (op === "sum") {
+      low = pool.reduce((a, x) => a + x.obs.low, 0);
+      high = pool.reduce((a, x) => a + x.obs.high, 0);
+      value2 = (low + high) / 2;
+    } else {
+      low = Math.max(...pool.map((x) => x.obs.low));
+      high = Math.max(...pool.map((x) => x.obs.high));
+      const top = pool.reduce(
+        (best, x) => (x.obs.low + x.obs.high) / 2 > (best.obs.low + best.obs.high) / 2 ? x : best
+      );
+      value2 = (top.obs.low + top.obs.high) / 2;
+      peak = top.date;
+    }
+    const derived = pool.filter((x) => x.q === "e").sort((a, b) => b.obs.high - a.obs.high)[0];
+    const excluded = cells.length - pool.length;
+    const partial = pool.some((x) => x.q === "p");
+    const parts = {
+      days: new Set(pool.map((x) => x.date)).size,
+      kind: regionalOnly ? "regional" : "national",
+      peak,
+      noNational: regionalOnly || void 0,
+      excluded: excluded > 0 ? excluded : void 0,
+      floored: pool.some((x) => x.q === "f") || void 0,
+      clipped: week.touchesEdge || void 0
+    };
+    return {
+      v: round2(value2),
+      band: [round2(low), round2(high)],
+      q: regionalOnly ? "r" : parts.floored ? "f" : partial ? "p" : "w",
+      note: derived ? { k: "obs", date: derived.date, metric: key } : { k: "week", p: parts },
+      detach: regionalOnly
+    };
+  });
+}
+function aggregateBlockades() {
+  return WEEKS.map((week) => {
+    const cells = [];
+    for (const date of week.dates) {
+      const obs = FACTS[date]?.blockades;
+      if (!obs) continue;
+      cells.push({ date, obs, q: obs.q ?? "n" });
+    }
+    if (!cells.length) return NIL;
+    const national = cells.filter((c) => c.q !== "r");
+    const pool = national.length ? national : cells;
+    const regionalOnly = national.length === 0;
+    const top = pool.reduce((best, c) => {
+      const mid = (c.obs.low + c.obs.high) / 2;
+      const bestMid = (best.obs.low + best.obs.high) / 2;
+      if (c.q === "c" && best.q !== "c") return c;
+      if (best.q === "c" && c.q !== "c") return best;
+      return mid > bestMid ? c : best;
+    });
+    const wide = top.q === "x";
+    const parts = {
+      days: new Set(pool.map((c) => c.date)).size,
+      kind: regionalOnly ? "regional" : "national",
+      peak: top.date,
+      noNational: regionalOnly || void 0,
+      excluded: cells.length - pool.length || void 0,
+      floored: pool.some((c) => c.q === "f") || void 0,
+      clipped: week.touchesEdge || void 0,
+      vacation: weekTouchesHoliday(week.key) || void 0
+    };
+    return {
+      v: round2((top.obs.low + top.obs.high) / 2),
+      band: [round2(top.obs.low), round2(top.obs.high)],
+      q: regionalOnly ? "r" : wide ? "x" : top.q === "f" ? "f" : "w",
+      note: wide ? { k: "obs", date: top.date, metric: "blockades" } : { k: "week", p: parts },
+      detach: regionalOnly
+    };
+  });
+}
+var DAILY = {
+  turnout: projectDaily("turnout"),
+  strikers,
+  arrests: projectDaily("arrests"),
+  forcesInjured: projectDaily("forcesInjured"),
+  forcesInjuredStock: projectForcesStock(),
+  protesterInjured: projectDaily("protesterInjured"),
+  damagesCost: projectDaily("damagesCost"),
+  blockades: projectDaily("blockades"),
+  policing: projectPolicingDaily(),
+  policingCumulative: projectPolicingCumulative()
+};
+var WEEKLY = {
+  turnout: aggregate("turnout", "max"),
+  strikers: aggregate("strikers", "max").map(
+    (p) => p.q === "w" ? { ...p, q: "e" } : p
+  ),
+  arrests: aggregate("arrests", "sum"),
+  forcesInjured: aggregate("forcesInjured", "sum"),
+  protesterInjured: aggregate("protesterInjured", "sum"),
+  blockades: aggregateBlockades()
+};
+var STUDENT_WEEKS = WEEKS.map((week, idx) => {
+  const out = {
+    key: week.key,
+    end: week.end,
+    touchesEdge: week.touchesEdge,
+    p: null,
+    a: null,
+    f: null,
+    i: null,
+    flags: {},
+    notes: {}
+  };
+  for (const m of METRICS) {
+    const pt = WEEKLY[METRIC_OF[m]][idx];
+    if (pt.band) out[m] = pt.band;
+    if (pt.band && pt.q && pt.q !== "n") out.flags[m] = pt.q;
+    if (pt.note) out.notes[m] = pt.note;
+  }
+  return out;
+});
+var SEVERITY_LEVELS = [
+  {
+    /* 1,167 / 1,233 = 94.65% → the 94.6% the file itself states. */
+    id: "crsOctober",
+    total: { s: "n", v: 1233 },
+    serious: { s: "x", why: "binaryFile" },
+    light: { s: "n", v: 1167 },
+    other: { s: "n", v: 66, d: true }
+  },
+  {
+    /* All forces, running total at the peak, consolidated. */
+    id: "forcesPeak",
+    total: { s: "n", v: 1144 },
+    serious: { s: "n", v: 7 },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" }
+  },
+  {
+    /* No total has ever been published, so no share can exist. */
+    id: "protesters",
+    total: { s: "x", why: "noDenominator" },
+    serious: { s: "x", why: "noTally" },
+    light: { s: "x", why: "noDenominator" },
+    other: { s: "x", why: "noDenominator" }
+  }
+];
+var SEVERITY_WEEKS = [
+  {
+    id: "week12oct",
+    total: { s: "n", v: 207, d: true },
+    serious: { s: "n", v: 7 },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" }
+  },
+  {
+    id: "week19oct",
+    total: { s: "n", v: 267, d: true },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" }
+  },
+  {
+    id: "week26oct",
+    total: { s: "n", v: 116, d: true },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" }
+  },
+  {
+    id: "week2nov",
+    total: { s: "n", v: 53 },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" }
+  },
+  {
+    /* The month is the smallest window at which a split exists at all. */
+    id: "crsOctober",
+    total: { s: "n", v: 1233 },
+    serious: { s: "x", why: "binaryFile" },
+    light: { s: "n", v: 1167 },
+    other: { s: "n", v: 66, d: true }
+  }
+];
+var CASES = [
+  {
+    id: "forcesAccidental",
+    side: "forces",
+    kind: "accidental",
+    count: { s: "c", n: 4 },
+    cases: ["givors", "crsWrist", "crsAnkle"]
+  },
+  {
+    id: "forcesConflictual",
+    side: "forces",
+    kind: "conflictual",
+    count: { s: "x", why: "noTally" },
+    cases: ["helmet", "groin2023"]
+  },
+  {
+    id: "protesterConflictual",
+    side: "protesters",
+    kind: "conflictual",
+    count: { s: "x", why: "noTally" },
+    cases: ["mael", "alaric", "eyes"]
+  },
+  {
+    id: "protesterAccidental",
+    side: "protesters",
+    kind: "accidental",
+    count: { s: "x", why: "noneDocumented" },
+    cases: []
+  },
+  {
+    id: "sainteSoline",
+    side: "forces",
+    kind: "accidental",
+    count: { s: "c", n: 29 },
+    cases: ["sainteSoline"],
+    reference: true
+  }
+];
+
+// src/client/dom.ts
+var byId = (id) => document.getElementById(id);
+function el(name, cls, text) {
+  const node = document.createElement(name);
+  if (cls) node.className = cls;
+  if (text !== void 0) node.textContent = text;
+  return node;
+}
+
+// src/client/casualties.ts
+function cellText(c) {
+  switch (c.s) {
+    case "n":
+      return {
+        text: `${c.d ? "\u2248 " : ""}${nf().format(c.v)}`,
+        cls: c.d ? "cas-num cas-derived" : "cas-num"
+      };
+    case "r":
+      return {
+        text: `\u2248 ${nf().format(c.lo)}\u2013${nf().format(c.hi)}`,
+        cls: "cas-num cas-derived"
+      };
+    case "c":
+      return {
+        text: fill(t().casualties.casesCount, { n: c.n }),
+        cls: "cas-num cas-cases"
+      };
+    default:
+      return { text: t().casualties.why[c.why], cls: "cas-absent" };
+  }
+}
+function cell(c, extra = "") {
+  const { text, cls } = cellText(c);
+  return el("td", extra ? `${cls} ${extra}` : cls, text);
+}
+function share2(light, total) {
+  if (light.s !== "n" || total.s !== "n" || total.v <= 0) return null;
+  return light.v / total.v;
+}
+function bar(p) {
+  const wrap = el("span", "cas-bar");
+  const run = el("span", "cas-bar-fill");
+  run.style.width = `${Math.max(0, Math.min(1, p)) * 100}%`;
+  wrap.append(run);
+  return wrap;
+}
+function severityTable(rows, caption) {
+  const c = t().casualties;
+  const table = el("table", "cas-table");
+  table.append(el("caption", "cas-caption", caption));
+  const thead = el("thead");
+  const head = el("tr");
+  const labels = [
+    c.colScope,
+    c.colTotal,
+    c.colSerious,
+    c.colLight,
+    c.colLightShare,
+    c.colOther
+  ];
+  labels.forEach((label, i) => {
+    const th = el("th", i === 0 ? "cas-scope-head" : "cas-num-head", label);
+    th.scope = "col";
+    head.append(th);
+  });
+  thead.append(head);
+  table.append(thead);
+  const tbody = el("tbody");
+  for (const row of rows) {
+    const tr = el("tr");
+    const th = el("th", "cas-scope", c.scope[row.id] ?? row.id);
+    th.scope = "row";
+    tr.append(th);
+    tr.append(cell(row.total));
+    tr.append(cell(row.serious));
+    tr.append(cell(row.light));
+    const p = share2(row.light, row.total);
+    const td = el("td", "cas-share");
+    if (p === null) {
+      td.append(el("span", "cas-absent", "\u2014"));
+    } else {
+      td.append(el("span", "cas-pct", `${(p * 100).toFixed(1)}%`), bar(p));
+    }
+    tr.append(td);
+    tr.append(cell(row.other));
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  return table;
+}
+function headline() {
+  const c = t().casualties;
+  const top = SEVERITY_LEVELS[0];
+  const p = share2(top.light, top.total);
+  const wrap = el("div", "cas-headline");
+  const left = el("div", "cas-head-stat");
+  left.append(
+    el("span", "cas-head-num", p === null ? "\u2014" : `${(p * 100).toFixed(1)}%`),
+    el(
+      "span",
+      "cas-head-label",
+      p === null || top.light.s !== "n" || top.total.s !== "n" ? c.headLightNote : fill(c.headLight, {
+        light: nf().format(top.light.v),
+        total: nf().format(top.total.v)
+      })
+    )
+  );
+  const right = el("div", "cas-head-stat cas-head-missing");
+  right.append(
+    el("span", "cas-head-num", "\u2014"),
+    el("span", "cas-head-label", c.headMissingNote)
+  );
+  wrap.append(left, right);
+  return wrap;
+}
+function causeTable(rows, caption) {
+  const c = t().casualties;
+  const table = el("table", "cas-table cas-cause");
+  table.append(el("caption", "cas-caption", caption));
+  const thead = el("thead");
+  const head = el("tr");
+  [c.colSide, c.colCircumstance, c.colCount, c.colCases].forEach((label, i) => {
+    const th = el("th", i < 2 ? "cas-scope-head" : "cas-num-head", label);
+    th.scope = "col";
+    head.append(th);
+  });
+  thead.append(head);
+  table.append(thead);
+  const tbody = el("tbody");
+  for (const row of rows) {
+    const tr = el("tr", row.reference ? "cas-reference" : "");
+    const th = el("th", "cas-scope", c.side[row.side]);
+    th.scope = "row";
+    tr.append(th);
+    tr.append(el("td", "cas-kind", c.kind[row.kind]));
+    tr.append(cell(row.count));
+    const td = el("td", "cas-cases-cell");
+    if (!row.cases.length) {
+      td.append(el("span", "cas-absent", t().casualties.noCases));
+    } else {
+      const list = el("ul", "cas-case-list");
+      for (const key of row.cases) list.append(el("li", "", c.cases[key]));
+      td.append(list);
+    }
+    tr.append(td);
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  return table;
+}
+function resolutionTable() {
+  const c = t().casualties;
+  const table = el("table", "cas-table cas-resolution");
+  table.append(el("caption", "cas-caption", c.capResolution));
+  const thead = el("thead");
+  const head = el("tr");
+  [c.colQuestion, c.colWindow, c.colWeekly].forEach((label, i) => {
+    const th = el("th", i === 2 ? "cas-num-head" : "cas-scope-head", label);
+    th.scope = "col";
+    head.append(th);
+  });
+  thead.append(head);
+  table.append(thead);
+  const tbody = el("tbody");
+  for (const row of c.resolution) {
+    const tr = el("tr");
+    const th = el("th", "cas-scope", row.label);
+    th.scope = "row";
+    tr.append(th, el("td", "", row.window));
+    tr.append(el("td", "cas-num", row.weekly));
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  return table;
+}
+function mountCasualties() {
+  const c = t().casualties;
+  const a = byId("cas-a");
+  if (a) {
+    a.replaceChildren(
+      el("h4", "cas-title", c.headlineTitle),
+      headline(),
+      severityTable(SEVERITY_LEVELS, c.capLevels),
+      causeTable(CASES, c.capCases),
+      el("p", "cas-note", c.noteLevels)
+    );
+  }
+  const b = byId("cas-b");
+  if (b) {
+    b.replaceChildren(
+      el("h4", "cas-title", c.weeklyTitle),
+      severityTable(SEVERITY_WEEKS, c.capWeeks),
+      resolutionTable(),
+      el("p", "cas-note", c.noteWeeks)
+    );
+  }
+}
+
 // node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
@@ -1664,10 +2959,10 @@ function hexParse(str) {
   }
   return ret;
 }
-var alpha = (a, f) => a < 255 ? f(a) : "";
+var alpha2 = (a, f) => a < 255 ? f(a) : "";
 function hexString(v) {
   var f = isShort(v) ? h1 : h2;
-  return v ? "#" + f(v.r) + f(v.g) + f(v.b) + alpha(v.a, f) : void 0;
+  return v ? "#" + f(v.r) + f(v.g) + f(v.b) + alpha2(v.a, f) : void 0;
 }
 var HUE_RE = /^(hsla?|hwb|hsv)\(\s*([-+.e\d]+)(?:deg)?[\s,]+([-+.e\d]+)%[\s,]+([-+.e\d]+)%(?:[\s,]+([-+.e\d]+)(%)?)?\s*\)$/;
 function hsl2rgbn(h, s, l) {
@@ -13326,1149 +14621,6 @@ var TimeSeriesScale = class extends TimeScale {
   }
 };
 
-// src/client/a11y.ts
-var live = null;
-var timer = 0;
-function region() {
-  if (live?.isConnected) return live;
-  live = document.getElementById("a11y-live");
-  if (!live) {
-    live = document.createElement("p");
-    live.id = "a11y-live";
-    live.className = "sr-only";
-    live.setAttribute("role", "status");
-    live.setAttribute("aria-live", "polite");
-    live.setAttribute("aria-atomic", "true");
-    document.body.append(live);
-  }
-  return live;
-}
-function announce(text) {
-  const r = region();
-  r.textContent = "";
-  window.clearTimeout(timer);
-  timer = window.setTimeout(() => r.textContent = text, 120);
-}
-var txt = (v) => {
-  if (v == null) return "\u2014";
-  if (typeof v === "number") return nf().format(Math.round(v));
-  if (typeof v === "object") {
-    const p = v;
-    if (typeof p.low === "number" && typeof p.high === "number")
-      return p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
-    for (const n of [p.v, p.y])
-      if (typeof n === "number") return nf().format(Math.round(n));
-  }
-  return String(v);
-};
-function dataTable(spec) {
-  const details = document.createElement("details");
-  details.className = "data-table";
-  const summary = document.createElement("summary");
-  summary.textContent = spec.caption;
-  const table = document.createElement("table");
-  const cap = document.createElement("caption");
-  cap.className = "sr-only";
-  cap.textContent = spec.caption;
-  const head = table.createTHead().insertRow();
-  for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
-    const th = document.createElement("th");
-    th.scope = "col";
-    th.textContent = h;
-    head.append(th);
-  }
-  const body = table.createTBody();
-  spec.index.forEach((label, i) => {
-    const tr = body.insertRow();
-    const th = document.createElement("th");
-    th.scope = "row";
-    th.textContent = label;
-    tr.append(th);
-    for (const c of spec.columns)
-      tr.insertCell().textContent = c.values[i] ?? "\u2014";
-  });
-  table.append();
-  details.append(summary, table);
-  return details;
-}
-function fromChart(chart, opts) {
-  const data = chart.data;
-  const sets = data.datasets.filter(
-    (d) => opts.include?.(d) ?? true
-  );
-  const labels = (data.labels ?? []).map(String);
-  const n = labels.length || Math.max(
-    0,
-    ...sets.map((d) => (d.data ?? []).length)
-  );
-  return dataTable({
-    caption: opts.caption,
-    indexHeader: opts.indexHeader,
-    index: Array.from(
-      { length: n },
-      (_, i) => opts.indexOf?.(sets[0], i) ?? labels[i] ?? String(i + 1)
-    ),
-    columns: sets.map((d) => {
-      const ds = d;
-      return {
-        header: String(ds.label ?? ""),
-        values: Array.from({ length: n }, (_, i) => txt(ds.data?.[i]))
-      };
-    })
-  });
-}
-function readout(chart, i) {
-  const label = chart.data.labels?.[i] ?? "";
-  const parts = chart.data.datasets.filter((d) => !d.detachedOnly).map((d) => {
-    const ds = d;
-    return `${ds.label}: ${txt(ds.data?.[i])}`;
-  });
-  return [label, ...parts].join(". ");
-}
-var seq = 0;
-function keyboardChart(chart, opts) {
-  const canvas = chart.canvas;
-  const n = chart.data.labels?.length ?? 0;
-  if (!n) return;
-  const hintId = canvas.id ? `kbd-${canvas.id}` : `kbd-chart-${++seq}`;
-  if (!document.getElementById(hintId)) {
-    const hint = document.createElement("p");
-    hint.id = hintId;
-    hint.className = "sr-only";
-    hint.textContent = opts.hint;
-    canvas.after(hint);
-  }
-  canvas.tabIndex = 0;
-  canvas.setAttribute("aria-roledescription", opts.roledescription);
-  const ids = new Set(
-    (canvas.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
-  );
-  ids.add(hintId);
-  canvas.setAttribute("aria-describedby", [...ids].join(" "));
-  const speak = opts.readout ?? ((i) => readout(chart, i));
-  let at = -1;
-  const paint = (next) => {
-    if (next === null || next < 0 || next >= n) {
-      at = -1;
-      chart.setActiveElements([]);
-      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-      chart.update("none");
-      return;
-    }
-    at = next;
-    const els = chart.data.datasets.map((_, datasetIndex) => ({
-      datasetIndex,
-      index: at
-    }));
-    const pt = chart.getDatasetMeta(0).data[at];
-    chart.setActiveElements(els);
-    chart.tooltip.setActiveElements(els, { x: pt?.x ?? 0, y: pt?.y ?? 0 });
-    chart.update("none");
-    announce(speak(at));
-  };
-  canvas.addEventListener("keydown", (ev) => {
-    switch (ev.key) {
-      case "ArrowRight":
-      case "ArrowUp":
-        paint(at < 0 ? 0 : Math.min(n - 1, at + 1));
-        break;
-      case "ArrowLeft":
-      case "ArrowDown":
-        paint(at < 0 ? n - 1 : Math.max(0, at - 1));
-        break;
-      case "Home":
-        paint(0);
-        break;
-      case "End":
-        paint(n - 1);
-        break;
-      case "Escape":
-        paint(null);
-        break;
-      default:
-        return;
-    }
-    ev.preventDefault();
-  });
-  canvas.addEventListener("blur", () => paint(null));
-}
-
-// src/client/canvas.ts
-var VARS = {
-  ink: "--chart-ink",
-  label: "--chart-label",
-  muted: "--chart-muted",
-  grid: "--chart-grid",
-  axisGrid: "--chart-axis-grid",
-  hollow: "--chart-hollow",
-  tooltipBg: "--chart-tooltip-bg",
-  tooltipInk: "--chart-tooltip-ink",
-  series1: "--chart-series-1",
-  series2: "--chart-series-2",
-  series3: "--chart-series-3",
-  series4: "--chart-series-4",
-  series5: "--chart-series-5",
-  series6: "--chart-series-6",
-  series7: "--chart-series-7"
-};
-var FALLBACK = {
-  ink: "#111827",
-  label: "#4b5563",
-  muted: "#6b7280",
-  grid: "#e5e5e5",
-  axisGrid: "rgba(17, 24, 39, 0.06)",
-  hollow: "#ffffff",
-  tooltipBg: "rgba(17, 24, 39, 0.92)",
-  tooltipInk: "#ffffff",
-  series1: "#5C97C5",
-  series2: "#357AB0",
-  series3: "#2A6B9C",
-  series4: "#1B5C92",
-  series5: "#124A78",
-  series6: "#0A3A63",
-  series7: "#062844"
-};
-var ctx2d = document.createElement("canvas").getContext("2d");
-function normalise(css, fallback) {
-  if (!ctx2d) return fallback;
-  ctx2d.fillStyle = fallback;
-  ctx2d.fillStyle = css;
-  return typeof ctx2d.fillStyle === "string" ? ctx2d.fillStyle : fallback;
-}
-var cache = null;
-function read() {
-  const out = {};
-  const probe2 = document.createElement("span");
-  probe2.setAttribute("aria-hidden", "true");
-  probe2.style.cssText = "position:absolute;width:0;height:0;visibility:hidden";
-  (document.body ?? document.documentElement).append(probe2);
-  for (const key of Object.keys(VARS)) {
-    probe2.style.color = `var(${VARS[key]})`;
-    out[key] = normalise(getComputedStyle(probe2).color, FALLBACK[key]);
-  }
-  probe2.remove();
-  return out;
-}
-var value = (key) => (cache ??= read(), cache[key]);
-var SERIES = [
-  "series1",
-  "series2",
-  "series3",
-  "series4",
-  "series5",
-  "series6",
-  "series7"
-].map((k) => value(k));
-function refreshTheme() {
-  cache = null;
-}
-var THEME = {
-  get ink() {
-    return value("ink");
-  },
-  get label() {
-    return value("label");
-  },
-  get muted() {
-    return value("muted");
-  },
-  get grid() {
-    return value("grid");
-  },
-  get axisGrid() {
-    return value("axisGrid");
-  },
-  get hollow() {
-    return value("hollow");
-  },
-  get tooltipBg() {
-    return value("tooltipBg");
-  },
-  get tooltipInk() {
-    return value("tooltipInk");
-  },
-  dim: 0.45
-  // was 0.18 — ≈1.3:1 against both modes (WCAG 1.4.1)
-};
-var SERIES_KEYS = [
-  "series1",
-  "series2",
-  "series3",
-  "series4",
-  "series5",
-  "series6",
-  "series7"
-];
-function seriesColor(i) {
-  const last = SERIES_KEYS.length - 1;
-  return value(SERIES_KEYS[Math.min(Math.max(i, 0), last)]);
-}
-var DASHES = [
-  [],
-  [6, 3],
-  [2, 3],
-  [8, 3, 2, 3],
-  [1.5, 3],
-  [10, 4],
-  [4, 3]
-];
-var RAMP = DASHES.map((dash, i) => ({
-  get color() {
-    return seriesColor(i);
-  },
-  dash
-}));
-function alpha2(hex2, a) {
-  const m = /^#([0-9a-f]{6})$/i.exec(hex2);
-  if (!m) throw new Error(`alpha() expects #rrggbb, got "${hex2}"`);
-  const n = Number.parseInt(m[1], 16);
-  return `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, ${a})`;
-}
-function segIndex(ctx, which) {
-  const given = which === 0 ? ctx.p0DataIndex : ctx.p1DataIndex;
-  if (typeof given === "number" && Number.isFinite(given)) {
-    return Math.round(given);
-  }
-  const pt = which === 0 ? ctx.p0 : ctx.p1;
-  const parsed = pt?.parsed?.x;
-  if (typeof parsed === "number" && Number.isInteger(parsed)) return parsed;
-  const px = pt?.x;
-  const axis = ctx.chart?.options?.indexAxis === "y" ? "y" : "x";
-  const scale = ctx.chart?.scales?.[axis];
-  if (typeof px === "number" && typeof scale?.getValueForPixel === "function") {
-    const v = scale.getValueForPixel(px);
-    if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
-  }
-  return void 0;
-}
-var gapSegment = (slots = 1, dash = [6, 4]) => ({
-  borderDash: (ctx) => {
-    const i0 = segIndex(ctx, 0);
-    const i1 = segIndex(ctx, 1);
-    if (i0 === void 0 || i1 === void 0) return void 0;
-    return Math.abs(i1 - i0) > slots + 0.01 ? dash : void 0;
-  }
-});
-var live2 = /* @__PURE__ */ new Set();
-var track = (chart) => (live2.add(chart), chart);
-function destroyAll() {
-  for (const chart of live2) {
-    try {
-      chart.destroy();
-    } catch (err) {
-      console.error("[chart] destroy failed", err);
-    }
-  }
-  live2.clear();
-}
-
-// src/client/model.ts
-var METRICS = ["p", "a", "f", "i"];
-var METRIC_OF = {
-  p: "turnout",
-  a: "arrests",
-  f: "forcesInjured",
-  i: "protesterInjured"
-};
-var DETACHED = /* @__PURE__ */ new Set(["r", "p", "e", "c"]);
-var isDetached = (q) => q != null && q !== "n" && DETACHED.has(q);
-var bandOf = (b) => typeof b === "number" ? [b, b] : b;
-var midOf = (b) => {
-  const [lo, hi] = bandOf(b);
-  return (lo + hi) / 2;
-};
-
-// src/client/data.ts
-var NIL = { v: null, band: null, q: null, note: null, detach: false };
-var START = "2026-09-15";
-var END = "2026-11-11";
-var utc = (s) => /* @__PURE__ */ new Date(`${s}T00:00:00Z`);
-var iso = (d) => d.toISOString().slice(0, 10);
-var addDays = (isoDate, n) => {
-  const d = /* @__PURE__ */ new Date(`${isoDate}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-};
-var mondayOf = (isoDate) => {
-  const d = /* @__PURE__ */ new Date(`${isoDate}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7);
-  return d.toISOString().slice(0, 10);
-};
-function eachDay(start, end) {
-  const out = [];
-  const stop = utc(end);
-  for (const d = utc(start); d <= stop; d.setUTCDate(d.getUTCDate() + 1))
-    out.push(iso(d));
-  return out;
-}
-var DATES = eachDay(START, END);
-var WEEKS = (() => {
-  const byKey = /* @__PURE__ */ new Map();
-  for (const d of DATES) {
-    const k = mondayOf(d);
-    const list = byKey.get(k);
-    if (list) list.push(d);
-    else byKey.set(k, [d]);
-  }
-  return [...byKey].sort(([a], [b]) => a.localeCompare(b)).map(([key, dates]) => {
-    const end = addDays(key, 6);
-    return { key, end, dates, touchesEdge: key < START || end > END };
-  });
-})();
-var HOLIDAY_START = "2026-10-18";
-var HOLIDAY_END = "2026-11-01";
-var weekTouchesHoliday = (weekStart) => weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
-var FACTS = {
-  /* ── School blockades ─────────────────────────────────────────────────
-         Metric: establishments where pupils could not attend normally —
-         blocked, or closed by decision. Band = official count (floor) to
-         union count (ceiling); the union's "à l'arrêt" also counts
-         administratively closed schools, so the ceiling is an upper bound.
-  
-         "x" = a wider measure than blockades (établissements perturbés,
-         cours suspendus, établissements fermés) — the only figure published
-         that day. "r" = regional count. "f" = publisher said "more than".
-  
-         Days with no published count stay empty. During the Toussaint
-         holiday (17 Oct – 1 Nov) no lycée was in session, so the metric did
-         not exist: those days are empty and the connector is dotted.       */
-  /* ── The movement's first fortnight ─────────────────────────────────────
-         The wave began after the rentrée: teachers and parents had been on
-         strike in Mayotte since 31 August (lycée Nord d'Acoua, blocked for
-         five weeks); in mainland France the lycée Théodore-Monod at Le Rheu
-         was blocked on 7 September, the lycée Queneau at Villeneuve-d'Ascq on
-         14 September and the lycée Victor-Hugo at Caen on 15 September. The
-         window opens on 15 September at the user's request, so the 7 and 14
-         September blockades fall outside it.
-  
-         NONE of 15–27 September carries a published turnout, arrest, injury or
-         damage figure, so the week of 14–20 September is empty rather than
-         estimated. The one exception is the Paris area on 25 September. */
-  "2026-09-15": { blockades: { low: 1, high: 1 } },
-  "2026-09-19": { blockades: { low: 1, high: 1 } },
-  "2026-09-23": { blockades: { low: 10, high: 10, q: "r" } },
-  /* Fri 25 Sep — the Île-de-France centre of gravity: ~60 franciliens
-     lycées disrupted over 24–25 Sep, mainly Seine-Saint-Denis and
-     Val-de-Marne (Saint-Denis, Sarcelles, Gonesse, Stains, Saint-Ouen,
-     Rosny-sous-Bois, La Courneuve); the Créteil rectorat counted a
-     "grosse dizaine" of new blockades that day.
-     21 interpellations by noon by the Préfecture de Police, in connection
-     with the Paris-area mobilisations — PARIS ONLY, hence "r". The
-     rectorat noted gatherings, crowd movements and material damage
-     without quantifying them. */
-  "2026-09-25": {
-    arrests: { low: 21, high: 21, q: "r" }
-  },
-  /* Mon 28 Sep — the movement goes national: actions in Marseille, Lille,
-     the Rhône, the Var and the Alpes-Maritimes. Interior Ministry: 180
-     establishments perturbed, 27 of them totally blocked, 164
-     interpellations that day.
-     First serious injury of the movement: a 14-year-old hit in the face
-     by a police projectile at the lycée professionnel Château-d'Epluches,
-     Saint-Ouen-l'Aumône (Val-d'Oise); the IGPN was seized. Flagged "f":
-     one documented casualty is a minimum, not a count. */
-  "2026-09-28": {
-    arrests: { low: 164, high: 164 },
-    protesterInjured: { low: 1, high: 1, q: "f" },
-    blockades: { low: 27, high: 27 }
-  },
-  /* Tue 29 Sep — national public-service mobilisation day, which the USL
-     called students to join; it is the movement's Act I.
-     Education ministry, end of day: 416 establishments touched since the
-     morning, 338 still affected, 45 blocked; Le Monde counted actions at
-     nearly 410 establishments; the USL claimed 400 blocked out of ~3,700
-     in France. 440 interpellations, two thirds of them leading to a garde
-     à vue, "essentially for degradations and attacks on officers"
-     (Nuñez, BFM-TV).
-     Turnout: the intersyndicale demonstration drew 206,000 (ministry) /
-     300,000 (CGT) nationwide and 30,000 / 70,000 in Paris, across 170+
-     demonstrations. The students marched with it, so the figure is
-     carried here — but it counts the public-service cortèges, not a
-     student crowd, for which no national count exists. Flagged "p".
-     The Education ministry counted 31 injured students and staff that
-     day. Strike rate: 11.47% weighted (12.74% second degree, 27.39%
-     life-schools staff; 13.71% of teachers). */
-  "2026-09-29": {
-    turnout: { low: 206e3, high: 3e5, q: "p" },
-    strikers: { low: 25e4, high: 25e4, q: "e" },
-    arrests: { low: 440, high: 440 },
-    protesterInjured: { low: 31, high: 31, q: "p" },
-    blockades: { low: 45, high: 45 }
-  },
-  /* Wed 30 Sep — 356 establishments perturbed; 625 interpellations that
-     day, which with 440 on the 29th makes the two-day total 1,065.
-     83 police and gendarmes injured.
-     The Education ministry's stock since the start of the blockades
-     reaches 119 injured students and staff (85 students, 34 staff) — a
-     cumulative level, hence "c". */
-  "2026-09-30": {
-    arrests: { low: 625, high: 625 },
-    protesterInjured: { low: 119, high: 119, q: "c" }
-  },
-  /* Thu 1 Oct — Acte II. More than 900 actions and blockages; AFP's police
-         returns counted 340 actions in the morning and 169 blockades, ending
-         the day at 900 actions including 400 closures; the Union étudiante
-         claimed 640 lycées and ~30 campuses blocked, a figure the authorities
-         do not confirm. Marseille: 18 high schools totally blocked, 3
-         partially, ~40 in Bouches-du-Rhône; Aix-en-Provence ~600 students;
-         Metz 6; Brest most; Épinal 2; Perpignan 11 interpellations and one
-         student injured. No national turnout figure was published.
-  
-         FIX 5: arrests 1,949 are THAT DAY ("1 949 interpellations ce jeudi"),
-         not a stock; the only stock is 6,059 "depuis le 28 septembre" on
-         5 Oct. The day was the peak of the first week.
-  
-         FIX 7: forces injured are bracketed [83, 300] — 83 is the
-         government level at the Wednesday cut-off (it is the same 83 that
-         appears in the 318-injury total of 1 Oct) and ~300 is Nuñez's
-         Thursday figure ("quelque 300 policiers et gendarmes blessés en
-         intervention jeudi"). The band spans a cumulative level and a daily
-         flow, so it is flagged "e" and the 83 is not counted twice.
-  
-         FIX 6: 235 = 170 students + 65 education staff, cumulative at the
-         1 Oct cut-off; the previous 119–235 band was two vintages of this
-         same series. Flagged "c".
-  
-         Damage: the hall of the lycée Nelson-Mandela in Nantes was destroyed
-         by a fire (several classrooms unusable for weeks), as was the main
-         entrance and a 35-classroom block at the lycée Henri-Moissan in
-         Meaux; the façade of the lycée Lumière in Lyon was burnt; in
-         Seine-Maritime two headteachers were hurt (Petit-Quevilly, Rouen) and
-         the prefecture counted eight injured and several intrusions. The €1M
-         cell is a local estimate from the original research and is a subset
-         of the larger Île-de-France and IFRAP totals, hence "c". */
-  "2026-10-01": {
-    arrests: { low: 1949, high: 1949 },
-    forcesInjured: { low: 300, high: 305, q: "e" },
-    protesterInjured: { low: 235, high: 235, q: "c" },
-    damagesCost: { low: 1, high: 1, q: "c" },
-    blockades: { low: 222, high: 640 }
-  },
-  /* Fri 2 Oct — 1,747 interpellations that day and "more than 5,000 since
-     Monday" (the daily series gives 4,925); 735 establishments perturbed,
-     30% fewer than the day before, with urban violence near 158 of them
-     (projectiles, attacks on officers, teachers, journalists and
-     passers-by). A young police lieutenant was assaulted in Paris's 20th
-     arrondissement. Geffray: 65 education staff injured since the start
-     of the movement, 40 of them headteachers. */
-  "2026-10-02": {
-    arrests: { low: 1747, high: 1747 },
-    blockades: { low: 400, high: 400, q: "f" }
-  },
-  /* Sat 3 Oct — the ministry's stock "6,059 interpellations since
-     28 September" (5 Oct) minus 984 on Monday 5 Oct leaves 5,075 through
-     Sunday 4 Oct; the daily figures for 28 Sep–2 Oct sum to 4,925. The
-     difference, 150, is the weekend of 3–4 October. It is a two-day total
-     derived by subtraction, not a Saturday figure — flagged "e" and
-     carried on the Saturday, with the derivation in this comment. */
-  "2026-10-03": {
-    arrests: { low: 150, high: 150, q: "e" },
-    blockades: { low: 735, high: 735, q: "x" }
-  },
-  /* Mon 5 Oct — 984 interpellations and 65 forces injured that day.
-     Stocks published the same day: 6,059 interpellations since 28 Sep;
-     715 police and gendarmes injured since the start of the movement;
-     Matignon: 215 students and 85 education staff injured since the
-     start, 34 of them headteachers. */
-  "2026-10-05": {
-    arrests: { low: 984, high: 984 },
-    forcesInjured: { low: 65, high: 65 },
-    blockades: { low: 400, high: 500, q: "x" }
-  },
-  /* Tue 6 Oct — "Acte III", first national school/student day.
-     256,000 ministry / 450,000 organisers; Paris 56,000 / 100,000.
-     488 interpellations and 43 forces injured that day; 215 students
-     injured since mid-September. The €6M is the Île-de-France damage
-     increment for the 1–8 Oct run and is therefore a subset, not an
-     increment unique to 6 Oct. Flagged "c"; the anchor of the run is
-     8 Oct. */
-  "2026-10-06": {
-    turnout: { low: 256e3, high: 45e4 },
-    arrests: { low: 488, high: 488 },
-    forcesInjured: { low: 43, high: 43 },
-    damagesCost: { low: 6, high: 6, q: "c" },
-    blockades: { low: 891, high: 1800, q: "x" }
-  },
-  /* Thu 8 Oct — Act IV. Education ministry: 0.82% weighted all staff
-     (teachers 0.99%, 1st degree 0.10%, 2nd degree 1.67%, vie scolaire
-     2.33%, other staff 0.45%), excluding Toulouse, Nantes and Corse.
-     The lowest rate of the whole sequence, in the middle of the
-     mobilisation — the school action had drained by 8 Oct. */
-  "2026-10-08": {
-    turnout: { low: 71500, high: 13e4 },
-    /* Education ministry 0.82% weighted; no function-wide rate that day,
-       so the education rate stands in for the civil service on the same
-       2,500,000-agent base: 20,500. Flagged "e" — the proxy runs low. */
-    strikers: { low: 20500, high: 20500, q: "e" },
-    damagesCost: { low: 6, high: 6, q: "e" },
-    blockades: { low: 224, high: 224, q: "x" }
-  },
-  /* Sat 10 Oct — national cumulative damage stock: "déjà estimées à
-     30 millions d'euros en France" since mid-September (CNEWS's own
-     compilation of regional figures — no ministry published a national
-     tally). Pannekoucke's parallel AURA estimate of €25–30M is NOT
-     included, so this is neither a floor nor additive with the regional
-     figures. Flagged "c": a stock, never summed with flows. */
-  "2026-10-10": {
-    damagesCost: { low: 30, high: 30, q: "c" },
-    blockades: { low: 40, high: 40, q: "f" }
-  },
-  /* Mon 12 Oct — three regional prefecture figures, all regional:
-       · Rhône: 27 établissements touchés (19 lycées, 6 universités,
-         2 collèges), 13 interpellations.
-       · Bas-Rhin/Strasbourg: 13 interpellations (préfecture), incl. 4
-         for preparing incendiary devices, 3 for mortar fire.
-     Two prefectures published 13 independently, so 13 is a FLOOR for the
-     day, not the day's regional total. NOT Paris — the old note was
-     wrong.
-     FIX 13 (third pass): the €1.5M moved here from 13 Oct. It is
-     NORMANDY (Hervé Morin, Conseil régional de Normandie, 12 Oct) and
-     it is a CUMULATIVE stock since mid-September — "atteint d'ores et
-     déjà 30 millions d'euros, dont 1,5 million en Normandie" — so the
-     flag moves from "e" to "c". Île-de-France's own revised total the
-     same day was €8.5M (110+ lycées, ~120 portails/sas out of service).
-     Both regional stocks are components of the €30M national stock and
-     must never be added to it.
-     The 3 injured are an Île-de-France figure and count education and
-     local-authority staff, not protesters: 1 proviseur, 1 parent
-     d'élève, 1 agent de la Région. */
-  "2026-10-12": {
-    arrests: { low: 13, high: 13, q: "r" },
-    protesterInjured: { low: 3, high: 3, q: "r" },
-    damagesCost: { low: 1.5, high: 1.5, q: "c" },
-    blockades: { low: 19, high: 19, q: "r" }
-  },
-  /* Tue 13 Oct — "Acte V": 214 high schools closed (94.2% open), 161,500
-     ministry / 480,000 youth intersyndicate (41,500 Paris), 40 police
-     and gendarmes injured.
-     FIX 13 (third pass): the €1.5M cell is GONE from this date — it
-     was Normandy, and it was published on 12 October. */
-  "2026-10-13": {
-    turnout: { low: 161500, high: 48e4 },
-    /* 3.71% weighted education rate as proxy: 3.71% x 2,500,000 = 92,750. */
-    strikers: { low: 92750, high: 92750, q: "e" },
-    forcesInjured: { low: 40, high: 40 },
-    blockades: { low: 214, high: 214, q: "x" }
-  },
-  /* Sat 17 Oct — the peak of the episode.
-         110 → 430 → 441 actions; ~60,000 officers deployed.
-         550,000 ministry / 800,000 organisers; Paris 110,000.
-         Arrests 2,397 initial → 2,628 consolidated (2,513 gardes à vue;
-         108 in Paris). Forces injured 997 initial → 1,144 consolidated,
-         7 serious. One civilian death: Christophe M., 59, Paris.
-  
-         FIX 2 (first pass): no official protester-injury count exists. The
-         low bound is Laurent Thines's serious-injury register (54 seriously
-         injured — 5 eye, 5 cranio-facial, 2 amputations, 42 other — plus the
-         1 death, i.e. 55); the high bound is a reasoned ceiling from
-         Toulouse's 130+ street-medics treatments (~13 treated per serious
-         case) against 54 serious cases nationally. Wikipedia's "400+ civilians"
-         is an uncited infobox line and sits below the partial nine-city sum
-         (~204 across Bordeaux, Clermont-Ferrand, Dijon, Metz, Nancy, Rouen,
-         Strasbourg, Avignon, Toulouse), so it is a floor, not a ceiling.
-         Flagged "e": derived, drawn hollow.
-  
-         Damages: IFRAP conditional estimate for the 17–18 Oct weekend,
-         €244M low / €463M central / €866M high for MATERIAL damage; the
-         €294M–€1.1bn variant includes lost turnover and is a different measure.
-         IFRAP excludes marginal order-maintenance and curfew costs. */
-  "2026-10-17": {
-    turnout: { low: 55e4, high: 8e5 },
-    arrests: { low: 2397, high: 2628 },
-    forcesInjured: { low: 207, high: 207, q: "e" },
-    protesterInjured: { low: 55, high: 1e3, q: "e" },
-    damagesCost: { low: 244, high: 866, q: "e" }
-  },
-  /* Sun 18 Oct — Paris curfew only, 108 interpellations.
-     FIX 3 (first pass): the €1.8–5M damage figure is a subset of the
-     17–18 Oct IFRAP weekend total, so it is flagged "c" and cannot be
-     added to it.
-     FIX 11 (third pass): "r", not "p" — the figure is Paris-only, and
-     "p" now means partial coverage. */
-  "2026-10-18": {
-    arrests: { low: 108, high: 108, q: "r" },
-    damagesCost: { low: 1.8, high: 5, q: "c" }
-  },
-  /* Tue 20 Oct — regional only: 13 interpellations overnight in Guadeloupe
-     (Basse-Terre, Saint-François, Goyave, Vieux-Habitants, Gosier). */
-  "2026-10-20": { arrests: { low: 13, high: 13, q: "r" } },
-  /* Sat 24 Oct — 289 actions, 70,000 officers, Centaure AFVs, water cannons,
-     14 aerial cameras in Paris. 410,000 ministry / 800,000+ CGT;
-     Paris 110,000 (préfecture) / 250,000 (CGT).
-     Arrests 1,314 initial → 1,435 final (142 Paris, 126 GàV).
-     Forces injured 53 at 7:30 a.m. — the ministry's own communiqué calls
-     this "provisoire" — then 267 on consolidation (Nuñez, 26 Oct), with
-     150 civilians injured, 3 seriously. 75 fire interventions.
-     La Réunion: ~80 Saint-Denis, 300 Saint-Pierre. Mayotte: Tsingoni.
-     FIX 4 (first pass): the national damage cell below replaces the earlier
-     local derivation. CCI France's 27 Oct tally — 2,488 shops hit after the
-     17th plus 50 after the 24th, 1,161 heavily damaged, 643 still shut —
-     puts the cost of the degradations at over €1bn on the IFRAP estimate,
-     for the 17–24 Oct period as a whole. That is a SUPERSET of the 17 Oct
-     cell, so it is flagged "c" and is never added to it. */
-  "2026-10-24": {
-    turnout: { low: 41e4, high: 8e5 },
-    arrests: { low: 1314, high: 1435 },
-    forcesInjured: { low: 267, high: 267 },
-    protesterInjured: { low: 150, high: 150 },
-    damagesCost: { low: 1e3, high: 1e3, q: "c" }
-  },
-  /* Sat 31 Oct — 291 actions → 227 consolidated.
-     320,000 ministry / ~500,000 youth organisations; Paris 70,000.
-     Arrests 565 at 21h → 779 cumulative (incl. 214 on the Halloween night).
-     Forces injured 116 by 21h + 43 that night = 159.
-     515 fires handled; 36 shops degraded, 3 pillaged — no cost figure. */
-  "2026-10-31": {
-    turnout: { low: 32e4, high: 5e5 },
-    arrests: { low: 565, high: 779 },
-    forcesInjured: { low: 116, high: 159 },
-    damagesCost: { low: 0.4, high: 3.3, q: "e" }
-  },
-  "2026-11-02": { blockades: { low: 41, high: 41 } },
-  "2026-11-03": { blockades: { low: 48, high: 500 } },
-  /* Thu 5 Nov — national strike day, 193 actions.
-     575,000 ministry (definitive) / 1.6M CGT; Paris 65,000 / 350,000.
-     Arrests 448 at 18h → 642 updated. Forces injured 53 at 18h → 112.
-     86 fire interventions. Marseille: 17 schools blocked, ~40 interpellations,
-     13 police wounded.
-     Protester injuries = 18, a FLOOR: the 18 who instructed lawyers to sue
-     Nuñez. Not a ministry count. */
-  "2026-11-05": {
-    turnout: { low: 575e3, high: 16e5 },
-    strikers: { low: 247250, high: 275e3, q: "e" },
-    arrests: { low: 448, high: 642 },
-    forcesInjured: { low: 53, high: 112 },
-    protesterInjured: { low: 18, high: 18, q: "f" },
-    blockades: { low: 81, high: 1e3 }
-  },
-  /* Sat 7 Nov — 141 actions; ~70,000 officers, 25 blindés, 15 water-cannon
-     trucks; ~40,000 preventive checks; Caen campus dispersed by 50 CRS.
-     146,000 ministry / 250,000 youth intersyndicate; Paris 46,000 / 75,000.
-     Arrests 232 at 18h → 360+ at 19h.
-     Security-force casualties acknowledged but no number published. */
-  "2026-11-07": {
-    turnout: { low: 146e3, high: 25e4 },
-    arrests: { low: 350, high: 360 }
-  },
-  /* Mon 9 Nov — regional only: Bègles 4, Lyon 8, Strasbourg 5 = 17.
-     ~50 Île-de-France schools disrupted with mortar fire; Rennes 2
-     evacuated; Brest rally; Guadeloupe: lycée blocked at Baie-Mahault. */
-  "2026-11-09": { arrests: { low: 17, high: 17, q: "r" } },
-  "2026-11-10": {
-    /* Education strike + student march. 1.55% weighted rate as proxy:
-       1.55% x 2,500,000 = 38,750. */
-    strikers: { low: 38750, high: 38750, q: "e" }
-  }
-};
-var DEPLOYMENT = {
-  /* September deployment is an ASSUMPTION, on the same basis as the early
-     October cells: no official headcount exists for these days. The band
-     spans the marginal cost of one CRS company-day to the Sainte-Soline
-     all-in benchmark. It is an order-of-magnitude placeholder for the
-     policing-cost series, not a measurement. */
-  "2026-09-28": { low: 5e3, high: 2e4, q: "e" },
-  "2026-09-29": { low: 5e3, high: 2e4, q: "e" },
-  "2026-09-30": { low: 5e3, high: 2e4, q: "e" },
-  "2026-10-01": { low: 5e3, high: 2e4, q: "e" },
-  "2026-10-02": { low: 1e4, high: 3e4, q: "e" },
-  "2026-10-05": { low: 1e4, high: 3e4, q: "e" },
-  "2026-10-06": { low: 5e3, high: 2e4, q: "e" },
-  "2026-10-08": { low: 5e3, high: 2e4, q: "e" },
-  /* 12 Oct: three cities at once — Île-de-France (~80 lycées perturbed),
-     Lyon/Rhône (27 établissements), Strasbourg. No headcount published:
-     the only concrete data is "une dizaine de camions de gendarmes
-     mobiles" at the Strasbourg schools and several CRS/police vans at
-     porte Dorée, Paris. */
-  "2026-10-12": { low: 2e3, high: 8e3, q: "e" },
-  "2026-10-13": { low: 5e3, high: 2e4, q: "e" },
-  "2026-10-17": {
-    low: 6e4,
-    high: 6e4
-  },
-  "2026-10-18": { low: 2e3, high: 8e3, q: "e" },
-  "2026-10-24": { low: 7e4, high: 7e4 },
-  "2026-10-31": { low: 7e4, high: 7e4 },
-  "2026-11-05": { low: 7e4, high: 7e4 },
-  "2026-11-07": { low: 7e4, high: 7e4 }
-};
-var FORCES_STOCK = {
-  "2026-09-30": { low: 83, high: 83 },
-  "2026-10-05": { low: 715, high: 715 },
-  "2026-10-08": { low: 761, high: 761 },
-  "2026-10-14": { low: 937, high: 937 },
-  "2026-10-17": { low: 997, high: 1144 },
-  "2026-11-05": { low: 1580, high: 1580 }
-};
-var FORCES_STOCK_DERIVED = {
-  "2026-10-01": { low: 383, high: 388 },
-  // 83 (30 Sep) + 300–305 (1 Oct)
-  "2026-10-24": { low: 1411, high: 1411 },
-  // 1,144 (17 Oct) + 267
-  "2026-10-31": { low: 1527, high: 1570 }
-  // + 116–159
-};
-var RATE = { low: 136, high: 1133 };
-var round2 = (v) => Number.isInteger(v) ? v : Math.round(v * 100) / 100;
-var costBand = (dep) => [
-  dep.low * RATE.low / 1e6,
-  dep.high * RATE.high / 1e6
-];
-function projectDaily(key) {
-  return DATES.map((date) => {
-    const obs = FACTS[date]?.[key];
-    if (!obs) return NIL;
-    const q = obs.q ?? "n";
-    return {
-      v: round2((obs.low + obs.high) / 2),
-      band: [obs.low, obs.high],
-      q,
-      note: { k: "obs", date, metric: key },
-      detach: isDetached(q)
-    };
-  });
-}
-var strikers = projectDaily("strikers").map(
-  (p) => ({ ...p, detach: false })
-);
-function projectPolicingDaily() {
-  return DATES.map((date) => {
-    const dep = DEPLOYMENT[date];
-    if (!dep) return NIL;
-    const [lo, hi] = costBand(dep);
-    const q = dep.q ?? "n";
-    return {
-      v: round2((lo + hi) / 2),
-      band: [round2(lo), round2(hi)],
-      q,
-      note: { k: "policing", low: dep.low, high: dep.high, date },
-      detach: isDetached(q)
-    };
-  });
-}
-function projectPolicingCumulative() {
-  let lo = 0;
-  let hi = 0;
-  let days = 0;
-  let started = false;
-  return DATES.map((date) => {
-    const dep = DEPLOYMENT[date];
-    if (dep) {
-      const [a, b] = costBand(dep);
-      lo += a;
-      hi += b;
-      days++;
-      started = true;
-    }
-    if (!started) return NIL;
-    return {
-      v: round2((lo + hi) / 2),
-      band: [round2(lo), round2(hi)],
-      q: "e",
-      note: { k: "cumulative", days, added: Boolean(dep) },
-      detach: false
-      // always a line; its band is shaded, not barred
-    };
-  });
-}
-function projectForcesStock() {
-  return DATES.map((date) => {
-    const pub = FORCES_STOCK[date];
-    if (pub) {
-      return {
-        v: round2((pub.low + pub.high) / 2),
-        band: [pub.low, pub.high],
-        q: "c",
-        note: { k: "obs", date, metric: "forcesInjuredStock" },
-        detach: false
-      };
-    }
-    const der = FORCES_STOCK_DERIVED[date];
-    if (der) {
-      return {
-        v: round2((der.low + der.high) / 2),
-        band: [der.low, der.high],
-        q: "e",
-        note: { k: "obs", date, metric: "forcesInjuredStock" },
-        detach: false
-      };
-    }
-    return NIL;
-  });
-}
-function aggregate(key, op) {
-  return WEEKS.map((week) => {
-    const cells = [];
-    for (const d of week.dates) {
-      const obs = FACTS[d]?.[key];
-      if (!obs) continue;
-      cells.push({ date: d, obs, q: obs.q ?? "n" });
-    }
-    if (!cells.length) return NIL;
-    const last = cells[cells.length - 1];
-    const othersHigh = Math.max(
-      ...cells.filter((c) => c !== last).map((c) => c.obs.high),
-      Number.NEGATIVE_INFINITY
-    );
-    if (last.q === "c" && last.obs.high >= othersHigh) {
-      return {
-        v: round2((last.obs.low + last.obs.high) / 2),
-        band: [round2(last.obs.low), round2(last.obs.high)],
-        q: "c",
-        note: { k: "obs", date: last.date, metric: key },
-        detach: isDetached("c")
-      };
-    }
-    const regional = cells.filter((c) => c.q === "r");
-    const subsets = cells.filter((c) => c.q === "c");
-    const flows = cells.filter((c) => c.q !== "c" && c.q !== "r");
-    const regionalOnly = flows.length === 0 && regional.length > 0;
-    let pool = regionalOnly ? regional : flows;
-    if (!pool.length) {
-      if (!subsets.length) return NIL;
-      pool = [
-        subsets.reduce((best, x) => x.obs.high > best.obs.high ? x : best)
-      ];
-    }
-    let low;
-    let high;
-    let value2;
-    let peak;
-    if (op === "sum") {
-      low = pool.reduce((a, x) => a + x.obs.low, 0);
-      high = pool.reduce((a, x) => a + x.obs.high, 0);
-      value2 = (low + high) / 2;
-    } else {
-      low = Math.max(...pool.map((x) => x.obs.low));
-      high = Math.max(...pool.map((x) => x.obs.high));
-      const top = pool.reduce(
-        (best, x) => (x.obs.low + x.obs.high) / 2 > (best.obs.low + best.obs.high) / 2 ? x : best
-      );
-      value2 = (top.obs.low + top.obs.high) / 2;
-      peak = top.date;
-    }
-    const derived = pool.filter((x) => x.q === "e").sort((a, b) => b.obs.high - a.obs.high)[0];
-    const excluded = cells.length - pool.length;
-    const partial = pool.some((x) => x.q === "p");
-    const parts = {
-      days: new Set(pool.map((x) => x.date)).size,
-      kind: regionalOnly ? "regional" : "national",
-      peak,
-      noNational: regionalOnly || void 0,
-      excluded: excluded > 0 ? excluded : void 0,
-      floored: pool.some((x) => x.q === "f") || void 0,
-      clipped: week.touchesEdge || void 0
-    };
-    return {
-      v: round2(value2),
-      band: [round2(low), round2(high)],
-      q: regionalOnly ? "r" : parts.floored ? "f" : partial ? "p" : "w",
-      note: derived ? { k: "obs", date: derived.date, metric: key } : { k: "week", p: parts },
-      detach: regionalOnly
-    };
-  });
-}
-function aggregateBlockades() {
-  return WEEKS.map((week) => {
-    const cells = [];
-    for (const date of week.dates) {
-      const obs = FACTS[date]?.blockades;
-      if (!obs) continue;
-      cells.push({ date, obs, q: obs.q ?? "n" });
-    }
-    if (!cells.length) return NIL;
-    const national = cells.filter((c) => c.q !== "r");
-    const pool = national.length ? national : cells;
-    const regionalOnly = national.length === 0;
-    const top = pool.reduce((best, c) => {
-      const mid = (c.obs.low + c.obs.high) / 2;
-      const bestMid = (best.obs.low + best.obs.high) / 2;
-      if (c.q === "c" && best.q !== "c") return c;
-      if (best.q === "c" && c.q !== "c") return best;
-      return mid > bestMid ? c : best;
-    });
-    const wide = top.q === "x";
-    const parts = {
-      days: new Set(pool.map((c) => c.date)).size,
-      kind: regionalOnly ? "regional" : "national",
-      peak: top.date,
-      noNational: regionalOnly || void 0,
-      excluded: cells.length - pool.length || void 0,
-      floored: pool.some((c) => c.q === "f") || void 0,
-      clipped: week.touchesEdge || void 0,
-      vacation: weekTouchesHoliday(week.key) || void 0
-    };
-    return {
-      v: round2((top.obs.low + top.obs.high) / 2),
-      band: [round2(top.obs.low), round2(top.obs.high)],
-      q: regionalOnly ? "r" : wide ? "x" : top.q === "f" ? "f" : "w",
-      note: wide ? { k: "obs", date: top.date, metric: "blockades" } : { k: "week", p: parts },
-      detach: regionalOnly
-    };
-  });
-}
-var DAILY = {
-  turnout: projectDaily("turnout"),
-  strikers,
-  arrests: projectDaily("arrests"),
-  forcesInjured: projectDaily("forcesInjured"),
-  forcesInjuredStock: projectForcesStock(),
-  protesterInjured: projectDaily("protesterInjured"),
-  damagesCost: projectDaily("damagesCost"),
-  blockades: projectDaily("blockades"),
-  policing: projectPolicingDaily(),
-  policingCumulative: projectPolicingCumulative()
-};
-var WEEKLY = {
-  turnout: aggregate("turnout", "max"),
-  strikers: aggregate("strikers", "max").map(
-    (p) => p.q === "w" ? { ...p, q: "e" } : p
-  ),
-  arrests: aggregate("arrests", "sum"),
-  forcesInjured: aggregate("forcesInjured", "sum"),
-  protesterInjured: aggregate("protesterInjured", "sum"),
-  blockades: aggregateBlockades()
-};
-var WEEK_FLAG_OVERRIDE = {
-  // Week of 28 Sep: the injury figure is the cumulative level reached on
-  // 1 Oct (235 students and staff). The cell-level "c" flag produces this
-  // on its own; the override documents the intent and survives any future
-  // re-ordering of the underlying cells.
-  "2026-09-28": { i: "c" }
-};
-var STUDENT_WEEKS = WEEKS.map((week, idx) => {
-  const out = {
-    key: week.key,
-    end: week.end,
-    touchesEdge: week.touchesEdge,
-    p: null,
-    a: null,
-    f: null,
-    i: null,
-    flags: {},
-    notes: {}
-  };
-  const override = WEEK_FLAG_OVERRIDE[week.key];
-  for (const m of METRICS) {
-    const pt = WEEKLY[METRIC_OF[m]][idx];
-    if (pt.band) out[m] = pt.band;
-    const q = override?.[m] ?? pt.q;
-    if (pt.band && q && q !== "n") out.flags[m] = q;
-    if (pt.note) out.notes[m] = pt.note;
-  }
-  return out;
-});
-var SEVERITY_LEVELS = [
-  {
-    /* 1,167 / 1,233 = 94.65% → the 94.6% the file itself states. */
-    id: "crsOctober",
-    total: { s: "n", v: 1233 },
-    serious: { s: "x", why: "binaryFile" },
-    light: { s: "n", v: 1167 },
-    other: { s: "n", v: 66, d: true }
-  },
-  {
-    /* All forces, running total at the peak, consolidated. */
-    id: "forcesPeak",
-    total: { s: "n", v: 1144 },
-    serious: { s: "n", v: 7 },
-    light: { s: "x", why: "notPublished" },
-    other: { s: "x", why: "notPublished" }
-  },
-  {
-    /* No total has ever been published, so no share can exist. */
-    id: "protesters",
-    total: { s: "x", why: "noDenominator" },
-    serious: { s: "x", why: "noTally" },
-    light: { s: "x", why: "noDenominator" },
-    other: { s: "x", why: "noDenominator" }
-  }
-];
-var SEVERITY_WEEKS = [
-  {
-    id: "week12oct",
-    total: { s: "n", v: 207, d: true },
-    serious: { s: "n", v: 7 },
-    light: { s: "x", why: "notPublished" },
-    other: { s: "x", why: "notPublished" }
-  },
-  {
-    id: "week19oct",
-    total: { s: "n", v: 267, d: true },
-    serious: { s: "x", why: "notPublished" },
-    light: { s: "x", why: "notPublished" },
-    other: { s: "x", why: "notPublished" }
-  },
-  {
-    id: "week26oct",
-    total: { s: "n", v: 116, d: true },
-    serious: { s: "x", why: "notPublished" },
-    light: { s: "x", why: "notPublished" },
-    other: { s: "x", why: "notPublished" }
-  },
-  {
-    id: "week2nov",
-    total: { s: "n", v: 53 },
-    serious: { s: "x", why: "notPublished" },
-    light: { s: "x", why: "notPublished" },
-    other: { s: "x", why: "notPublished" }
-  },
-  {
-    /* The month is the smallest window at which a split exists at all. */
-    id: "crsOctober",
-    total: { s: "n", v: 1233 },
-    serious: { s: "x", why: "binaryFile" },
-    light: { s: "n", v: 1167 },
-    other: { s: "n", v: 66, d: true }
-  }
-];
-var CASES = [
-  {
-    id: "forcesAccidental",
-    side: "forces",
-    kind: "accidental",
-    count: { s: "c", n: 4 },
-    cases: ["givors", "crsWrist", "crsAnkle"]
-  },
-  {
-    id: "forcesConflictual",
-    side: "forces",
-    kind: "conflictual",
-    count: { s: "x", why: "noTally" },
-    cases: ["helmet", "groin2023"]
-  },
-  {
-    id: "protesterConflictual",
-    side: "protesters",
-    kind: "conflictual",
-    count: { s: "x", why: "noTally" },
-    cases: ["mael", "alaric", "eyes"]
-  },
-  {
-    id: "protesterAccidental",
-    side: "protesters",
-    kind: "accidental",
-    count: { s: "x", why: "noneDocumented" },
-    cases: []
-  },
-  {
-    id: "sainteSoline",
-    side: "forces",
-    kind: "accidental",
-    count: { s: "c", n: 29 },
-    cases: ["sainteSoline"],
-    reference: true
-  }
-];
-
-// src/client/dom.ts
-var byId = (id) => document.getElementById(id);
-function el(name, cls, text) {
-  const node = document.createElement(name);
-  if (cls) node.className = cls;
-  if (text !== void 0) node.textContent = text;
-  return node;
-}
-
 // src/client/context.ts
 var L = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
 var LAYERS = [
@@ -15052,19 +15204,14 @@ var DEF = {
     style: "triangle"
   }
 };
-function visiblePoints(dataKey, weekly = false) {
-  const series = weekly ? WEEKLY[dataKey] : DAILY[dataKey];
-  if (!series) return [];
-  let mask = null;
-  for (const def of Object.values(DEF)) {
-    const d = def;
-    if (d.data !== series) continue;
-    if (Array.isArray(d.pointRadius)) mask = d.pointRadius;
-  }
+function visiblePoints(id) {
+  const def = DEF[id];
+  if (!def?.data) return [];
+  const mask = def.pointRadius;
   const out = [];
-  series.forEach((p, i) => {
+  def.data.forEach((p, i) => {
     if (p.v === null) return;
-    if (mask && mask[i] === 0) return;
+    if (mask?.[i] === 0) return;
     out.push({ i, v: p.v });
   });
   return out;
@@ -15397,18 +15544,6 @@ var spanMark = {
           Math.PI * 2
         );
         ctx.fill();
-        ctx.stroke();
-      } else {
-        const top = y - BRACE_LIFT;
-        const c = BRACE_CURL;
-        ctx.setLineDash([]);
-        ctx.moveTo(x0, top + c);
-        ctx.quadraticCurveTo(x0, top, x0 + c, top);
-        ctx.lineTo(mid - c, top);
-        ctx.quadraticCurveTo(mid, top, mid, top - c);
-        ctx.quadraticCurveTo(mid, top, mid + c, top);
-        ctx.lineTo(x1 - c, top);
-        ctx.quadraticCurveTo(x1, top, x1, top + c);
         ctx.stroke();
       }
       const labelY = (MARKER === "ellipse" ? y - ELLIPSE_RY : y - BRACE_LIFT - BRACE_CURL) - 2;
@@ -16334,7 +16469,7 @@ var activeItem = null;
 var activeEvent = null;
 var datasetsOf = (chart) => chart.data.datasets;
 function restyle(d, on, bold = false) {
-  const c = on ? d.__color : alpha2(d.__color, DIM);
+  const c = on ? d.__color : alpha(d.__color, DIM);
   d.borderColor = c;
   d.backgroundColor = c;
   d.pointBorderColor = c;
@@ -16520,6 +16655,30 @@ var panelOptions = (kind, x, y, onHover) => {
     onHover
   };
 };
+var panelPoints = (ds) => ds.data ?? [];
+function decoratePanel(chart, figure, title) {
+  const datasets = chart.data.datasets;
+  figure.querySelector(".data-table")?.remove();
+  figure.append(
+    fromChart(chart, {
+      caption: fill(a11y().tableCaption, { title }),
+      indexHeader: a11y().weekHeader,
+      indexOf: (ds, i) => String(panelPoints(ds)[i]?.t ?? "\u2014")
+    })
+  );
+  keyboardChart(chart, {
+    hint: a11y().chartHint,
+    roledescription: a11y().chartRole,
+    readout: (i) => {
+      const week = panelPoints(datasets[0])[i]?.t ?? String(i + 1);
+      const rows = datasets.map((d) => {
+        const p = panelPoints(d)[i];
+        return p ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}\u2013${p.high}`}` : `${d.label}: \u2014`;
+      });
+      return `${week}. ${rows.join(". ")}`;
+    }
+  });
+}
 function mountCrossEpisode(opts) {
   episodePanels.length = 0;
   itemPanels.length = 0;
@@ -16563,23 +16722,7 @@ function mountCrossEpisode(opts) {
         // no per-panel labels: the episode is the panel title
       })
     );
-    function decoratePanel(chart2, figure2, title) {
-      figure2.append(
-        fromChart(chart2, {
-          caption: fill(a11y().tableCaption, { title }),
-          indexHeader: a11y().weekHeader,
-          indexOf: (ds, i) => String(ds.data[i]?.t ?? "\u2014")
-        })
-      );
-      keyboardChart(chart2, {
-        hint: a11y().chartHint,
-        roledescription: a11y().chartRole,
-        readout: (i) => (chart2.data.datasets[0]?.data?.[i]?.t ?? String(i + 1)) + ". " + chart2.data.datasets.map((d) => {
-          const p = d.data[i];
-          return p ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}\u2013${p.high}`}` : `${d.label}: \u2014`;
-        }).join(". ")
-      });
-    }
+    decoratePanel(chart, figure, text.strip);
     canvas.addEventListener("mouseleave", () => emphasiseItem(null));
     episodePanels.push(chart);
   });
@@ -16612,23 +16755,7 @@ function mountCrossEpisode(opts) {
         plugins: []
       })
     );
-    function decoratePanel(chart2, figure2, title) {
-      figure2.append(
-        fromChart(chart2, {
-          caption: fill(a11y().tableCaption, { title }),
-          indexHeader: a11y().weekHeader,
-          indexOf: (ds, i) => String(ds.data[i]?.t ?? "\u2014")
-        })
-      );
-      keyboardChart(chart2, {
-        hint: a11y().chartHint,
-        roledescription: a11y().chartRole,
-        readout: (i) => (chart2.data.datasets[0]?.data?.[i]?.t ?? String(i + 1)) + ". " + chart2.data.datasets.map((d) => {
-          const p = d.data[i];
-          return p ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}\u2013${p.high}`}` : `${d.label}: \u2014`;
-        }).join(". ")
-      });
-    }
+    decoratePanel(chart, figure, m.items[series.key].short);
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas.addEventListener("mousemove", (ev) => {
       const pts = chart.getElementsAtEventForMode(
@@ -16643,8 +16770,8 @@ function mountCrossEpisode(opts) {
     });
     itemPanels.push({ chart, item: series.key });
   });
-  const cHost = document.getElementById("trellis-episodes");
-  const dHost = document.getElementById("trellis-items");
+  const cHost = opts.episodeHost;
+  const dHost = opts.itemHost;
   legend(
     opts.itemLegend,
     "items",
@@ -16772,7 +16899,7 @@ function rangeDataset(key, label, cells) {
     data: cells.map((c) => statPt(c, "median")),
     showLine: false,
     borderColor: RANGE_COLOR,
-    backgroundColor: alpha2(RANGE_COLOR, 0.2),
+    backgroundColor: alpha(RANGE_COLOR, 0.2),
     pointRadius: 0,
     pointHoverRadius: 0,
     pointHitRadius: 0,
@@ -16823,9 +16950,9 @@ function emphasiseStat(stat, force = false) {
       if (!s) continue;
       const on = stat === null || s === stat;
       if (s === "range") {
-        d.backgroundColor = alpha2(d.__color, on ? 0.2 : 0.05);
+        d.backgroundColor = alpha(d.__color, on ? 0.2 : 0.05);
       } else {
-        const c = on ? d.__color : alpha2(d.__color, DIM);
+        const c = on ? d.__color : alpha(d.__color, DIM);
         d.borderColor = c;
         d.pointBorderColor = c;
         d.backgroundColor = c;
@@ -16992,7 +17119,7 @@ function mountSummary() {
   legend(legendHost, "stats", [
     {
       text: m.panels.range,
-      color: alpha2(RANGE_COLOR, 0.45),
+      color: alpha(RANGE_COLOR, 0.45),
       on: () => emphasiseStat("range", true),
       off: () => emphasiseStat(null, true),
       hide: (hidden) => setStatHidden("range", hidden)
@@ -17012,6 +17139,186 @@ function mountSummary() {
       hide: (hidden) => setStatHidden("peak", hidden)
     }
   ]);
+}
+
+// src/client/kpis.ts
+var DAILY_SPECS = [
+  { copy: "protestersDaily", data: "turnout", unit: "count" },
+  { copy: "arrestsDaily", data: "arrests", unit: "count" },
+  { copy: "forcesDaily", data: "forcesInjured", unit: "count" },
+  { copy: "protestersInjuredDaily", data: "protesterInjured", unit: "count" },
+  { copy: "blockadesDaily", data: "blockades", unit: "count" },
+  { copy: "damagesDaily", data: "damagesCost", unit: "eurM" }
+];
+var WEEKLY_SPECS = [
+  { copy: "protestersWeekly", data: "turnout", unit: "count" },
+  { copy: "arrestsWeekly", data: "arrests", unit: "count" },
+  { copy: "forcesWeekly", data: "forcesInjured", unit: "count" },
+  { copy: "protestersInjuredWeekly", data: "protesterInjured", unit: "count" },
+  { copy: "blockadesWeekly", data: "blockades", unit: "count" }
+];
+var METRIC_KEYS = ["p", "a", "f", "i"];
+function meanMedian(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mid = n >> 1;
+  let sum = 0;
+  for (const v of values) sum += v;
+  return {
+    mean: sum / n,
+    median: n % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+  };
+}
+function bestRatio(obs, base) {
+  if (!(base > 0)) return null;
+  let best = null;
+  for (const o of obs) {
+    const pct = o.v / base;
+    if (!best || pct > best.pct) best = { obs: o, pct, base };
+  }
+  return best;
+}
+function bestValue(obs) {
+  let best = null;
+  for (const o of obs) if (!best || o.v > best.v) best = o;
+  return best;
+}
+function dailyRows(weekly) {
+  const specs = weekly ? WEEKLY_SPECS : DAILY_SPECS;
+  return specs.map((spec) => {
+    const pts = visiblePoints(spec.data, weekly);
+    const obs = pts.map((p) => ({
+      v: p.v,
+      where: weekly ? fmtWeek(WEEKS[p.i].key, WEEKS[p.i].end) : fmtDate(DATES[p.i])
+    }));
+    const st = meanMedian(obs.map((o) => o.v));
+    const first = obs.length ? obs[0].v : 0;
+    return {
+      label: t().chart.series[spec.copy].label,
+      unit: spec.unit,
+      largest: bestValue(obs),
+      vsMean: st ? bestRatio(obs, st.mean) : null,
+      vsMedian: st ? bestRatio(obs, st.median) : null,
+      vsFirst: bestRatio(obs, first)
+    };
+  });
+}
+function episodeRows(maxX) {
+  return METRIC_KEYS.map((key) => {
+    let largest = null;
+    let vsMean = null;
+    let vsMedian = null;
+    let vsFirst = null;
+    for (const ep of EPISODES) {
+      const pts = seriesData(ep, key) ?? [];
+      const kept = pts.filter((p) => p.x <= maxX);
+      if (!kept.length) continue;
+      const obs = kept.map((p) => ({
+        v: p.y,
+        where: `${t().episodes[ep.id].short} \xB7 ${p.t}`
+      }));
+      const st = meanMedian(obs.map((o) => o.v));
+      const first = kept[0].base;
+      const l = bestValue(obs);
+      if (l && (!largest || l.v > largest.v)) largest = l;
+      const m = st ? bestRatio(obs, st.mean) : null;
+      if (m && (!vsMean || m.pct > vsMean.pct)) vsMean = m;
+      const md = st ? bestRatio(obs, st.median) : null;
+      if (md && (!vsMedian || md.pct > vsMedian.pct)) vsMedian = md;
+      const f = bestRatio(obs, first);
+      if (f && (!vsFirst || f.pct > vsFirst.pct)) vsFirst = f;
+    }
+    return {
+      label: t().items[key].label,
+      unit: "count",
+      largest,
+      vsMean,
+      vsMedian,
+      vsFirst
+    };
+  });
+}
+function fmtValue(v, unit) {
+  return unit === "eurM" ? fill(t().kpi.eurM, { v: eurM().format(v) }) : compact().format(v);
+}
+function fmtPct2(ratio) {
+  const x = ratio * 100;
+  if (x >= 1e3) return `${nf().format(Math.round(x))}%`;
+  if (x >= 10) return `${Math.round(x)}%`;
+  return `${Number(x.toFixed(1))}%`;
+}
+function kpiRow(label, num, sub) {
+  const row = el("div", "kpi-row");
+  row.append(el("dt", "kpi-label", label));
+  const dd = el("dd");
+  dd.append(el("span", "kpi-num", num), el("span", "kpi-sub", sub));
+  row.append(dd);
+  return row;
+}
+function ratioCell(r, label, template, unit) {
+  if (!r) return kpiRow(label, "\u2014", t().kpi.none);
+  const against = fill(template, {
+    value: fmtValue(r.obs.v, unit),
+    base: fmtValue(r.base, unit)
+  });
+  return kpiRow(label, fmtPct2(r.pct), `${r.obs.where} \xB7 ${against}`);
+}
+function card(row, largestLabel) {
+  const k = t().kpi;
+  const box = el("div", "kpi-card");
+  box.append(el("h5", "kpi-title", row.label));
+  const list = el("dl", "kpi-list");
+  list.append(
+    row.largest ? kpiRow(
+      largestLabel,
+      fmtValue(row.largest.v, row.unit),
+      row.largest.where
+    ) : kpiRow(largestLabel, "\u2014", k.none),
+    ratioCell(row.vsMean, k.vsMean, k.againstMean, row.unit),
+    ratioCell(row.vsMedian, k.vsMedian, k.againstMedian, row.unit),
+    ratioCell(row.vsFirst, k.vsFirst, k.againstFirst, row.unit)
+  );
+  box.append(list);
+  return box;
+}
+function block(rows, largestLabel, note2) {
+  const frag = document.createDocumentFragment();
+  frag.append(el("h4", "kpi-heading", t().kpi.heading));
+  const grid = el("div", "kpi-grid");
+  for (const row of rows) grid.append(card(row, largestLabel));
+  frag.append(grid);
+  frag.append(el("p", "kpi-note", note2));
+  return frag;
+}
+function mountKpis() {
+  const k = t().kpi;
+  const a = byId("kpi-a");
+  if (a) a.replaceChildren(block(dailyRows(false), k.largestDay, k.noteDaily));
+  const b = byId("kpi-b");
+  if (b) {
+    b.replaceChildren(block(dailyRows(true), k.largestWeek, k.noteWeekly));
+  }
+  const c = byId("kpi-c");
+  if (c) {
+    c.replaceChildren(
+      block(
+        episodeRows(Number.POSITIVE_INFINITY),
+        k.largestFigure,
+        k.noteEpisodes
+      )
+    );
+  }
+  const d = byId("kpi-d");
+  if (d) {
+    d.replaceChildren(
+      block(
+        episodeRows(ENFORCEMENT_LAST),
+        k.largestFigure,
+        k.noteEpisodesCapped
+      )
+    );
+  }
 }
 
 // src/client/lang.ts
@@ -17508,7 +17815,7 @@ function inline(run) {
   if (/^https?:/i.test(run.href)) a.target = "_blank";
   return a;
 }
-function block(b) {
+function block2(b) {
   if (b.kind === "p") {
     const p = document.createElement("p");
     p.append(...b.runs.map(inline));
@@ -17548,7 +17855,7 @@ function group(sub, open) {
   summary.append(title);
   const body = document.createElement("div");
   body.className = "about-body";
-  for (const b of sub.blocks) body.append(block(b));
+  for (const b of sub.blocks) body.append(block2(b));
   details.append(summary, body);
   return details;
 }
@@ -17617,6 +17924,586 @@ function renderChrome() {
   note("note-c", m.sections.c.note ?? "");
   note("note-d", m.sections.d.note ?? "");
   note("note-e", m.sections.e.note ?? "");
+}
+
+// src/client/percapita.ts
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LogarithmicScale,
+  plugin_tooltip,
+  plugin_legend
+);
+var BLUE = "#1d4ed8";
+var PALE = "rgba(29,78,216,0.10)";
+var STACK_TOTAL = 100;
+var L2 = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
+var COPY = {
+  turnout: { en: "In the street", fr: "Dans la rue" },
+  rest: { en: "The rest of the population", fr: "Le reste de la population" },
+  measured: { en: "Measured day", fr: "Jour mesur\xE9" },
+  logNote: {
+    en: "\xB7 log scale: band heights are not proportional",
+    fr: "\xB7 \xE9chelle log : les hauteurs ne sont pas proportionnelles"
+  },
+  axisY: {
+    en: "Share of the population (log)",
+    fr: "Part de la population (log)"
+  },
+  axisDate: { en: "Date", fr: "Date" },
+  axisWeek: { en: "Week", fr: "Semaine" },
+  axisWeekNo: { en: "Week of the movement", fr: "Semaine du mouvement" },
+  titleA: {
+    en: "Turnout as a share of the population, day by day",
+    fr: "La foule rapport\xE9e \xE0 la population, jour par jour"
+  },
+  titleB: {
+    en: "Weekly peak as a share of the population",
+    fr: "Pointe hebdomadaire rapport\xE9e \xE0 la population"
+  },
+  ttCount: { en: "{v} in the street", fr: "{v} dans la rue" },
+  ttShare: { en: "{v} of the population", fr: "{v} de la population" },
+  tableCaption: {
+    en: "Table of figures: {title}",
+    fr: "Tableau des chiffres : {title}"
+  },
+  colDate: { en: "Date", fr: "Date" },
+  colWeek: { en: "Week", fr: "Semaine" },
+  colCount: { en: "Count", fr: "D\xE9compte" },
+  colShare: { en: "Share of population", fr: "Part de la population" },
+  base: { en: "Population {n}", fr: "Population {n}" },
+  metro: { en: "metropolitan France", fr: "France m\xE9tropolitaine" },
+  noBase: { en: "no denominator", fr: "pas de d\xE9nominateur" },
+  noteA: {
+    en: "France enti\xE8re \u2014 {pop} residents at 1 January 2026 (INSEE, provisional). Nine days carry a published crowd; the band is interpolated between them and those nine are marked with a dot. Blue is the ministry count, and the organisers\u2019 ceiling is in the tooltip. Logarithmic axis from {min} to 100 %: it spreads the range so small shares are readable, so band heights are not proportional to population. The 29 September count is a floor \u2014 public-service cort\xE8ge only.",
+    fr: "France enti\xE8re \u2014 {pop} habitants au 1er janvier 2026 (INSEE, chiffre provisoire). Neuf jours portent une foule publi\xE9e ; la bande est interpol\xE9e entre eux et ces neuf jours sont marqu\xE9s d\u2019un point. Le bleu est le d\xE9compte minist\xE9riel, la borne syndicale est dans l\u2019infobulle. Axe logarithmique de {min} \xE0 100 % : il \xE9tale la plage pour rendre les petites parts lisibles, les hauteurs ne sont donc pas proportionnelles \xE0 la population. Le d\xE9compte du 29 septembre est un plancher \u2014 cort\xE8ge de la fonction publique seulement."
+  },
+  noteB: {
+    en: "The peak day of each week, against France enti\xE8re \u2014 {pop} residents. A peak, not a sum: the same person is counted once per day. Logarithmic axis from {min} to 100 %: band heights are not proportional.",
+    fr: "Le jour de pointe de chaque semaine, rapport\xE9 \xE0 la France enti\xE8re \u2014 {pop} habitants. Une pointe, pas une somme : une m\xEAme personne est compt\xE9e une fois par jour. Axe logarithmique de {min} \xE0 100 % : les hauteurs ne sont pas proportionnelles."
+  },
+  noteC: {
+    en: "Each panel uses the population of its own year and the same logarithmic axis, so the seven are comparable. May 68 is read against metropolitan France \u2014 49 711 853 residents at the census of 7 March 1968 \u2014 because no France-enti\xE8re count exists for that year in this vintage; the metropolitan base is narrower than France enti\xE8re by the overseas departments, so its rate reads a little high against the others. On it, 13 May is 0,40 % to 2,01 % of the country: 200 000 according to the prefecture, over a million according to the organisers, and that fivefold band is the disagreement, not an error bar. Its crowd is a scholarly reconstruction, so its rate is a magnitude, not a measurement. The Gilets jaunes count includes road blockades (Act I); the Nahel crowd is an episode-level estimate.",
+    fr: "Chaque panneau utilise la population de son ann\xE9e et le m\xEAme axe logarithmique : les sept sont comparables. Mai 68 est rapport\xE9 \xE0 la France m\xE9tropolitaine \u2014 49 711 853 habitants au recensement du 7 mars 1968 \u2014 car aucun d\xE9compte France enti\xE8re n\u2019existe pour cette ann\xE9e dans cette version ; la base m\xE9tropolitaine est plus \xE9troite que la France enti\xE8re du fait des d\xE9partements d\u2019outre-mer, son taux est donc un peu surestim\xE9 par rapport aux autres. Sur cette base, le 13 mai repr\xE9sente de 0,40 % \xE0 2,01 % du pays : 200 000 selon la pr\xE9fecture, plus d\u2019un million selon les organisateurs, et cette fourchette de 1 \xE0 5 est le d\xE9saccord, non une barre d\u2019erreur. Sa foule est une reconstruction savante : son taux est un ordre de grandeur, non une mesure. Le d\xE9compte des Gilets jaunes inclut les blocages routiers (acte I) ; la foule du mouvement Nahel est une estimation d\u2019\xE9pisode."
+  }
+};
+var SHARE = {
+  france: { en: "Share of population", fr: "Part de la population" },
+  metropole: {
+    en: "Share of the metropolitan population",
+    fr: "Part de la population m\xE9tropolitaine"
+  },
+  ttFrance: { en: "{v} of the population", fr: "{v} de la population" },
+  ttMetro: {
+    en: "{v} of the metropolitan population",
+    fr: "{v} de la population m\xE9tropolitaine"
+  }
+};
+var tag2 = "";
+var pctFmt = null;
+function locale() {
+  const next = String(getLocale()).slice(0, 2) === "fr" ? "fr-FR" : "en-GB";
+  if (next !== tag2) {
+    tag2 = next;
+    pctFmt = new Intl.NumberFormat(next, {
+      style: "percent",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+  return next;
+}
+var pctText = (v) => {
+  locale();
+  return v === null ? "\u2014" : pctFmt.format(v);
+};
+var pctBand = (lo, hi) => {
+  if (lo === null || hi === null) return "\u2014";
+  const a = pctText(lo);
+  return Math.abs(hi - lo) < 1e-9 ? a : `${a} \u2013 ${pctText(hi)}`;
+};
+var countText = (v) => v === null ? "\u2014" : nf().format(Math.round(v));
+var countBand = (r) => {
+  if (r.lo === null) return "\u2014";
+  const hi = r.hi ?? r.lo;
+  return Math.abs(hi - r.lo) < 1e-9 ? countText(r.lo) : `${countText(r.lo)} \u2013 ${countText(hi)}`;
+};
+function tickText(v) {
+  const exp = Math.round(Math.log10(v));
+  const d = Math.max(0, -exp);
+  const n = new Intl.NumberFormat(locale(), {
+    minimumFractionDigits: d,
+    maximumFractionDigits: d
+  }).format(v);
+  return locale() === "fr-FR" ? `${n} %` : `${n}%`;
+}
+function dailyRows2() {
+  const pop = population(KEY_2026);
+  const notes = t().chart.dayNotes;
+  return DATES.map((d, i) => {
+    const p = DAILY.turnout[i];
+    const v = p?.v ?? null;
+    const hi = p?.band?.[1] ?? v;
+    const plo = v === null ? null : pctOfValue(v, pop);
+    const phi = hi === null ? null : pctOfValue(hi, pop);
+    return {
+      key: fmtDayMonth(d),
+      title: fmtDate(d),
+      p: plo === null ? null : plo / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
+      lo: v,
+      hi: hi ?? null,
+      note: notes?.[d]
+    };
+  });
+}
+function weeklyRows() {
+  const pop = population(KEY_2026);
+  return WEEKS.map((w, i) => {
+    const p = WEEKLY.turnout[i];
+    const v = p?.v ?? null;
+    const hi = p?.band?.[1] ?? v;
+    const plo = v === null ? null : pctOfValue(v, pop);
+    const phi = hi === null ? null : pctOfValue(hi, pop);
+    return {
+      key: String(w.key),
+      title: fmtWeek(w.key, w.end),
+      p: plo === null ? null : plo / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
+      lo: v,
+      hi: hi ?? null
+    };
+  });
+}
+function episodeRows2(ep) {
+  const pop = population(popKeyFor(ep.id));
+  const basis = basisOf(pop) ?? void 0;
+  const pts = seriesData(ep, "p") ?? [];
+  const byWeek = new Map(pts.map((p) => [p.x, p]));
+  const span = Math.max(...pts.map((p) => p.x), ...ep.weeks.map((r) => r.w), 0);
+  const out = [];
+  for (let w = 0; w <= span; w++) {
+    const p = byWeek.get(w);
+    if (!p) {
+      out.push({
+        key: String(w),
+        title: String(w),
+        p: null,
+        plo: null,
+        phi: null,
+        lo: null,
+        hi: null,
+        basis
+      });
+      continue;
+    }
+    const lo = p.low ?? p.y ?? null;
+    const hi = p.high ?? p.y ?? null;
+    const mid = pctOfValue(p.y, pop);
+    const plo = pctOfValue(lo, pop);
+    const phi = pctOfValue(hi, pop);
+    out.push({
+      key: String(w),
+      title: p.t,
+      p: mid === null ? null : mid / 100,
+      plo: plo === null ? null : plo / 100,
+      phi: phi === null ? null : phi / 100,
+      lo,
+      hi,
+      note: p.note,
+      basis
+    });
+  }
+  return out;
+}
+var pcStack = {
+  id: "pcStack",
+  beforeDatasetsDraw(chart) {
+    const data = chart.data.datasets[0]?.data;
+    if (!data) return;
+    const meta = chart.getDatasetMeta(0);
+    const pts = [];
+    meta.data.forEach((item, i) => {
+      const v = data[i];
+      if (v === null || v === void 0 || !(v > 0)) return;
+      pts.push({ x: item.x, y: item.y });
+    });
+    if (!pts.length) return;
+    const { ctx, chartArea, scales } = chart;
+    const yTop = scales.y?.getPixelForValue(STACK_TOTAL) ?? chartArea.top;
+    const yBottom = chartArea.bottom;
+    const x0 = pts[0].x;
+    const xN = pts[pts.length - 1].x;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+      chartArea.left,
+      chartArea.top,
+      chartArea.right - chartArea.left,
+      chartArea.bottom - chartArea.top
+    );
+    ctx.clip();
+    ctx.beginPath();
+    ctx.moveTo(x0, yTop);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(xN, yTop);
+    ctx.closePath();
+    ctx.fillStyle = PALE;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x0, yBottom);
+    for (const p of pts) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(xN, yBottom);
+    ctx.closePath();
+    ctx.fillStyle = BLUE;
+    ctx.fill();
+    ctx.restore();
+  }
+};
+var pcPeak = {
+  id: "pcPeak",
+  afterDatasetsDraw(chart) {
+    const ds = chart.data.datasets[0];
+    if (!ds) return;
+    const data = ds.data;
+    let best = -1;
+    let bestV = -Infinity;
+    data.forEach((v, j) => {
+      if (v !== null && v > bestV) {
+        bestV = v;
+        best = j;
+      }
+    });
+    if (best < 0) return;
+    const at = chart.getDatasetMeta(0).data[best];
+    if (!at) return;
+    const { ctx, chartArea } = chart;
+    const text = tickText(bestV);
+    ctx.save();
+    ctx.font = "600 11px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    const x = Math.min(
+      Math.max(at.x, chartArea.left + 30),
+      chartArea.right - 30
+    );
+    const y = Math.max(at.y - 7, chartArea.top + 14);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#fff";
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = BLUE;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+};
+function axisFloor(values) {
+  const pos = values.filter((v) => v > 0);
+  if (!pos.length) return 0.01;
+  return Math.pow(10, Math.floor(Math.log10(Math.min(...pos))) - 1);
+}
+function build(rows, o) {
+  const plotted = rows.map((r) => r.p === null ? null : r.p * 100);
+  if (!plotted.some((v) => v !== null && v > 0)) return null;
+  const floor = o.floor ?? axisFloor(plotted);
+  const decades2 = [];
+  for (let e = Math.round(Math.log10(floor)); e <= Math.log10(STACK_TOTAL); e++) {
+    decades2.push(Number(Math.pow(10, e).toPrecision(12)));
+  }
+  const dataset = {
+    label: L2(COPY.turnout),
+    data: plotted,
+    borderColor: BLUE,
+    backgroundColor: "transparent",
+    // the area is drawn by pcStack
+    borderWidth: 2,
+    // nine observations across 58 days: without this the series is invisible
+    spanGaps: true,
+    tension: 0,
+    pointRadius: (ctx) => ctx.raw === null ? 0 : 3,
+    pointBackgroundColor: "#fff",
+    pointBorderColor: BLUE,
+    pointBorderWidth: 1.5,
+    pointHoverRadius: 5,
+    pointHitRadius: 12,
+    fill: false
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    interaction: { mode: "index", intersect: false },
+    layout: { padding: { top: 16, right: 16, bottom: 0, left: 4 } },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: {
+          maxRotation: o.rotate ? 90 : 0,
+          autoSkip: true,
+          maxTicksLimit: o.maxTicks,
+          font: { size: 10 },
+          color: THEME.muted,
+          padding: 4
+        },
+        title: {
+          display: Boolean(o.xTitle),
+          text: o.xTitle,
+          color: THEME.label,
+          font: { size: 11 },
+          padding: { top: 4 }
+        }
+      },
+      y: {
+        type: "logarithmic",
+        min: floor,
+        max: STACK_TOTAL,
+        border: { display: false },
+        grid: { color: THEME.axisGrid, drawTicks: false },
+        afterBuildTicks: (axis) => {
+          axis.ticks = decades2.map((value2) => ({ value: value2 }));
+        },
+        ticks: {
+          display: o.showY,
+          font: { size: 10 },
+          color: THEME.muted,
+          padding: 6,
+          callback: (v) => tickText(Number(v))
+        },
+        title: {
+          display: o.showY,
+          text: L2(COPY.axisY),
+          color: THEME.label,
+          font: { size: 11 },
+          padding: { bottom: 4 }
+        }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      title: { display: false },
+      tooltip: {
+        backgroundColor: THEME.tooltipBg,
+        titleColor: THEME.tooltipInk,
+        bodyColor: THEME.tooltipInk,
+        borderColor: THEME.grid,
+        borderWidth: 1,
+        callbacks: {
+          title: (items) => wrapTooltipLines(
+            rows[items[0]?.dataIndex ?? 0]?.title ?? "",
+            items[0],
+            "title"
+          ),
+          label: (item) => {
+            const r = rows[item.dataIndex];
+            if (!r) return "";
+            const lines = [];
+            if (r.lo !== null)
+              lines.push(fill(L2(COPY.ttCount), { v: countBand(r) }));
+            lines.push(
+              fill(r.basis === "metro" ? L2(SHARE.ttMetro) : L2(SHARE.ttFrance), {
+                v: pctBand(r.plo, r.phi)
+              })
+            );
+            return wrapTooltipLines(lines.join("\n"), item, "body");
+          },
+          footer: (items) => {
+            const r = rows[items[0]?.dataIndex ?? 0];
+            return r?.note ? wrapTooltipLines(r.note, items[0], "footer") : "";
+          }
+        }
+      }
+    }
+  };
+  Object.assign(options.plugins, {
+    contextBands: { spans: o.spans ?? [] }
+  });
+  return {
+    data: { labels: rows.map((r) => r.key), datasets: [dataset] },
+    options
+  };
+}
+function legendRow() {
+  const row = el("div", "pc-legend");
+  const chip = (bg, text, ring) => {
+    const span = el("span", "pc-chip");
+    const sw = el("span", "pc-swatch");
+    sw.style.background = bg;
+    if (ring) {
+      sw.style.border = `1.5px solid ${BLUE}`;
+      sw.style.background = "#fff";
+      sw.style.borderRadius = "50%";
+    }
+    span.append(sw, document.createTextNode(text));
+    return span;
+  };
+  row.append(
+    chip(BLUE, L2(COPY.turnout), false),
+    chip(PALE, `${L2(COPY.rest)} ${L2(COPY.logNote)}`, false),
+    chip("#fff", L2(COPY.measured), true)
+  );
+  return row;
+}
+function render(host, rows, o, title, note2, firstCol) {
+  const cfg = build(rows, o);
+  if (!cfg) return;
+  const metro = rows.some((r) => r.basis === "metro");
+  const shareHeader = metro ? L2(SHARE.metropole) : L2(SHARE.france);
+  const figure = el("figure", "pc-figure");
+  const cap = el("figcaption", "pc-caption");
+  cap.append(el("span", "pc-fig-title", title), legendRow());
+  const box = el("div", "pc-canvas");
+  const canvas = el("canvas");
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", title);
+  box.append(canvas);
+  figure.append(cap, box);
+  figure.append(
+    dataTable({
+      caption: fill(L2(COPY.tableCaption), { title }),
+      indexHeader: firstCol,
+      index: rows.map((r) => r.title),
+      columns: [
+        { header: L2(COPY.colCount), values: rows.map(countBand) },
+        { header: shareHeader, values: rows.map((r) => pctBand(r.plo, r.phi)) }
+      ]
+    })
+  );
+  if (note2) figure.append(el("p", "pc-note", note2));
+  host.append(figure);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const chart = track(
+    new Chart(ctx, {
+      type: "line",
+      data: cfg.data,
+      options: cfg.options,
+      plugins: [contextBands, pcStack, pcPeak]
+    })
+  );
+  keyboardChart(chart, {
+    hint: a11y().chartHint,
+    roledescription: a11y().chartRole,
+    readout: (i) => {
+      const r = rows[i];
+      return r ? `${r.title}. ${countBand(r)}. ${pctBand(r.plo, r.phi)}` : String(i + 1);
+    }
+  });
+}
+function floorLabel(rows) {
+  const vals = rows.map((r) => r.p === null ? 0 : r.p * 100);
+  return tickText(axisFloor(vals));
+}
+function sectionA(host) {
+  const pop = population(KEY_2026);
+  const rows = dailyRows2();
+  render(
+    host,
+    rows,
+    {
+      xTitle: L2(COPY.axisDate),
+      rotate: true,
+      maxTicks: 25,
+      showY: true,
+      spans: daySpans()
+    },
+    L2(COPY.titleA),
+    fill(L2(COPY.noteA), {
+      pop: nf().format(denominator(pop) ?? 0),
+      min: floorLabel(rows)
+    }),
+    L2(COPY.colDate)
+  );
+}
+function sectionB(host) {
+  const pop = population(KEY_2026);
+  const rows = weeklyRows();
+  render(
+    host,
+    rows,
+    {
+      xTitle: L2(COPY.axisWeek),
+      rotate: false,
+      maxTicks: 12,
+      showY: true,
+      spans: weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end })))
+    },
+    L2(COPY.titleB),
+    fill(L2(COPY.noteB), {
+      pop: nf().format(denominator(pop) ?? 0),
+      min: floorLabel(rows)
+    }),
+    L2(COPY.colWeek)
+  );
+}
+var spansFor = (ep) => ep.weeks.some((w) => w.to >= START && w.from <= END) ? [] : weekSpans(ep.weeks);
+function sectionC(host) {
+  const m = t();
+  const cols = host.clientWidth >= 1180 ? 4 : host.clientWidth >= 620 ? 2 : 1;
+  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  const panels = EPISODES.map((ep) => ({ ep, rows: episodeRows2(ep) }));
+  const floor = axisFloor(
+    panels.flatMap((p) => p.rows.map((r) => r.p === null ? 0 : r.p * 100))
+  );
+  panels.forEach(({ ep, rows }, idx) => {
+    const pop = population(popKeyFor(ep.id));
+    const base = denominator(pop);
+    const caption = base === null ? L2(COPY.noBase) : fill(L2(COPY.base), {
+      n: `${nf().format(base)}${basisOf(pop) === "metro" ? ` \xB7 ${L2(COPY.metro)}` : ""}`
+    });
+    const panel = el("div", "pc-panel");
+    render(
+      panel,
+      rows,
+      {
+        xTitle: idx >= EPISODES.length - cols ? L2(COPY.axisWeekNo) : "",
+        rotate: false,
+        maxTicks: 9,
+        showY: idx % cols === 0,
+        floor,
+        spans: spansFor(ep)
+      },
+      `${m.episodes[ep.id].short} \xB7 ${caption}`,
+      "",
+      L2(COPY.colWeek)
+    );
+    host.append(panel);
+  });
+  const head = el("div", "pc-trellis-head");
+  head.append(el("p", "pc-note", L2(COPY.noteC)));
+  host.append(head);
+}
+function mountPerCapita() {
+  const a = byId("pc-a");
+  if (a) {
+    a.replaceChildren();
+    try {
+      sectionA(a);
+    } catch (e) {
+      console.error("[percapita A]", e);
+    }
+  }
+  const b = byId("pc-b");
+  if (b) {
+    b.replaceChildren();
+    try {
+      sectionB(b);
+    } catch (e) {
+      console.error("[percapita B]", e);
+    }
+  }
+  const c = byId("pc-c");
+  if (c) {
+    c.replaceChildren();
+    try {
+      sectionC(c);
+    } catch (e) {
+      console.error("[percapita C]", e);
+    }
+  }
 }
 
 // src/client/sources.ts
@@ -19936,955 +20823,6 @@ function initTheme() {
   };
 }
 
-// src/client/kpis.ts
-var DAILY_SPECS = [
-  { copy: "protestersDaily", data: "turnout", unit: "count" },
-  { copy: "arrestsDaily", data: "arrests", unit: "count" },
-  { copy: "forcesDaily", data: "forcesInjured", unit: "count" },
-  { copy: "protestersInjuredDaily", data: "protesterInjured", unit: "count" },
-  { copy: "blockadesDaily", data: "blockades", unit: "count" },
-  { copy: "damagesDaily", data: "damagesCost", unit: "eurM" }
-];
-var WEEKLY_SPECS = [
-  { copy: "protestersWeekly", data: "turnout", unit: "count" },
-  { copy: "arrestsWeekly", data: "arrests", unit: "count" },
-  { copy: "forcesWeekly", data: "forcesInjured", unit: "count" },
-  { copy: "protestersInjuredWeekly", data: "protesterInjured", unit: "count" },
-  { copy: "blockadesWeekly", data: "blockades", unit: "count" }
-];
-var METRIC_KEYS = ["p", "a", "f", "i"];
-function meanMedian(values) {
-  if (!values.length) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const n = sorted.length;
-  const mid = n >> 1;
-  let sum = 0;
-  for (const v of values) sum += v;
-  return {
-    mean: sum / n,
-    median: n % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
-  };
-}
-function bestRatio(obs, base) {
-  if (!(base > 0)) return null;
-  let best = null;
-  for (const o of obs) {
-    const pct = o.v / base;
-    if (!best || pct > best.pct) best = { obs: o, pct, base };
-  }
-  return best;
-}
-function bestValue(obs) {
-  let best = null;
-  for (const o of obs) if (!best || o.v > best.v) best = o;
-  return best;
-}
-function dailyRows(weekly) {
-  const specs = weekly ? WEEKLY_SPECS : DAILY_SPECS;
-  return specs.map((spec) => {
-    const pts = visiblePoints(spec.data, weekly);
-    const obs = pts.map((p) => ({
-      v: p.v,
-      where: weekly ? fmtWeek(WEEKS[p.i].key, WEEKS[p.i].end) : fmtDate(DATES[p.i])
-    }));
-    const st = meanMedian(obs.map((o) => o.v));
-    const first = obs.length ? obs[0].v : 0;
-    return {
-      label: t().chart.series[spec.copy].label,
-      unit: spec.unit,
-      largest: bestValue(obs),
-      vsMean: st ? bestRatio(obs, st.mean) : null,
-      vsMedian: st ? bestRatio(obs, st.median) : null,
-      vsFirst: bestRatio(obs, first)
-    };
-  });
-}
-function episodeRows(maxX) {
-  return METRIC_KEYS.map((key) => {
-    let largest = null;
-    let vsMean = null;
-    let vsMedian = null;
-    let vsFirst = null;
-    for (const ep of EPISODES) {
-      const pts = seriesData(ep, key) ?? [];
-      const kept = pts.filter((p) => p.x <= maxX);
-      if (!kept.length) continue;
-      const obs = kept.map((p) => ({
-        v: p.y,
-        where: `${t().episodes[ep.id].short} \xB7 ${p.t}`
-      }));
-      const st = meanMedian(obs.map((o) => o.v));
-      const first = kept[0].base;
-      const l = bestValue(obs);
-      if (l && (!largest || l.v > largest.v)) largest = l;
-      const m = st ? bestRatio(obs, st.mean) : null;
-      if (m && (!vsMean || m.pct > vsMean.pct)) vsMean = m;
-      const md = st ? bestRatio(obs, st.median) : null;
-      if (md && (!vsMedian || md.pct > vsMedian.pct)) vsMedian = md;
-      const f = bestRatio(obs, first);
-      if (f && (!vsFirst || f.pct > vsFirst.pct)) vsFirst = f;
-    }
-    return {
-      label: t().items[key].label,
-      unit: "count",
-      largest,
-      vsMean,
-      vsMedian,
-      vsFirst
-    };
-  });
-}
-function fmtValue(v, unit) {
-  return unit === "eurM" ? fill(t().kpi.eurM, { v: eurM().format(v) }) : compact().format(v);
-}
-function fmtPct2(ratio) {
-  const x = ratio * 100;
-  if (x >= 1e3) return `${nf().format(Math.round(x))}%`;
-  if (x >= 10) return `${Math.round(x)}%`;
-  return `${Number(x.toFixed(1))}%`;
-}
-function kpiRow(label, num, sub) {
-  const row = el("div", "kpi-row");
-  row.append(el("dt", "kpi-label", label));
-  const dd = el("dd");
-  dd.append(el("span", "kpi-num", num), el("span", "kpi-sub", sub));
-  row.append(dd);
-  return row;
-}
-function ratioCell(r, label, template, unit) {
-  if (!r) return kpiRow(label, "\u2014", t().kpi.none);
-  const against = fill(template, {
-    value: fmtValue(r.obs.v, unit),
-    base: fmtValue(r.base, unit)
-  });
-  return kpiRow(label, fmtPct2(r.pct), `${r.obs.where} \xB7 ${against}`);
-}
-function card(row, largestLabel) {
-  const k = t().kpi;
-  const box = el("div", "kpi-card");
-  box.append(el("h5", "kpi-title", row.label));
-  const list = el("dl", "kpi-list");
-  list.append(
-    row.largest ? kpiRow(
-      largestLabel,
-      fmtValue(row.largest.v, row.unit),
-      row.largest.where
-    ) : kpiRow(largestLabel, "\u2014", k.none),
-    ratioCell(row.vsMean, k.vsMean, k.againstMean, row.unit),
-    ratioCell(row.vsMedian, k.vsMedian, k.againstMedian, row.unit),
-    ratioCell(row.vsFirst, k.vsFirst, k.againstFirst, row.unit)
-  );
-  box.append(list);
-  return box;
-}
-function block2(rows, largestLabel, note2) {
-  const frag = document.createDocumentFragment();
-  frag.append(el("h4", "kpi-heading", t().kpi.heading));
-  const grid = el("div", "kpi-grid");
-  for (const row of rows) grid.append(card(row, largestLabel));
-  frag.append(grid);
-  frag.append(el("p", "kpi-note", note2));
-  return frag;
-}
-function mountKpis() {
-  const k = t().kpi;
-  const a = byId("kpi-a");
-  if (a) a.replaceChildren(block2(dailyRows(false), k.largestDay, k.noteDaily));
-  const b = byId("kpi-b");
-  if (b) {
-    b.replaceChildren(block2(dailyRows(true), k.largestWeek, k.noteWeekly));
-  }
-  const c = byId("kpi-c");
-  if (c) {
-    c.replaceChildren(
-      block2(
-        episodeRows(Number.POSITIVE_INFINITY),
-        k.largestFigure,
-        k.noteEpisodes
-      )
-    );
-  }
-  const d = byId("kpi-d");
-  if (d) {
-    d.replaceChildren(
-      block2(
-        episodeRows(ENFORCEMENT_LAST),
-        k.largestFigure,
-        k.noteEpisodesCapped
-      )
-    );
-  }
-}
-
-// src/client/casualties.ts
-function cellText(c) {
-  switch (c.s) {
-    case "n":
-      return {
-        text: `${c.d ? "\u2248 " : ""}${nf().format(c.v)}`,
-        cls: c.d ? "cas-num cas-derived" : "cas-num"
-      };
-    case "r":
-      return {
-        text: `\u2248 ${nf().format(c.lo)}\u2013${nf().format(c.hi)}`,
-        cls: "cas-num cas-derived"
-      };
-    case "c":
-      return {
-        text: fill(t().casualties.casesCount, { n: c.n }),
-        cls: "cas-num cas-cases"
-      };
-    default:
-      return { text: t().casualties.why[c.why], cls: "cas-absent" };
-  }
-}
-function cell(c, extra = "") {
-  const { text, cls } = cellText(c);
-  return el("td", extra ? `${cls} ${extra}` : cls, text);
-}
-function share2(light, total) {
-  if (light.s !== "n" || total.s !== "n" || total.v <= 0) return null;
-  return light.v / total.v;
-}
-function bar(p) {
-  const wrap = el("span", "cas-bar");
-  const run = el("span", "cas-bar-fill");
-  run.style.width = `${Math.max(0, Math.min(1, p)) * 100}%`;
-  wrap.append(run);
-  return wrap;
-}
-function severityTable(rows, caption) {
-  const c = t().casualties;
-  const table = el("table", "cas-table");
-  table.append(el("caption", "cas-caption", caption));
-  const thead = el("thead");
-  const head = el("tr");
-  const labels = [
-    c.colScope,
-    c.colTotal,
-    c.colSerious,
-    c.colLight,
-    c.colLightShare,
-    c.colOther
-  ];
-  labels.forEach((label, i) => {
-    const th = el("th", i === 0 ? "cas-scope-head" : "cas-num-head", label);
-    th.scope = "col";
-    head.append(th);
-  });
-  thead.append(head);
-  table.append(thead);
-  const tbody = el("tbody");
-  for (const row of rows) {
-    const tr = el("tr");
-    const th = el("th", "cas-scope", c.scope[row.id] ?? row.id);
-    th.scope = "row";
-    tr.append(th);
-    tr.append(cell(row.total));
-    tr.append(cell(row.serious));
-    tr.append(cell(row.light));
-    const p = share2(row.light, row.total);
-    const td = el("td", "cas-share");
-    if (p === null) {
-      td.append(el("span", "cas-absent", "\u2014"));
-    } else {
-      td.append(el("span", "cas-pct", `${(p * 100).toFixed(1)}%`), bar(p));
-    }
-    tr.append(td);
-    tr.append(cell(row.other));
-    tbody.append(tr);
-  }
-  table.append(tbody);
-  return table;
-}
-function headline() {
-  const c = t().casualties;
-  const top = SEVERITY_LEVELS[0];
-  const p = share2(top.light, top.total);
-  const wrap = el("div", "cas-headline");
-  const left = el("div", "cas-head-stat");
-  left.append(
-    el("span", "cas-head-num", p === null ? "\u2014" : `${(p * 100).toFixed(1)}%`),
-    el(
-      "span",
-      "cas-head-label",
-      p === null || top.light.s !== "n" || top.total.s !== "n" ? c.headLightNote : fill(c.headLight, {
-        light: nf().format(top.light.v),
-        total: nf().format(top.total.v)
-      })
-    )
-  );
-  const right = el("div", "cas-head-stat cas-head-missing");
-  right.append(
-    el("span", "cas-head-num", "\u2014"),
-    el("span", "cas-head-label", c.headMissingNote)
-  );
-  wrap.append(left, right);
-  return wrap;
-}
-function causeTable(rows, caption) {
-  const c = t().casualties;
-  const table = el("table", "cas-table cas-cause");
-  table.append(el("caption", "cas-caption", caption));
-  const thead = el("thead");
-  const head = el("tr");
-  [c.colSide, c.colCircumstance, c.colCount, c.colCases].forEach((label, i) => {
-    const th = el("th", i < 2 ? "cas-scope-head" : "cas-num-head", label);
-    th.scope = "col";
-    head.append(th);
-  });
-  thead.append(head);
-  table.append(thead);
-  const tbody = el("tbody");
-  for (const row of rows) {
-    const tr = el("tr", row.reference ? "cas-reference" : "");
-    const th = el("th", "cas-scope", c.side[row.side]);
-    th.scope = "row";
-    tr.append(th);
-    tr.append(el("td", "cas-kind", c.kind[row.kind]));
-    tr.append(cell(row.count));
-    const td = el("td", "cas-cases-cell");
-    if (!row.cases.length) {
-      td.append(el("span", "cas-absent", t().casualties.noCases));
-    } else {
-      const list = el("ul", "cas-case-list");
-      for (const key of row.cases) list.append(el("li", "", c.cases[key]));
-      td.append(list);
-    }
-    tr.append(td);
-    tbody.append(tr);
-  }
-  table.append(tbody);
-  return table;
-}
-function resolutionTable() {
-  const c = t().casualties;
-  const table = el("table", "cas-table cas-resolution");
-  table.append(el("caption", "cas-caption", c.capResolution));
-  const thead = el("thead");
-  const head = el("tr");
-  [c.colQuestion, c.colWindow, c.colWeekly].forEach((label, i) => {
-    const th = el("th", i === 2 ? "cas-num-head" : "cas-scope-head", label);
-    th.scope = "col";
-    head.append(th);
-  });
-  thead.append(head);
-  table.append(thead);
-  const tbody = el("tbody");
-  for (const row of c.resolution) {
-    const tr = el("tr");
-    const th = el("th", "cas-scope", row.label);
-    th.scope = "row";
-    tr.append(th, el("td", "", row.window));
-    tr.append(el("td", "cas-num", row.weekly));
-    tbody.append(tr);
-  }
-  table.append(tbody);
-  return table;
-}
-function mountCasualties() {
-  const c = t().casualties;
-  const a = byId("cas-a");
-  if (a) {
-    a.replaceChildren(
-      el("h4", "cas-title", c.headlineTitle),
-      headline(),
-      severityTable(SEVERITY_LEVELS, c.capLevels),
-      causeTable(CASES, c.capCases),
-      el("p", "cas-note", c.noteLevels)
-    );
-  }
-  const b = byId("cas-b");
-  if (b) {
-    b.replaceChildren(
-      el("h4", "cas-title", c.weeklyTitle),
-      severityTable(SEVERITY_WEEKS, c.capWeeks),
-      resolutionTable(),
-      el("p", "cas-note", c.noteWeeks)
-    );
-  }
-}
-
-// src/client/percapita.ts
-Chart.register(
-  LineController,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LogarithmicScale,
-  plugin_tooltip,
-  plugin_legend
-);
-var BLUE = "#1d4ed8";
-var PALE = "rgba(29,78,216,0.10)";
-var STACK_TOTAL = 100;
-var L2 = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
-var COPY = {
-  turnout: { en: "In the street", fr: "Dans la rue" },
-  rest: { en: "The rest of the population", fr: "Le reste de la population" },
-  measured: { en: "Measured day", fr: "Jour mesur\xE9" },
-  logNote: {
-    en: "\xB7 log scale: band heights are not proportional",
-    fr: "\xB7 \xE9chelle log : les hauteurs ne sont pas proportionnelles"
-  },
-  axisY: {
-    en: "Share of the population (log)",
-    fr: "Part de la population (log)"
-  },
-  axisDate: { en: "Date", fr: "Date" },
-  axisWeek: { en: "Week", fr: "Semaine" },
-  axisWeekNo: { en: "Week of the movement", fr: "Semaine du mouvement" },
-  titleA: {
-    en: "Turnout as a share of the population, day by day",
-    fr: "La foule rapport\xE9e \xE0 la population, jour par jour"
-  },
-  titleB: {
-    en: "Weekly peak as a share of the population",
-    fr: "Pointe hebdomadaire rapport\xE9e \xE0 la population"
-  },
-  ttCount: { en: "{v} in the street", fr: "{v} dans la rue" },
-  ttShare: { en: "{v} of the population", fr: "{v} de la population" },
-  tableCaption: {
-    en: "Table of figures: {title}",
-    fr: "Tableau des chiffres : {title}"
-  },
-  colDate: { en: "Date", fr: "Date" },
-  colWeek: { en: "Week", fr: "Semaine" },
-  colCount: { en: "Count", fr: "D\xE9compte" },
-  colShare: { en: "Share of population", fr: "Part de la population" },
-  base: { en: "Population {n}", fr: "Population {n}" },
-  metro: { en: "metropolitan France", fr: "France m\xE9tropolitaine" },
-  noBase: { en: "no denominator", fr: "pas de d\xE9nominateur" },
-  noteA: {
-    en: "France enti\xE8re \u2014 {pop} residents at 1 January 2026 (INSEE, provisional). Nine days carry a published crowd; the band is interpolated between them and those nine are marked with a dot. Blue is the ministry count, and the organisers\u2019 ceiling is in the tooltip. Logarithmic axis from {min} to 100 %: it spreads the range so small shares are readable, so band heights are not proportional to population. The 29 September count is a floor \u2014 public-service cort\xE8ge only.",
-    fr: "France enti\xE8re \u2014 {pop} habitants au 1er janvier 2026 (INSEE, chiffre provisoire). Neuf jours portent une foule publi\xE9e ; la bande est interpol\xE9e entre eux et ces neuf jours sont marqu\xE9s d\u2019un point. Le bleu est le d\xE9compte minist\xE9riel, la borne syndicale est dans l\u2019infobulle. Axe logarithmique de {min} \xE0 100 % : il \xE9tale la plage pour rendre les petites parts lisibles, les hauteurs ne sont donc pas proportionnelles \xE0 la population. Le d\xE9compte du 29 septembre est un plancher \u2014 cort\xE8ge de la fonction publique seulement."
-  },
-  noteB: {
-    en: "The peak day of each week, against France enti\xE8re \u2014 {pop} residents. A peak, not a sum: the same person is counted once per day. Logarithmic axis from {min} to 100 %: band heights are not proportional.",
-    fr: "Le jour de pointe de chaque semaine, rapport\xE9 \xE0 la France enti\xE8re \u2014 {pop} habitants. Une pointe, pas une somme : une m\xEAme personne est compt\xE9e une fois par jour. Axe logarithmique de {min} \xE0 100 % : les hauteurs ne sont pas proportionnelles."
-  },
-  noteC: {
-    en: "Each panel uses the population of its own year and the same logarithmic axis, so the seven are comparable. May 68 is read against metropolitan France \u2014 49 711 853 residents at the census of 7 March 1968 \u2014 because no France-enti\xE8re count exists for that year in this vintage; the metropolitan base is narrower than France enti\xE8re by the overseas departments, so its rate reads a little high against the others. On it, 13 May is 0,40 % to 2,01 % of the country: 200 000 according to the prefecture, over a million according to the organisers, and that fivefold band is the disagreement, not an error bar. Its crowd is a scholarly reconstruction, so its rate is a magnitude, not a measurement. The Gilets jaunes count includes road blockades (Act I); the Nahel crowd is an episode-level estimate.",
-    fr: "Chaque panneau utilise la population de son ann\xE9e et le m\xEAme axe logarithmique : les sept sont comparables. Mai 68 est rapport\xE9 \xE0 la France m\xE9tropolitaine \u2014 49 711 853 habitants au recensement du 7 mars 1968 \u2014 car aucun d\xE9compte France enti\xE8re n\u2019existe pour cette ann\xE9e dans cette version ; la base m\xE9tropolitaine est plus \xE9troite que la France enti\xE8re du fait des d\xE9partements d\u2019outre-mer, son taux est donc un peu surestim\xE9 par rapport aux autres. Sur cette base, le 13 mai repr\xE9sente de 0,40 % \xE0 2,01 % du pays : 200 000 selon la pr\xE9fecture, plus d\u2019un million selon les organisateurs, et cette fourchette de 1 \xE0 5 est le d\xE9saccord, non une barre d\u2019erreur. Sa foule est une reconstruction savante : son taux est un ordre de grandeur, non une mesure. Le d\xE9compte des Gilets jaunes inclut les blocages routiers (acte I) ; la foule du mouvement Nahel est une estimation d\u2019\xE9pisode."
-  }
-};
-var SHARE = {
-  france: { en: "Share of population", fr: "Part de la population" },
-  metropole: {
-    en: "Share of the metropolitan population",
-    fr: "Part de la population m\xE9tropolitaine"
-  },
-  ttFrance: { en: "{v} of the population", fr: "{v} de la population" },
-  ttMetro: {
-    en: "{v} of the metropolitan population",
-    fr: "{v} de la population m\xE9tropolitaine"
-  }
-};
-var tag2 = "";
-var pctFmt = null;
-function locale() {
-  const next = String(getLocale()).slice(0, 2) === "fr" ? "fr-FR" : "en-GB";
-  if (next !== tag2) {
-    tag2 = next;
-    pctFmt = new Intl.NumberFormat(next, {
-      style: "percent",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
-  return next;
-}
-var pctText = (v) => {
-  locale();
-  return v === null ? "\u2014" : pctFmt.format(v);
-};
-var pctBand = (lo, hi) => {
-  if (lo === null || hi === null) return "\u2014";
-  const a = pctText(lo);
-  return Math.abs(hi - lo) < 1e-9 ? a : `${a} \u2013 ${pctText(hi)}`;
-};
-var countText = (v) => v === null ? "\u2014" : nf().format(Math.round(v));
-var countBand = (r) => {
-  if (r.lo === null) return "\u2014";
-  const hi = r.hi ?? r.lo;
-  return Math.abs(hi - r.lo) < 1e-9 ? countText(r.lo) : `${countText(r.lo)} \u2013 ${countText(hi)}`;
-};
-function tickText(v) {
-  const exp = Math.round(Math.log10(v));
-  const d = Math.max(0, -exp);
-  const n = new Intl.NumberFormat(locale(), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d
-  }).format(v);
-  return locale() === "fr-FR" ? `${n} %` : `${n}%`;
-}
-function dailyRows2() {
-  const pop = population(KEY_2026);
-  const notes = t().chart.dayNotes;
-  return DATES.map((d, i) => {
-    const p = DAILY.turnout[i];
-    const v = p?.v ?? null;
-    const hi = p?.band?.[1] ?? v;
-    const plo = v === null ? null : pctOfValue(v, pop);
-    const phi = hi === null ? null : pctOfValue(hi, pop);
-    return {
-      key: fmtDayMonth(d),
-      title: fmtDate(d),
-      p: plo === null ? null : plo / 100,
-      plo: plo === null ? null : plo / 100,
-      phi: phi === null ? null : phi / 100,
-      lo: v,
-      hi: hi ?? null,
-      note: notes?.[d]
-    };
-  });
-}
-function weeklyRows() {
-  const pop = population(KEY_2026);
-  return WEEKS.map((w, i) => {
-    const p = WEEKLY.turnout[i];
-    const v = p?.v ?? null;
-    const hi = p?.band?.[1] ?? v;
-    const plo = v === null ? null : pctOfValue(v, pop);
-    const phi = hi === null ? null : pctOfValue(hi, pop);
-    return {
-      key: String(w.key),
-      title: fmtWeek(w.key, w.end),
-      p: plo === null ? null : plo / 100,
-      plo: plo === null ? null : plo / 100,
-      phi: phi === null ? null : phi / 100,
-      lo: v,
-      hi: hi ?? null
-    };
-  });
-}
-function episodeRows2(ep) {
-  const pop = population(popKeyFor(ep.id));
-  const basis = basisOf(pop) ?? void 0;
-  const pts = seriesData(ep, "p") ?? [];
-  const byWeek = new Map(pts.map((p) => [p.x, p]));
-  const span = Math.max(...pts.map((p) => p.x), ...ep.weeks.map((r) => r.w), 0);
-  const out = [];
-  for (let w = 0; w <= span; w++) {
-    const p = byWeek.get(w);
-    if (!p) {
-      out.push({
-        key: String(w),
-        title: String(w),
-        p: null,
-        plo: null,
-        phi: null,
-        lo: null,
-        hi: null,
-        basis
-      });
-      continue;
-    }
-    const lo = p.low ?? p.y ?? null;
-    const hi = p.high ?? p.y ?? null;
-    const mid = pctOfValue(p.y, pop);
-    const plo = pctOfValue(lo, pop);
-    const phi = pctOfValue(hi, pop);
-    out.push({
-      key: String(w),
-      title: p.t,
-      p: mid === null ? null : mid / 100,
-      plo: plo === null ? null : plo / 100,
-      phi: phi === null ? null : phi / 100,
-      lo,
-      hi,
-      note: p.note,
-      basis
-    });
-  }
-  return out;
-}
-var pcStack = {
-  id: "pcStack",
-  beforeDatasetsDraw(chart) {
-    const data = chart.data.datasets[0]?.data;
-    if (!data) return;
-    const meta = chart.getDatasetMeta(0);
-    const pts = [];
-    meta.data.forEach((item, i) => {
-      const v = data[i];
-      if (v === null || v === void 0 || !(v > 0)) return;
-      pts.push({ x: item.x, y: item.y });
-    });
-    if (!pts.length) return;
-    const { ctx, chartArea, scales } = chart;
-    const yTop = scales.y?.getPixelForValue(STACK_TOTAL) ?? chartArea.top;
-    const yBottom = chartArea.bottom;
-    const x0 = pts[0].x;
-    const xN = pts[pts.length - 1].x;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(
-      chartArea.left,
-      chartArea.top,
-      chartArea.right - chartArea.left,
-      chartArea.bottom - chartArea.top
-    );
-    ctx.clip();
-    ctx.beginPath();
-    ctx.moveTo(x0, yTop);
-    for (const p of pts) ctx.lineTo(p.x, p.y);
-    ctx.lineTo(xN, yTop);
-    ctx.closePath();
-    ctx.fillStyle = PALE;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(x0, yBottom);
-    for (const p of pts) ctx.lineTo(p.x, p.y);
-    ctx.lineTo(xN, yBottom);
-    ctx.closePath();
-    ctx.fillStyle = BLUE;
-    ctx.fill();
-    ctx.restore();
-  }
-};
-var pcPeak = {
-  id: "pcPeak",
-  afterDatasetsDraw(chart) {
-    const ds = chart.data.datasets[0];
-    if (!ds) return;
-    const data = ds.data;
-    let best = -1;
-    let bestV = -Infinity;
-    data.forEach((v, j) => {
-      if (v !== null && v > bestV) {
-        bestV = v;
-        best = j;
-      }
-    });
-    if (best < 0) return;
-    const at = chart.getDatasetMeta(0).data[best];
-    if (!at) return;
-    const { ctx, chartArea } = chart;
-    const text = tickText(bestV);
-    ctx.save();
-    ctx.font = "600 11px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    const x = Math.min(
-      Math.max(at.x, chartArea.left + 30),
-      chartArea.right - 30
-    );
-    const y = Math.max(at.y - 7, chartArea.top + 14);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#fff";
-    ctx.strokeText(text, x, y);
-    ctx.fillStyle = BLUE;
-    ctx.fillText(text, x, y);
-    ctx.restore();
-  }
-};
-function axisFloor(values) {
-  const pos = values.filter((v) => v > 0);
-  if (!pos.length) return 0.01;
-  return Math.pow(10, Math.floor(Math.log10(Math.min(...pos))) - 1);
-}
-function build(rows, o) {
-  const plotted = rows.map((r) => r.p === null ? null : r.p * 100);
-  if (!plotted.some((v) => v !== null && v > 0)) return null;
-  const floor = o.floor ?? axisFloor(plotted);
-  const decades2 = [];
-  for (let e = Math.round(Math.log10(floor)); e <= Math.log10(STACK_TOTAL); e++) {
-    decades2.push(Number(Math.pow(10, e).toPrecision(12)));
-  }
-  const dataset = {
-    label: L2(COPY.turnout),
-    data: plotted,
-    borderColor: BLUE,
-    backgroundColor: "transparent",
-    // the area is drawn by pcStack
-    borderWidth: 2,
-    // nine observations across 58 days: without this the series is invisible
-    spanGaps: true,
-    tension: 0,
-    pointRadius: (ctx) => ctx.raw === null ? 0 : 3,
-    pointBackgroundColor: "#fff",
-    pointBorderColor: BLUE,
-    pointBorderWidth: 1.5,
-    pointHoverRadius: 5,
-    pointHitRadius: 12,
-    fill: false
-  };
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: false,
-    interaction: { mode: "index", intersect: false },
-    layout: { padding: { top: 16, right: 16, bottom: 0, left: 4 } },
-    scales: {
-      x: {
-        grid: { display: false },
-        border: { display: false },
-        ticks: {
-          maxRotation: o.rotate ? 90 : 0,
-          autoSkip: true,
-          maxTicksLimit: o.maxTicks,
-          font: { size: 10 },
-          color: THEME.muted,
-          padding: 4
-        },
-        title: {
-          display: Boolean(o.xTitle),
-          text: o.xTitle,
-          color: THEME.label,
-          font: { size: 11 },
-          padding: { top: 4 }
-        }
-      },
-      y: {
-        type: "logarithmic",
-        min: floor,
-        max: STACK_TOTAL,
-        border: { display: false },
-        grid: { color: THEME.axisGrid, drawTicks: false },
-        afterBuildTicks: (axis) => {
-          axis.ticks = decades2.map((value2) => ({ value: value2 }));
-        },
-        ticks: {
-          display: o.showY,
-          font: { size: 10 },
-          color: THEME.muted,
-          padding: 6,
-          callback: (v) => tickText(Number(v))
-        },
-        title: {
-          display: o.showY,
-          text: L2(COPY.axisY),
-          color: THEME.label,
-          font: { size: 11 },
-          padding: { bottom: 4 }
-        }
-      }
-    },
-    plugins: {
-      legend: { display: false },
-      title: { display: false },
-      tooltip: {
-        backgroundColor: THEME.tooltipBg,
-        titleColor: THEME.tooltipInk,
-        bodyColor: THEME.tooltipInk,
-        borderColor: THEME.grid,
-        borderWidth: 1,
-        callbacks: {
-          title: (items) => wrapTooltipLines(
-            rows[items[0]?.dataIndex ?? 0]?.title ?? "",
-            items[0],
-            "title"
-          ),
-          label: (item) => {
-            const r = rows[item.dataIndex];
-            if (!r) return "";
-            const lines = [];
-            if (r.lo !== null)
-              lines.push(fill(L2(COPY.ttCount), { v: countBand(r) }));
-            lines.push(
-              fill(r.basis === "metro" ? L2(SHARE.ttMetro) : L2(SHARE.ttFrance), {
-                v: pctBand(r.plo, r.phi)
-              })
-            );
-            return wrapTooltipLines(lines.join("\n"), item, "body");
-          },
-          footer: (items) => {
-            const r = rows[items[0]?.dataIndex ?? 0];
-            return r?.note ? wrapTooltipLines(r.note, items[0], "footer") : "";
-          }
-        }
-      }
-    }
-  };
-  Object.assign(options.plugins, {
-    contextBands: { spans: o.spans ?? [] }
-  });
-  return {
-    data: { labels: rows.map((r) => r.key), datasets: [dataset] },
-    options
-  };
-}
-function legendRow() {
-  const row = el("div", "pc-legend");
-  const chip = (bg, text, ring) => {
-    const span = el("span", "pc-chip");
-    const sw = el("span", "pc-swatch");
-    sw.style.background = bg;
-    if (ring) {
-      sw.style.border = `1.5px solid ${BLUE}`;
-      sw.style.background = "#fff";
-      sw.style.borderRadius = "50%";
-    }
-    span.append(sw, document.createTextNode(text));
-    return span;
-  };
-  row.append(
-    chip(BLUE, L2(COPY.turnout), false),
-    chip(PALE, `${L2(COPY.rest)} ${L2(COPY.logNote)}`, false),
-    chip("#fff", L2(COPY.measured), true)
-  );
-  return row;
-}
-function render(host, rows, o, title, note2, firstCol) {
-  const cfg = build(rows, o);
-  if (!cfg) return;
-  const metro = rows.some((r) => r.basis === "metro");
-  const shareHeader = metro ? L2(SHARE.metropole) : L2(SHARE.france);
-  const figure = el("figure", "pc-figure");
-  const cap = el("figcaption", "pc-caption");
-  cap.append(el("span", "pc-fig-title", title), legendRow());
-  const box = el("div", "pc-canvas");
-  const canvas = el("canvas");
-  canvas.setAttribute("role", "img");
-  canvas.setAttribute("aria-label", title);
-  box.append(canvas);
-  figure.append(cap, box);
-  figure.append(
-    dataTable({
-      caption: fill(L2(COPY.tableCaption), { title }),
-      indexHeader: firstCol,
-      index: rows.map((r) => r.title),
-      columns: [
-        { header: L2(COPY.colCount), values: rows.map(countBand) },
-        { header: shareHeader, values: rows.map((r) => pctBand(r.plo, r.phi)) }
-      ]
-    })
-  );
-  if (note2) figure.append(el("p", "pc-note", note2));
-  host.append(figure);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const chart = track(
-    new Chart(ctx, {
-      type: "line",
-      data: cfg.data,
-      options: cfg.options,
-      plugins: [contextBands, pcStack, pcPeak]
-    })
-  );
-  keyboardChart(chart, {
-    hint: a11y().chartHint,
-    roledescription: a11y().chartRole,
-    readout: (i) => {
-      const r = rows[i];
-      return r ? `${r.title}. ${countBand(r)}. ${pctBand(r.plo, r.phi)}` : String(i + 1);
-    }
-  });
-}
-function floorLabel(rows) {
-  const vals = rows.map((r) => r.p === null ? 0 : r.p * 100);
-  return tickText(axisFloor(vals));
-}
-function sectionA(host) {
-  const pop = population(KEY_2026);
-  const rows = dailyRows2();
-  render(
-    host,
-    rows,
-    {
-      xTitle: L2(COPY.axisDate),
-      rotate: true,
-      maxTicks: 25,
-      showY: true,
-      spans: daySpans()
-    },
-    L2(COPY.titleA),
-    fill(L2(COPY.noteA), {
-      pop: nf().format(denominator(pop) ?? 0),
-      min: floorLabel(rows)
-    }),
-    L2(COPY.colDate)
-  );
-}
-function sectionB(host) {
-  const pop = population(KEY_2026);
-  const rows = weeklyRows();
-  render(
-    host,
-    rows,
-    {
-      xTitle: L2(COPY.axisWeek),
-      rotate: false,
-      maxTicks: 12,
-      showY: true,
-      spans: weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end })))
-    },
-    L2(COPY.titleB),
-    fill(L2(COPY.noteB), {
-      pop: nf().format(denominator(pop) ?? 0),
-      min: floorLabel(rows)
-    }),
-    L2(COPY.colWeek)
-  );
-}
-var spansFor = (ep) => ep.weeks.some((w) => w.to >= START && w.from <= END) ? [] : weekSpans(ep.weeks);
-function sectionC(host) {
-  const m = t();
-  const cols = host.clientWidth >= 1180 ? 4 : host.clientWidth >= 620 ? 2 : 1;
-  host.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-  const panels = EPISODES.map((ep) => ({ ep, rows: episodeRows2(ep) }));
-  const floor = axisFloor(
-    panels.flatMap((p) => p.rows.map((r) => r.p === null ? 0 : r.p * 100))
-  );
-  panels.forEach(({ ep, rows }, idx) => {
-    const pop = population(popKeyFor(ep.id));
-    const base = denominator(pop);
-    const caption = base === null ? L2(COPY.noBase) : fill(L2(COPY.base), {
-      n: `${nf().format(base)}${basisOf(pop) === "metro" ? ` \xB7 ${L2(COPY.metro)}` : ""}`
-    });
-    const panel = el("div", "pc-panel");
-    render(
-      panel,
-      rows,
-      {
-        xTitle: idx >= EPISODES.length - cols ? L2(COPY.axisWeekNo) : "",
-        rotate: false,
-        maxTicks: 9,
-        showY: idx % cols === 0,
-        floor,
-        spans: spansFor(ep)
-      },
-      `${m.episodes[ep.id].short} \xB7 ${caption}`,
-      "",
-      L2(COPY.colWeek)
-    );
-    host.append(panel);
-  });
-  const head = el("div", "pc-trellis-head");
-  head.append(el("p", "pc-note", L2(COPY.noteC)));
-  host.append(head);
-}
-function mountPerCapita() {
-  const a = byId("pc-a");
-  if (a) {
-    a.replaceChildren();
-    try {
-      sectionA(a);
-    } catch (e) {
-      console.error("[percapita A]", e);
-    }
-  }
-  const b = byId("pc-b");
-  if (b) {
-    b.replaceChildren();
-    try {
-      sectionB(b);
-    } catch (e) {
-      console.error("[percapita B]", e);
-    }
-  }
-  const c = byId("pc-c");
-  if (c) {
-    c.replaceChildren();
-    try {
-      sectionC(c);
-    } catch (e) {
-      console.error("[percapita C]", e);
-    }
-  }
-}
-
 // src/client/main.ts
 function trellisHosts() {
   const episodeHost = byId("trellis-episodes");
@@ -20947,7 +20885,8 @@ var REQUIRED = [
   "kpi-a",
   "kpi-b",
   "kpi-c",
-  "kpi-d"
+  "kpi-d",
+  "kpi-e"
 ];
 function boot() {
   const missing = REQUIRED.filter((id) => !byId(id));
@@ -20973,12 +20912,8 @@ if (document.readyState === "loading") {
   boot();
 }
 export {
-  LOCALES,
-  getLocale,
-  localeFromUrl,
   render2 as render,
-  scheduleRender,
-  setLang
+  scheduleRender
 };
 /*! Bundled license information:
 

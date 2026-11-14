@@ -16,6 +16,11 @@ export interface Bi {
   readonly fr: string;
 }
 
+const UTC = { timeZone: "UTC" } as const;
+
+type DateWidth = "long" | "short" | "day";
+let dates: Record<DateWidth, Intl.DateTimeFormat>;
+
 /* ============================================================== descriptors */
 
 export type SectionId = "a" | "b" | "c" | "d" | "e";
@@ -221,13 +226,8 @@ export function localeVersion(): number {
   return version;
 }
 
-/** The one synchronous accessor. `lang()` was an identical twin — deleted. */
+/** The one synchronous accessor. */
 export function getLocale(): Lang {
-  return current;
-}
-
-/** Synchronous accessor. */
-export function lang(): Lang {
   return current;
 }
 
@@ -344,8 +344,9 @@ type DateInput = Date | string | number;
 let numFmt: Intl.NumberFormat;
 let cptFmt: Intl.NumberFormat;
 let eurFmt: Intl.NumberFormat;
-let dateFmt: Record<"long" | "short" | "day", Intl.DateTimeFormat>;
 
+/** The one place a locale tag becomes formatters. Called at module scope and
+ *  by setLang(); nothing else may build an Intl object. */
 function buildFormats(tag: string): void {
   numFmt = new Intl.NumberFormat(tag, { maximumFractionDigits: 0 });
   cptFmt = new Intl.NumberFormat(tag, {
@@ -354,19 +355,19 @@ function buildFormats(tag: string): void {
     maximumFractionDigits: 1,
   });
   eurFmt = new Intl.NumberFormat(tag, { maximumFractionDigits: 1 });
-  dateFmt = {
+  dates = {
     long: new Intl.DateTimeFormat(tag, {
       day: "numeric",
       month: "short",
       year: "numeric",
-      timeZone: "UTC",
+      ...UTC,
     }),
     short: new Intl.DateTimeFormat(tag, {
       day: "numeric",
       month: "short",
-      timeZone: "UTC",
+      ...UTC,
     }),
-    day: new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: "UTC" }),
+    day: new Intl.DateTimeFormat(tag, { day: "numeric", ...UTC }),
   };
 }
 buildFormats(localeMeta(current).tag);
@@ -391,20 +392,6 @@ const DAY_ONLY: Intl.DateTimeFormatOptions = {
   timeZone: "UTC",
 };
 
-let dsLong = new Intl.DateTimeFormat(EN_META.tag, DATE_LONG);
-let dsShort = new Intl.DateTimeFormat(EN_META.tag, DATE_SHORT);
-let dsDay = new Intl.DateTimeFormat(EN_META.tag, DAY_ONLY);
-let dsLang: Lang | null = null;
-
-function refreshDates(): void {
-  if (dsLang === current) return;
-  dsLang = current;
-  const tag = localeMeta(current).tag;
-  dsLong = new Intl.DateTimeFormat(tag, DATE_LONG);
-  dsShort = new Intl.DateTimeFormat(tag, DATE_SHORT);
-  dsDay = new Intl.DateTimeFormat(tag, DAY_ONLY);
-}
-
 /** ISO strings parse as UTC, so '2026-10-01' cannot slip to 30 September. */
 function toDate(value: DateInput): Date | null {
   if (value instanceof Date)
@@ -425,18 +412,14 @@ function firstOfMonth(s: string, d: Date): string {
     : s;
 }
 
-/** "1 Nov 2026" / "1er nov. 2026". Invalid input → em dash. */
 export function fmtDate(value: DateInput): string {
-  refreshDates();
   const d = toDate(value);
-  return d ? firstOfMonth(dsLong.format(d), d) : "—";
+  return d ? firstOfMonth(dates.long.format(d), d) : "—";
 }
 
-/** "1 Nov" / "1er nov." */
 export function fmtDayMonth(value: DateInput): string {
-  refreshDates();
   const d = toDate(value);
-  return d ? firstOfMonth(dsShort.format(d), d) : "—";
+  return d ? firstOfMonth(dates.short.format(d), d) : "—";
 }
 
 /**
@@ -446,18 +429,18 @@ export function fmtDayMonth(value: DateInput): string {
  * One argument gives a single day-month, for callers that pass a lone date.
  */
 export function fmtWeek(start: DateInput, end?: DateInput): string {
-  refreshDates();
   const a = toDate(start);
   if (!a) return "—";
-  if (end === undefined) return firstOfMonth(dsShort.format(a), a);
+  if (end === undefined) return firstOfMonth(dates.short.format(a), a);
 
   const b = toDate(end);
-  if (!b) return firstOfMonth(dsShort.format(a), a);
+  if (!b) return firstOfMonth(dates.short.format(a), a);
 
   const sameYear = a.getUTCFullYear() === b.getUTCFullYear();
   const sameMonth = sameYear && a.getUTCMonth() === b.getUTCMonth();
 
-  if (sameMonth) return `${firstOfMonth(dsDay.format(a), a)}–${fmtDayMonth(b)}`;
+  if (sameMonth)
+    return `${firstOfMonth(dates.day.format(a), a)}–${fmtDayMonth(b)}`;
   if (sameYear) return `${fmtDayMonth(a)} – ${fmtDayMonth(b)}`;
   return `${fmtDayMonth(a)} ${a.getUTCFullYear()} – ${fmtDayMonth(b)} ${b.getUTCFullYear()}`;
 }

@@ -8,9 +8,6 @@ export type Metric = (typeof METRICS)[number];
  *  "x" = a wider measure than the metric's definition (perturbés, closed). */
 export type Flag = "n" | "r" | "p" | "f" | "e" | "c" | "w" | "x";
 
-/** Kept as an alias so existing call sites compile; one name for one type. */
-export type Quality = Flag;
-
 /** A single figure, or a published range. */
 export type Band = number | [number, number];
 

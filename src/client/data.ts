@@ -186,16 +186,9 @@ export const WEEKS: readonly Week[] = (() => {
 export const HOLIDAY_START = "2026-10-18";
 export const HOLIDAY_END = "2026-11-01";
 
-export const inHoliday = (date: string): boolean =>
-  date >= HOLIDAY_START && date <= HOLIDAY_END;
-
 /** The week overlaps the holiday. */
 export const weekTouchesHoliday = (weekStart: string): boolean =>
   weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
-
-/** The week sits wholly inside the holiday — the metric did not exist. */
-export const weekInHoliday = (weekStart: string): boolean =>
-  weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
 
 /* --------------------------------------------------------------------- facts */
 
@@ -963,18 +956,6 @@ export interface StudentWeek {
   notes: Partial<Record<Metric, NoteRef>>;
 }
 
-/** Editorial corrections the aggregator cannot infer from a band alone.
- *  Keyed by ISO Monday, so inserting a fact above cannot shift them. */
-const WEEK_FLAG_OVERRIDE: Partial<
-  Record<string, Partial<Record<Metric, Flag>>>
-> = {
-  // Week of 28 Sep: the injury figure is the cumulative level reached on
-  // 1 Oct (235 students and staff). The cell-level "c" flag produces this
-  // on its own; the override documents the intent and survives any future
-  // re-ordering of the underlying cells.
-  "2026-09-28": { i: "c" },
-};
-
 export const STUDENT_WEEKS: readonly StudentWeek[] = WEEKS.map((week, idx) => {
   const out: StudentWeek = {
     key: week.key,
@@ -987,15 +968,13 @@ export const STUDENT_WEEKS: readonly StudentWeek[] = WEEKS.map((week, idx) => {
     flags: {},
     notes: {},
   };
-  const override = WEEK_FLAG_OVERRIDE[week.key];
 
   for (const m of METRICS) {
     const pt = WEEKLY[METRIC_OF[m]][idx];
     if (pt.band) out[m] = pt.band;
-    const q = override?.[m] ?? pt.q;
     // A flag is only meaningful where there is a band: an empty week must
     // not inherit an override and sprout a phantom marker.
-    if (pt.band && q && q !== "n") out.flags[m] = q;
+    if (pt.band && pt.q && pt.q !== "n") out.flags[m] = pt.q;
     if (pt.note) out.notes[m] = pt.note;
   }
   return out;
@@ -1187,9 +1166,3 @@ export const CASES: readonly CaseRow[] = [
     reference: true,
   },
 ];
-
-/** What each section can and cannot resolve, for B's second table. */
-export interface ResolutionRow {
-  readonly id: string;
-  readonly weekly: "no" | "yes";
-}

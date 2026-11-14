@@ -229,7 +229,23 @@ const CPE: Episode = {
    Act I's 287,700 counts ALL actions including road blockades, so it is an
    actions-total rather than a march count: flagged "c", hollow, and excluded
    from the index baseline.
-   Act II was initially published as 106,301 and revised up 8 days later.     */
+   Act II was initially published as 106,301 and revised up 8 days later. 
+   
+   Gilets jaunes organiser / union counter-counts. Published alongside the
+   ministry figure, never plotted: that episode is deliberately a ministry
+   series. Recorded so a band version (comparable with the other episodes,
+   which use authority–organiser ranges) can be switched on without re-research.
+   Source: FR-Wikipedia "Déroulement du mouvement des Gilets jaunes";
+   Ouest-France running count.
+
+     Act I   ~750,000  France Police union (as quoted for Act II)
+     Act VII  123,400  (5 Jan 2019)
+     Act VIII 159,200  (12 Jan 2019)
+     Act IX   147,400  (19 Jan 2019)
+     Act X    123,200  (26 Jan 2019)
+     Act XI   116,000  (2 Feb 2019)
+     Act XIII 104,100  (16 Feb 2019)
+   ─────────────────────────────────────────────────────────────────────── */
 const GJ_ACTS: readonly [number, string, number][] = [
   [0, "2018-11-17", 287_700],
   [1, "2018-11-24", 166_000],
@@ -266,23 +282,6 @@ const GJ_ACTS: readonly [number, string, number][] = [
   [32, "2019-06-29", 5_800],
   [43, "2019-09-07", 7_000],
 ];
-
-/** Organiser / union counter-counts for the Gilets jaunes acts, published
- *  alongside the ministry figure but NOT plotted (the episode is a ministry
- *  series). Exported so the data is auditable and so a band version can be
- *  switched on without re-research: a band version would make this episode
- *  comparable with the others, which use authority–organiser ranges.
- *  Source: FR-Wikipedia "Déroulement du mouvement des Gilets jaunes" and
- *  Ouest-France's running count of the mobilisation. */
-export const GJ_ORGANISER_COUNTS: Readonly<Record<number, number>> = {
-  1: 750_000, // France Police union, Act II
-  7: 123_400, // Act VIII,  5 Jan 2019
-  8: 159_200, // Act IX,  12 Jan 2019
-  9: 147_400, // Act X,   19 Jan 2019
-  10: 123_200, // Act XI,  26 Jan 2019
-  11: 116_000, // Act XII,  2 Feb 2019
-  13: 104_100, // Act XIV, 16 Feb 2019
-};
 
 /** Enforcement figures exist only for Acts I–IV; later acts were not published
  *  as a series.
@@ -1240,6 +1239,40 @@ export interface TrellisHosts {
   eventLegend: HTMLElement;
 }
 
+const panelPoints = (ds: ChartDataset): (Pt | null)[] =>
+  (ds as { data?: (Pt | null)[] }).data ?? [];
+
+/** Data table + keyboard navigation for one trellis panel. Shared by both
+ *  grids: the row index is the week number (`Pt.t`), which every panel's
+ *  series carries, so the same decorate works for episodes and for items. */
+function decoratePanel(chart: Chart, figure: HTMLElement, title: string): void {
+  const datasets = chart.data.datasets;
+
+  figure.querySelector(".data-table")?.remove();
+  figure.append(
+    fromChart(chart, {
+      caption: fill(a11y().tableCaption, { title }),
+      indexHeader: a11y().weekHeader,
+      indexOf: (ds, i) => String(panelPoints(ds)[i]?.t ?? "—"),
+    }),
+  );
+
+  keyboardChart(chart, {
+    hint: a11y().chartHint,
+    roledescription: a11y().chartRole,
+    readout: (i) => {
+      const week = panelPoints(datasets[0])[i]?.t ?? String(i + 1);
+      const rows = datasets.map((d) => {
+        const p = panelPoints(d)[i];
+        return p
+          ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}–${p.high}`}`
+          : `${d.label}: —`;
+      });
+      return `${week}. ${rows.join(". ")}`;
+    },
+  });
+}
+
 export function mountCrossEpisode(opts: TrellisHosts): void {
   /* destroyAll() has already destroyed the previous instances (canvas.ts owns
      them); clear the handles so emphasis cannot touch a dead chart. */
@@ -1292,36 +1325,7 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
       }),
     );
 
-    function decoratePanel(
-      chart: Chart,
-      figure: HTMLElement,
-      title: string,
-    ): void {
-      figure.append(
-        fromChart(chart, {
-          caption: fill(a11y().tableCaption, { title }),
-          indexHeader: a11y().weekHeader,
-          indexOf: (ds, i) =>
-            String((ds as { data: (Pt | null)[] }).data[i]?.t ?? "—"),
-        }),
-      );
-      keyboardChart(chart, {
-        hint: a11y().chartHint,
-        roledescription: a11y().chartRole,
-        readout: (i) =>
-          ((chart.data.datasets[0]?.data as (Pt | null)[] | undefined)?.[i]
-            ?.t ?? String(i + 1)) +
-          ". " +
-          chart.data.datasets
-            .map((d) => {
-              const p = (d.data as (Pt | null)[])[i];
-              return p
-                ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}–${p.high}`}`
-                : `${d.label}: —`;
-            })
-            .join(". "),
-      });
-    }
+    decoratePanel(chart, figure, text.strip);
 
     canvas.addEventListener("mouseleave", () => emphasiseItem(null));
     episodePanels.push(chart);
@@ -1362,36 +1366,7 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
       }),
     );
 
-    function decoratePanel(
-      chart: Chart,
-      figure: HTMLElement,
-      title: string,
-    ): void {
-      figure.append(
-        fromChart(chart, {
-          caption: fill(a11y().tableCaption, { title }),
-          indexHeader: a11y().weekHeader,
-          indexOf: (ds, i) =>
-            String((ds as { data: (Pt | null)[] }).data[i]?.t ?? "—"),
-        }),
-      );
-      keyboardChart(chart, {
-        hint: a11y().chartHint,
-        roledescription: a11y().chartRole,
-        readout: (i) =>
-          ((chart.data.datasets[0]?.data as (Pt | null)[] | undefined)?.[i]
-            ?.t ?? String(i + 1)) +
-          ". " +
-          chart.data.datasets
-            .map((d) => {
-              const p = (d.data as (Pt | null)[])[i];
-              return p
-                ? `${d.label}: ${p.low === p.high ? p.low : `${p.low}–${p.high}`}`
-                : `${d.label}: —`;
-            })
-            .join(". "),
-      });
-    }
+    decoratePanel(chart, figure, m.items[series.key].short);
 
     canvas.addEventListener("mouseleave", () => emphasiseEvent(null));
     canvas.addEventListener("mousemove", (ev) => {
@@ -1414,8 +1389,8 @@ export function mountCrossEpisode(opts: TrellisHosts): void {
   });
 
   /* ---- legends ---- */
-  const cHost = document.getElementById("trellis-episodes");
-  const dHost = document.getElementById("trellis-items");
+  const cHost = opts.episodeHost;
+  const dHost = opts.itemHost;
 
   legend(
     opts.itemLegend,

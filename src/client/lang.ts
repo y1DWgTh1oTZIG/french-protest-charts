@@ -3,13 +3,13 @@
    gone — main.ts imports from i18n.ts directly. */
 
 import {
+  getLocale,
   localeFromUrl,
   normalizeLocale,
   setLang,
   syncLangSwitch,
   type Lang,
 } from "./i18n.ts";
-import { getLocale } from "./main.ts";
 
 /**
  * Applies ?lang= before the first render. Does not persist — a shared link must
