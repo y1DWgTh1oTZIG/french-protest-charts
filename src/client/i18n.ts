@@ -661,10 +661,12 @@ const CHART_EN: ChartCopy = {
     "2026-09-30": {
       protesterInjured:
         "Cumulative since the first blockades — a stock, not a daily count.",
+      forcesInjuredStock:
+        "The running total of injured security forces: 83 on 30 September, the first injury figures of the movement.",
     },
     "2026-10-01": {
       forcesInjured:
-        "Brackets a Wednesday cumulative level with a Thursday daily flow: a derived band, not a published count.",
+        "The day's own figure: 'some 300' injured in intervention on Thursday (Nuñez), 305 in Actu Forces' Beauvau tally. The running total that day was 383–388.",
       protesterInjured:
         "Cumulative level reached at the 1 October cut-off (170 students + 65 education staff) — a stock, not a daily count. Where a week ends on this cell, the level is the week’s figure, never the sum of the week’s flows.",
       damagesCost:
@@ -687,6 +689,8 @@ const CHART_EN: ChartCopy = {
         "984 interpellations that day. The ministry's 6 059 since 28 September is the stock that makes the weekend figure checkable.",
       blockades:
         "Wider measure: 400 to 500 establishments closed (government spokeswoman), more than 400 to stay closed. The ministry's morning count was 413 establishments perturbed.",
+      forcesInjuredStock:
+        "Running total since the start of the movement: 715 injured police and gendarmes (Matignon).",
     },
     "2026-10-06": {
       damagesCost:
@@ -699,6 +703,8 @@ const CHART_EN: ChartCopy = {
         "Anchor of the 1–8 October Île-de-France damage increment. The same €6M is published for 6 October and is not counted twice.",
       blockades:
         "Wider measure: 224 establishments closed (ministry); more than 150 still perturbed (franceinfo). The 224 figure is the benchmark the ministry quotes back on 13 October.",
+      forcesInjuredStock:
+        "Running total: 761 injured (Nuñez). The published increments reconcile with it — 715 on 5 October plus 43 on 6 October is 758.",
     },
     "2026-10-09": {
       arrests:
@@ -723,7 +729,14 @@ const CHART_EN: ChartCopy = {
       blockades:
         "Wider measure: 214 establishments closed, 94.2% of lycées open — against 224 on 8 October. The ministry called the movement 'en recul'.",
     },
+    "2026-10-14": {
+      forcesInjuredStock: "Running total: 937 injured (Nuñez).",
+    },
     "2026-10-17": {
+      forcesInjured:
+        "Derived: the ministry's running total rose from 937 (14 October) to 1,144 (17 October), so this is the three-day increment, not a single day.",
+      forcesInjuredStock:
+        "The peak of the running total: 997 injured in the first bilan, 1,144 on consolidation, 7 of them serious. This is the total since the movement began, not that day's toll.",
       protesterInjured:
         "Derived band: the floor is the serious-injury register, the ceiling is extrapolated from street-medics treatment counts. No official count exists.",
       damagesCost:
@@ -740,9 +753,13 @@ const CHART_EN: ChartCopy = {
     "2026-10-24": {
       damagesCost:
         "CCI France's national tally for 17–24 October — a superset of the 17 October cell, never added to it.",
+      forcesInjuredStock:
+        "Derived: 1,144 (17 October) plus 267 injured that day gives 1,411.",
     },
     "2026-10-31": {
       damagesCost: "Local estimate — no national damage figure was published.",
+      forcesInjuredStock:
+        "Derived: 1,411 plus 116–159 injured that day gives 1,527–1,570. An internal CRS file obtained by Mediapart counts 1,233 CRS agents declared injured in October, of whom 1,167 were classified as light injuries — 94.6%.",
     },
     "2026-11-02": {
       blockades:
@@ -753,6 +770,9 @@ const CHART_EN: ChartCopy = {
         "Education ministry: 48 schools blocked. The USL counted nearly 500.",
     },
     "2026-11-05": {
+      forcesInjured: "The day's own figure: 53 at 18:00, 112 on consolidation.",
+      forcesInjuredStock:
+        "The ministry's final running total: 1,580 injured since the start of the movement. It reconciles exactly with the published daily increments — 1,144 (17 October) + 267 (24 October) + 116 (31 October) + 53 (5 November) = 1,580.",
       protesterInjured: 'Published as a floor: "at least this many".',
       blockades:
         "Matignon at 10.00: 81 establishments blocked (2.2%). The USL counted 1,000 schools 'à l'arrêt' — blocked or administratively closed, so an upper bound. The Education ministry counted 33% of establishments perturbed.",
@@ -815,6 +835,10 @@ const CHART_EN: ChartCopy = {
     forcesDaily: {
       label: "Injured — security forces",
       detached: "Injured forces (detached figure)",
+    },
+    forcesInjuredStock: {
+      label: "Injured forces (running total)",
+      detached: "Injured forces, running total (stock)",
     },
     protestersInjuredDaily: {
       label: "Injured — protesters",
@@ -982,10 +1006,12 @@ const CHART_FR: ChartCopy = {
     "2026-09-30": {
       protesterInjured:
         "Cumul depuis les premiers blocages — un stock, pas un décompte quotidien.",
+      forcesInjuredStock:
+        "Cumul des blessés parmi les forces : 83 le 30 septembre, premiers chiffres de blessures du mouvement.",
     },
     "2026-10-01": {
       forcesInjured:
-        "Encadre un niveau cumulé du mercredi et un flux quotidien du jeudi : une fourchette dérivée, pas un chiffre publié.",
+        "Le compte du jour : « quelque 300 » blessés en intervention le jeudi (Nuñez), 305 dans le décompte Beauvau d’Actu Forces. Le cumul de ce jour-là : 383–388.",
       protesterInjured:
         "Niveau cumulé atteint à l’arrêt du 1er octobre (170 élèves + 65 personnels de l’éducation) — un stock, pas un décompte quotidien. Lorsqu’une semaine se termine sur cette cellule, le niveau est le chiffre de la semaine, jamais la somme des flux de la semaine.",
       damagesCost:
@@ -1008,6 +1034,8 @@ const CHART_FR: ChartCopy = {
         "984 interpellations ce jour-là. Le stock ministériel de 6 059 depuis le 28 septembre est ce qui rend vérifiable le chiffre du week-end.",
       blockades:
         "Mesure plus large : 400 à 500 établissements fermés (porte-parole du gouvernement), plus de 400 doivent le rester. Le comptage de mi-matin du ministère est de 413 établissements perturbés.",
+      forcesInjuredStock:
+        "Cumul depuis le début du mouvement : 715 policiers et gendarmes blessés (Matignon).",
     },
     "2026-10-06": {
       damagesCost:
@@ -1020,6 +1048,8 @@ const CHART_FR: ChartCopy = {
         "Ancrage de l’incrément de dommages francilien du 1er au 8 octobre. Les mêmes 6 M€ sont publiés au 6 octobre et ne sont pas comptés deux fois.",
       blockades:
         "Mesure plus large : 224 établissements fermés (ministère) ; plus de 150 encore perturbés (franceinfo). Le chiffre de 224 est celui que le ministère rappellera le 13 octobre.",
+      forcesInjuredStock:
+        "Cumul : 761 blessés (Nuñez). Les incréments publiés se recoupent — 715 le 5 octobre plus 43 le 6 octobre font 758.",
     },
     "2026-10-10": {
       blockades: "« Plus de 40 lycées bloqués » (AFP/Reuters, 10 octobre).",
@@ -1038,11 +1068,18 @@ const CHART_FR: ChartCopy = {
       blockades:
         "Mesure plus large : 214 établissements fermés, 94,2 % de lycées ouverts — contre 224 le 8 octobre. Le ministère parle d’un mouvement « en recul ».",
     },
+    "2026-10-14": {
+      forcesInjuredStock: "Cumul : 937 blessés (Nuñez).",
+    },
     "2026-10-17": {
       protesterInjured:
         "Fourchette dérivée : le plancher est le registre des blessures graves, le plafond est extrapolé à partir des soins dispensés par les street-medics. Aucun décompte officiel n’existe.",
       damagesCost:
         "Estimation modélisée de l’IFRAP pour le week-end des 17–18 octobre ; hors chiffre d’affaires perdu et coûts de maintien de l’ordre. L’estimation parisienne publiée le 18 octobre en est un sous-ensemble, exclue de la somme hebdomadaire.",
+      forcesInjured:
+        "Dérivé : le cumul ministériel passe de 937 (14 octobre) à 1 144 (17 octobre) ; c’est donc l’incrément de trois jours, pas celui d’une journée.",
+      forcesInjuredStock:
+        "Pic du cumul : 997 blessés au premier bilan, 1 144 après consolidation, dont 7 graves. C’est le total depuis le début du mouvement, pas le compte du jour.",
     },
     "2026-10-18": {
       arrests:
@@ -1060,6 +1097,8 @@ const CHART_FR: ChartCopy = {
     "2026-10-31": {
       damagesCost:
         "Estimation locale — aucun chiffre national de dommages n’a été publié.",
+      forcesInjuredStock:
+        "Dérivé : 1 411 (17 octobre) plus 116–159 blessés le jour même font 1 527–1 570. Un fichier interne des CRS obtenu par Mediapart dénombre 1 233 agents déclarés blessés en octobre, dont 1 167 classés « légèrement » blessés — 94,6 %.",
     },
     "2026-11-02": {
       blockades:
@@ -1073,6 +1112,9 @@ const CHART_FR: ChartCopy = {
       protesterInjured: "Publié comme plancher : « au moins ». ",
       blockades:
         "Matignon à 10 h : 81 établissements bloqués (2,2 %). L’USL compte 1 000 lycées « à l’arrêt » — bloqués ou fermés administrativement, donc une borne haute. Le ministère de l’Éducation compte 33 % d’établissements perturbés.",
+      forcesInjured: "Le compte du jour : 53 à 18 h, 112 après consolidation.",
+      forcesInjuredStock:
+        "Cumul final du ministère : 1 580 blessés depuis le début du mouvement. Il se recoupe exactement avec les incréments publiés — 1 144 (17 octobre) + 267 (24 octobre) + 116 (31 octobre) + 53 (5 novembre) = 1 580.",
     },
     "2026-11-09": {
       arrests:
@@ -1137,6 +1179,10 @@ const CHART_FR: ChartCopy = {
     forcesDaily: {
       label: "Blessés — forces de l’ordre",
       detached: "Forces blessées (chiffre écarté)",
+    },
+    forcesInjuredStock: {
+      label: "Forces blessées (cumul)",
+      detached: "Forces blessées, cumul (stock)",
     },
     protestersInjuredDaily: {
       label: "Blessés — manifestants",
@@ -1515,6 +1561,51 @@ export interface KpiCopy {
   readonly none: string;
 }
 
+export interface CasualtyCopy {
+  readonly headlineTitle: string;
+  readonly weeklyTitle: string;
+
+  readonly colScope: string;
+  readonly colTotal: string;
+  readonly colSerious: string;
+  readonly colLight: string;
+  readonly colLightShare: string;
+  readonly colOther: string;
+  readonly colSide: string;
+  readonly colCircumstance: string;
+  readonly colCount: string;
+  readonly colCases: string;
+  readonly colQuestion: string;
+  readonly colWindow: string;
+  readonly colWeekly: string;
+
+  readonly scope: Readonly<Record<string, string>>;
+  readonly side: Readonly<Record<string, string>>;
+  readonly kind: Readonly<Record<string, string>>;
+  readonly why: Readonly<Record<string, string>>;
+  readonly cases: Readonly<Record<string, string>>;
+
+  readonly casesCount: string;
+  readonly noCases: string;
+
+  readonly capLevels: string;
+  readonly capWeeks: string;
+  readonly capCases: string;
+  readonly capResolution: string;
+  readonly noteLevels: string;
+  readonly noteWeeks: string;
+
+  readonly headLight: string;
+  readonly headLightNote: string;
+  readonly headMissingNote: string;
+
+  readonly resolution: readonly {
+    readonly label: string;
+    readonly window: string;
+    readonly weekly: string;
+  }[];
+}
+
 export interface ItemCopy {
   readonly label: string;
   readonly short: string;
@@ -1545,6 +1636,7 @@ export interface Catalogue {
   readonly tooltip: TooltipCopy;
   readonly disclaimer: DisclaimerCopy;
   readonly kpi: KpiCopy;
+  readonly casualties: CasualtyCopy;
   /** Dictionary lookups; `t('key')` reads these. */
   readonly [key: string]: unknown;
 }
@@ -1592,6 +1684,110 @@ const CATALOGUE: Record<Lang, Catalogue> = {
         "As in section C, but over the weeks plotted in section D only, which stop at the last week with an enforcement figure.",
       eurM: "€{v}M",
       none: "no figure published",
+    },
+    casualties: {
+      headlineTitle: "How the injuries divide",
+      weeklyTitle: "What a week can establish",
+
+      colScope: "Population",
+      colTotal: "Declared total",
+      colSerious: "Serious",
+      colLight: "Light",
+      colLightShare: "Light share",
+      colOther: "Not classed light",
+      colSide: "Side",
+      colCircumstance: "Circumstance",
+      colCount: "Count",
+      colCases: "Documented cases",
+      colQuestion: "Question",
+      colWindow: "Smallest published window",
+      colWeekly: "Weekly figure",
+
+      scope: {
+        crsOctober: "CRS, October 2026",
+        forcesPeak: "All forces, running total at its peak",
+        protesters: "Protesters, since 30 September",
+        week12oct: "Week of 12 October",
+        week19oct: "Week of 19 October",
+        week26oct: "Week of 26 October",
+        week2nov: "Week of 2 November",
+      },
+      side: {
+        forces: "Police and gendarmerie",
+        protesters: "Protesters",
+      },
+      kind: {
+        accidental: "Accidental or self-inflicted",
+        conflictual: "Inflicted in the confrontation",
+      },
+      why: {
+        notPublished: "not published",
+        noDenominator: "no published total",
+        binaryFile: "file is light / not light only",
+        noTally: "no count, cases only",
+        noneDocumented: "none documented",
+      },
+      cases: {
+        givors:
+          "Givors, 10 October: two officers on patrol outside a school burned on the hand and thigh when a grenade fired accidentally inside their own vehicle, setting it alight.",
+        crsWrist:
+          "A CRS officer bruised his left wrist closing his own vehicle door.",
+        crsAnkle:
+          "Another CRS officer sprained his ankle falling out of a van.",
+        helmet:
+          "Paris, 31 October: a CRS officer struck on the helmet, found uninjured — a little paint removed from the shell.",
+        groin2023:
+          "Sainte-Soline, March 2023, for comparison: of the 29 gendarmes counted, one had a groin haematoma, one respiratory trauma, the rest were examined for acoustic trauma.",
+        mael: "Tours, 30 September: a school student blinded in one eye by a rubber bullet, having thrown nothing.",
+        alaric:
+          "Paris, 17 October: a 19-year-old student burned on the torso and arm by a tear-gas grenade fired flat at him; second-degree burns, unhealed ten days later.",
+        eyes: "Several other minors lost an eye in the same circumstances.",
+        sainteSoline:
+          "The official claim was 29 gendarmes injured, two in absolute emergency. The two were later described as a groin haematoma and respiratory trauma.",
+      },
+
+      casesCount: "{n} documented cases",
+      noCases: "none documented",
+
+      capLevels:
+        "Severity, by the finest window each source publishes. Rows are different populations and different windows — they are never summed.",
+      capWeeks:
+        "Severity, by week. The increment is the difference between the running total at the start and the end of the week.",
+      capCases:
+        "Circumstance. No source counts this, so the column gives the number of documented cases, not a share.",
+      capResolution:
+        "The smallest window at which each breakdown exists, and whether a weekly figure can be derived from it.",
+      noteLevels:
+        "The 1,167 of 1,233 is the only published light share: 94.6%, the figure the file itself states. It covers CRS officers in October, so it cannot be extended to all forces or to the whole movement. The 7 serious injuries belong to the 1,144 consolidation of 17 October. No total for protester injuries has ever been published, so no share can be computed on that side — the serious cases are a register, not a rate. The four documented accidental injuries are four named people, not four per cent of anything.",
+      noteWeeks:
+        "The ministry publishes a running total, not a weekly severity breakdown. Splitting the total into weeks is arithmetic, and it reconciles exactly to 1,580, but the only light/not-light split that exists is the October CRS file, which spans four of these weeks and cannot be attributed to any one of them. That is why section A carries the breakdown and section B carries the increments.",
+      headLight: "{light} of {total} declared injuries were classed light",
+      headLightNote: "CRS officers, October 2026",
+      headMissingNote:
+        "No published total for protester injuries, so no share exists",
+
+      resolution: [
+        {
+          label: "Light / serious split",
+          window: "One month (October 2026), CRS only",
+          weekly: "no",
+        },
+        {
+          label: "Accidental / conflictual split",
+          window: "None — named cases only",
+          weekly: "no",
+        },
+        {
+          label: "Running total of injured forces",
+          window: "One day",
+          weekly: "yes",
+        },
+        {
+          label: "Daily increments",
+          window: "One day",
+          weekly: "yes",
+        },
+      ],
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1666,6 +1862,109 @@ const CATALOGUE: Record<Lang, Catalogue> = {
         "Comme en section C, mais sur les seules semaines tracées en section D, qui s’arrêtent à la dernière semaine de chiffres de maintien de l’ordre.",
       eurM: "{v} M€",
       none: "aucun chiffre publié",
+    },
+    casualties: {
+      headlineTitle: "Comment se répartissent les blessures",
+      weeklyTitle: "Ce qu’une semaine peut établir",
+
+      colScope: "Population",
+      colTotal: "Total déclaré",
+      colSerious: "Graves",
+      colLight: "Légères",
+      colLightShare: "Part de légères",
+      colOther: "Non classées légères",
+      colSide: "Camp",
+      colCircumstance: "Circonstance",
+      colCount: "Décompte",
+      colCases: "Cas documentés",
+      colQuestion: "Question",
+      colWindow: "Plus petite fenêtre publiée",
+      colWeekly: "Chiffre hebdomadaire",
+
+      scope: {
+        crsOctober: "CRS, octobre 2026",
+        forcesPeak: "Toutes forces, cumul à son pic",
+        protesters: "Manifestant·es, depuis le 30 septembre",
+        week12oct: "Semaine du 12 octobre",
+        week19oct: "Semaine du 19 octobre",
+        week26oct: "Semaine du 26 octobre",
+        week2nov: "Semaine du 2 novembre",
+      },
+      side: {
+        forces: "Police et gendarmerie",
+        protesters: "Manifestant·es",
+      },
+      kind: {
+        accidental: "Accidentelle ou auto-infligée",
+        conflictual: "Imputée à l’affrontement",
+      },
+      why: {
+        notPublished: "non publié",
+        noDenominator: "aucun total publié",
+        binaryFile: "fichier binaire : léger / non léger",
+        noTally: "aucun décompte, des cas seulement",
+        noneDocumented: "aucun cas documenté",
+      },
+      cases: {
+        givors:
+          "Givors, 10 octobre : deux policiers en faction devant un lycée se brûlent à la main et à la cuisse quand une grenade part accidentellement dans leur propre véhicule, qui prend feu.",
+        crsWrist:
+          "Un CRS s’est contusionné le poignet gauche en fermant la portière de son véhicule.",
+        crsAnkle: "Un autre CRS s’est tordu la cheville en chutant du fourgon.",
+        helmet:
+          "Paris, 31 octobre : un CRS touché au casque, indemne — un peu de peinture ôtée de la coque.",
+        groin2023:
+          "Sainte-Soline, mars 2023, pour comparaison : sur 29 gendarmes recensés, un hématome à l’aine, un traumatisme respiratoire, les autres examinés pour traumatismes sonores.",
+        mael: "Tours, 30 septembre : un lycéen éborgné par une balle en caoutchouc, alors qu’il ne lançait rien.",
+        alaric:
+          "Paris, 17 octobre : un étudiant de 19 ans brûlé au torse et au bras par une grenade lacrymogène tirée en tir tendu ; brûlures au deuxième degré, non cicatrisées dix jours plus tard.",
+        eyes: "Plusieurs autres mineurs ont perdu un œil dans les mêmes circonstances.",
+        sainteSoline:
+          "Le bilan officiel était de 29 gendarmes blessés, dont deux en urgence absolue. Les deux ont ensuite été décrits comme un hématome à l’aine et un traumatisme respiratoire.",
+      },
+
+      casesCount: "{n} cas documentés",
+      noCases: "aucun cas documenté",
+
+      capLevels:
+        "Gravité, à la plus fine fenêtre publiée par chaque source. Les lignes sont des populations et des fenêtres différentes — elles ne s’additionnent jamais.",
+      capWeeks:
+        "Gravité, par semaine. L’incrément est la différence entre le cumul en début et en fin de semaine.",
+      capCases:
+        "Circonstance. Aucune source ne la dénombre : la colonne donne le nombre de cas documentés, non une part.",
+      capResolution:
+        "La plus petite fenêtre à laquelle chaque ventilation existe, et si un chiffre hebdomadaire peut en être tiré.",
+      noteLevels:
+        "Les 1 167 sur 1 233 constituent la seule part de blessés légers publiée : 94,6 %, le chiffre que le fichier énonce lui-même. Il porte sur les CRS en octobre : il ne s’étend ni à toutes les forces ni à tout le mouvement. Les 7 blessés graves relèvent de la consolidation de 1 144 du 17 octobre. Aucun total des blessures chez les manifestant·es n’a jamais été publié : aucune part ne peut donc être calculée de ce côté — les cas graves forment un registre, non un taux. Les quatre blessures accidentelles documentées sont quatre personnes nommées, non quatre pour cent de quoi que ce soit.",
+      noteWeeks:
+        "Le ministère publie un cumul, non une ventilation hebdomadaire de la gravité. Découper ce cumul en semaines est de l’arithmétique, et le total se recoupe exactement à 1 580, mais la seule ventilation léger / non léger existante est le fichier des CRS d’octobre, qui couvre quatre de ces semaines sans pouvoir être attribué à l’une d’elles. C’est pourquoi la section A porte la ventilation et la section B les incréments.",
+      headLight: "{light} blessures déclarées sur {total} classées légères",
+      headLightNote: "Agents des CRS, octobre 2026",
+      headMissingNote:
+        "Aucun total publié pour les blessures des manifestant·es : aucune part n’existe",
+
+      resolution: [
+        {
+          label: "Ventilation léger / grave",
+          window: "Un mois (octobre 2026), CRS seulement",
+          weekly: "non",
+        },
+        {
+          label: "Ventilation accidentelle / conflictuelle",
+          window: "Aucune — des cas nommés seulement",
+          weekly: "non",
+        },
+        {
+          label: "Cumul des forces blessées",
+          window: "Un jour",
+          weekly: "oui",
+        },
+        {
+          label: "Incréments quotidiens",
+          window: "Un jour",
+          weekly: "oui",
+        },
+      ],
     },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },

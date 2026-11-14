@@ -32,7 +32,9 @@
    Arithmetic cross-checks:
      · arrest flows sum to 6,547 through 6 Oct = ministry stock 6,059 (5 Oct)
        + 488 (6 Oct) ✓;
-     · forces injured, movement total = 1,664–2,130;
+     · forces injured: the ministry's running total is 1,580 (5 Nov); the
+       published daily increments sum to 1,091–1,198, the difference being
+       injuries on days with no published daily figure;
      · policing cost = DEPLOYMENT × RATE = €49.2M–€484.9M (cumulative high
        ≈ €485M) — unchanged.
 
@@ -64,7 +66,7 @@
        + 488 (6 Oct) ✓;
      · weekly arrests: 21 · 5,075 · 1,472 · 2,397–2,628 · 1,314–1,435 ·
        565–779 · 798–1,002 · 17 ✓;
-     · weekly forces injured: 108 · 1,037–1,184 · 267 · 116–159 · 53–112 ✓;
+     · weekly forces injured: 300–305 · 108 · 247 · 267 · 116–159 · 53–112 ✓;
      · forces injured, movement total = 1,664–2,130;
      · policing cost = DEPLOYMENT × RATE = €54.3M–€629.9M.
 */
@@ -335,7 +337,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
        of the larger Île-de-France and IFRAP totals, hence "c". */
     "2026-10-01": {
       arrests: { low: 1_949, high: 1_949 },
-      forcesInjured: { low: 83, high: 300, q: "e" },
+      forcesInjured: { low: 300, high: 305, q: "e" },
       protesterInjured: { low: 235, high: 235, q: "c" },
       damagesCost: { low: 1, high: 1, q: "c" },
       blockades: { low: 222, high: 640 },
@@ -471,7 +473,7 @@ export const FACTS: Readonly<Record<string, Partial<Record<MetricKey, Obs>>>> =
     "2026-10-17": {
       turnout: { low: 550_000, high: 800_000 },
       arrests: { low: 2_397, high: 2_628 },
-      forcesInjured: { low: 997, high: 1_144 },
+      forcesInjured: { low: 207, high: 207, q: "e" },
       protesterInjured: { low: 55, high: 1000, q: "e" },
       damagesCost: { low: 244, high: 866, q: "e" },
     },
@@ -592,6 +594,39 @@ export const DEPLOYMENT: Readonly<Record<string, Obs>> = {
   "2026-11-07": { low: 70_000, high: 70_000 },
 };
 
+/* ── Forces injured: the ministry's running total ───────────────────────────
+   The daily "blessés" figures are not one statistic. Some are increments for
+   the day; others are the minister's running total since the movement began.
+   These are the published levels, and they are what identifies 17 October:
+   997, then 1,144 on consolidation, is not that day's toll.
+
+   The reconciliation is exact, and it is the proof that the later daily
+   figures are increments:
+     1,144 (17 Oct) + 267 (24 Oct) + 116 (31 Oct) + 53 (5 Nov) = 1,580 (5 Nov)
+   and at the earlier point:
+     715 (5 Oct) + 43 (6 Oct) = 758 ≈ 761 (8 Oct).
+
+   Sources: Le Figaro 5 Oct (715, since the start of the movement); Médiapart
+   13 Nov 2026, citing Nuñez (761 on 8 Oct, 937 on 14 Oct, 1,580 on 5 Nov);
+   BFMTV 18 Oct (997 → 1,144 for 17 Oct). */
+
+export const FORCES_STOCK: Readonly<Record<string, Obs>> = {
+  "2026-09-30": { low: 83, high: 83 },
+  "2026-10-05": { low: 715, high: 715 },
+  "2026-10-08": { low: 761, high: 761 },
+  "2026-10-14": { low: 937, high: 937 },
+  "2026-10-17": { low: 997, high: 1_144 },
+  "2026-11-05": { low: 1_580, high: 1_580 },
+};
+
+/* Levels derived from the published total plus the published increments that
+   follow it. Flagged "e" wherever they are plotted. */
+export const FORCES_STOCK_DERIVED: Readonly<Record<string, Obs>> = {
+  "2026-10-01": { low: 383, high: 388 }, // 83 (30 Sep) + 300–305 (1 Oct)
+  "2026-10-24": { low: 1_411, high: 1_411 }, // 1,144 (17 Oct) + 267
+  "2026-10-31": { low: 1_527, high: 1_570 }, // + 116–159
+};
+
 /** € per officer per day: CRS-company marginal opex → Sainte-Soline all-in.
  *  Low  = marginal cost of one CRS company-day (overtime, travel, fuel,
  *         accommodation, munitions). Salaries are excluded because officers
@@ -666,6 +701,39 @@ function projectPolicingCumulative(): Series {
       note: { k: "cumulative", days, added: Boolean(dep) } as NoteRef,
       detach: false, // always a line; its band is shaded, not barred
     };
+  });
+}
+
+/* The running total, as published and as derived.
+ *
+ * `detach: false` is deliberate and is the one place this file overrides the
+ * convention: "c" here means "this is a level", not "this must not be joined
+ * to the national line". The levels ARE the national line — a running total
+ * that rises. The tooltip suffix still reads "· stock", because the flag is
+ * what the suffix looks at. */
+function projectForcesStock(): Series {
+  return DATES.map((date) => {
+    const pub = FORCES_STOCK[date];
+    if (pub) {
+      return {
+        v: round2((pub.low + pub.high) / 2),
+        band: [pub.low, pub.high] as [number, number],
+        q: "c",
+        note: { k: "obs", date, metric: "forcesInjuredStock" } as NoteRef,
+        detach: false,
+      };
+    }
+    const der = FORCES_STOCK_DERIVED[date];
+    if (der) {
+      return {
+        v: round2((der.low + der.high) / 2),
+        band: [der.low, der.high] as [number, number],
+        q: "e",
+        note: { k: "obs", date, metric: "forcesInjuredStock" } as NoteRef,
+        detach: false,
+      };
+    }
+    return NIL;
   });
 }
 
@@ -842,6 +910,7 @@ export const DAILY: Readonly<Record<string, Series>> = {
   turnout: projectDaily("turnout"),
   arrests: projectDaily("arrests"),
   forcesInjured: projectDaily("forcesInjured"),
+  forcesInjuredStock: projectForcesStock(),
   protesterInjured: projectDaily("protesterInjured"),
   damagesCost: projectDaily("damagesCost"),
   blockades: projectDaily("blockades"),
@@ -908,3 +977,196 @@ export const STUDENT_WEEKS: readonly StudentWeek[] = WEEKS.map((week, idx) => {
   }
   return out;
 });
+
+/* ── Casualty breakdown (sections A and B) ─────────────────────────────────
+ *
+ * The injured series in DAILY/WEEKLY hold one figure per day or week. These
+ * breakdowns do not, and they are not interchangeable:
+ *
+ *   · the CRS file is an administrative count with two categories, light and
+ *     not-light, for one month (October) and one corps;
+ *   · the 17 October tally is a police count of all forces since 30 September,
+ *     with a serious sub-count and no light category;
+ *   · the protester figure is a case register with no total at all.
+ *
+ * Different populations, different windows, different categories. The table
+ * keeps each on its own row and never sums across rows.
+ *
+ * Sources: Médiapart 13 Nov 2026 for the CRS file (1,233 declared, 1,167
+ * light, 94.6%); BFMTV 18 Oct for the 1,144 consolidation and its 7 serious;
+ * Le Progrès 10 Oct via Contre-Attaque for Givors; Médiapart 3 Nov for the
+ * protester cases. The Sainte-Soline row is 2023 and is marked as a precedent,
+ * not as 2026 data. */
+
+export type Why =
+  | "notPublished"
+  | "noDenominator"
+  | "binaryFile"
+  | "noTally"
+  | "noneDocumented";
+
+/** A cell is a figure, a range, a count of documented cases, or an absence
+ *  with a stated reason. `d` marks a figure obtained by subtraction. */
+export type Cell =
+  | { readonly s: "n"; readonly v: number; readonly d?: true }
+  | {
+      readonly s: "r";
+      readonly lo: number;
+      readonly hi: number;
+      readonly d?: true;
+    }
+  | { readonly s: "c"; readonly n: number }
+  | { readonly s: "x"; readonly why: Why };
+
+export interface SevRow {
+  /** Key in casualties.scope. */
+  readonly id: string;
+  readonly total: Cell;
+  readonly serious: Cell;
+  readonly light: Cell;
+  /** Not light, not broken down further — the file's second category. */
+  readonly other: Cell;
+}
+
+/* ── A: the levels, at the finest window each source publishes ── */
+
+export const SEVERITY_LEVELS: readonly SevRow[] = [
+  {
+    /* 1,167 / 1,233 = 94.65% → the 94.6% the file itself states. */
+    id: "crsOctober",
+    total: { s: "n", v: 1_233 },
+    serious: { s: "x", why: "binaryFile" },
+    light: { s: "n", v: 1_167 },
+    other: { s: "n", v: 66, d: true },
+  },
+  {
+    /* All forces, running total at the peak, consolidated. */
+    id: "forcesPeak",
+    total: { s: "n", v: 1_144 },
+    serious: { s: "n", v: 7 },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" },
+  },
+  {
+    /* No total has ever been published, so no share can exist. */
+    id: "protesters",
+    total: { s: "x", why: "noDenominator" },
+    serious: { s: "x", why: "noTally" },
+    light: { s: "x", why: "noDenominator" },
+    other: { s: "x", why: "noDenominator" },
+  },
+];
+
+/* ── B: the same question asked of a week ──
+ *
+ * Increments are derived from FORCES_STOCK: the difference between the
+ * running total at the end of the week and at its start. The reconciliation
+ * is exact against the ministry's 1,580:
+ *
+ *   83 + 854 (to 14 Oct) + 207 + 267 + 116 + 53 = 1,580
+ *
+ * The 116 is not a range: 1,527 + 53 = 1,580 rules out the 159 implied by
+ * the day's own figure. The 7 serious are attached to the 1,144 level, which
+ * falls in the week of 12 October, not to that week's 207 increment. */
+
+export const SEVERITY_WEEKS: readonly SevRow[] = [
+  {
+    id: "week12oct",
+    total: { s: "n", v: 207, d: true },
+    serious: { s: "n", v: 7 },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" },
+  },
+  {
+    id: "week19oct",
+    total: { s: "n", v: 267, d: true },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" },
+  },
+  {
+    id: "week26oct",
+    total: { s: "n", v: 116, d: true },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" },
+  },
+  {
+    id: "week2nov",
+    total: { s: "n", v: 53 },
+    serious: { s: "x", why: "notPublished" },
+    light: { s: "x", why: "notPublished" },
+    other: { s: "x", why: "notPublished" },
+  },
+  {
+    /* The month is the smallest window at which a split exists at all. */
+    id: "crsOctober",
+    total: { s: "n", v: 1_233 },
+    serious: { s: "x", why: "binaryFile" },
+    light: { s: "n", v: 1_167 },
+    other: { s: "n", v: 66, d: true },
+  },
+];
+
+/* ── Circumstances ──
+ *
+ * No source publishes a causation breakdown. What exists is a set of case
+ * reports, each a named incident. `n` in a "c" cell counts documented cases,
+ * never a proportion of a total: four documented cases do not mean four per
+ * cent, and they do not mean four in total. */
+
+export interface CaseRow {
+  readonly id: string;
+  readonly side: "forces" | "protesters";
+  readonly kind: "accidental" | "conflictual";
+  readonly count: Cell;
+  /** Keys in casualties.cases, in the order they should read. */
+  readonly cases: readonly string[];
+  /** Era marker: this row is not 2026 data. */
+  readonly reference?: true;
+}
+
+export const CASES: readonly CaseRow[] = [
+  {
+    id: "forcesAccidental",
+    side: "forces",
+    kind: "accidental",
+    count: { s: "c", n: 4 },
+    cases: ["givors", "crsWrist", "crsAnkle"],
+  },
+  {
+    id: "forcesConflictual",
+    side: "forces",
+    kind: "conflictual",
+    count: { s: "x", why: "noTally" },
+    cases: ["helmet", "groin2023"],
+  },
+  {
+    id: "protesterConflictual",
+    side: "protesters",
+    kind: "conflictual",
+    count: { s: "x", why: "noTally" },
+    cases: ["mael", "alaric", "eyes"],
+  },
+  {
+    id: "protesterAccidental",
+    side: "protesters",
+    kind: "accidental",
+    count: { s: "x", why: "noneDocumented" },
+    cases: [],
+  },
+  {
+    id: "sainteSoline",
+    side: "forces",
+    kind: "accidental",
+    count: { s: "c", n: 29 },
+    cases: ["sainteSoline"],
+    reference: true,
+  },
+];
+
+/** What each section can and cannot resolve, for B's second table. */
+export interface ResolutionRow {
+  readonly id: string;
+  readonly weekly: "no" | "yes";
+}

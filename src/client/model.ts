@@ -18,6 +18,7 @@ export type MetricKey =
   | "turnout"
   | "arrests"
   | "forcesInjured"
+  | "forcesInjuredStock"
   | "protesterInjured"
   | "damagesCost"
   | "blockades";

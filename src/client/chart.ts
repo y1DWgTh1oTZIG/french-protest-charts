@@ -134,6 +134,13 @@ const DEF = {
     width: 1.5,
     style: "rectRot",
   },
+  forcesInjuredStock: {
+    data: DAILY.forcesInjuredStock,
+    color: "#065f46",
+    unit: "count",
+    radius: 3,
+    width: 2,
+  },
   protestersInjuredDaily: {
     data: DAILY.protesterInjured,
     color: "#b45309",
@@ -267,7 +274,12 @@ export const CHARTS: readonly ChartSpec[] = [
     id: "chart-enforcement",
     copy: "enforcementDaily",
     weekly: false,
-    series: ["arrestsDaily", "forcesDaily", "protestersInjuredDaily"],
+    series: [
+      "arrestsDaily",
+      "forcesDaily",
+      "forcesInjuredStock",
+      "protestersInjuredDaily",
+    ],
   },
   {
     id: "chart-costs",

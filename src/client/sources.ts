@@ -1230,6 +1230,28 @@ export const SOURCES: readonly Source[] = [
     ),
     "2026-11-09",
   ),
+  src(
+    "mediapart-crs-blesses",
+    "press",
+    "Mediapart — « CRS blessés : le fichier interne qui dégonfle le bilan du ministre »",
+    "https://www.mediapart.fr/journal/france/131126/crs-blesses-le-fichier-interne-qui-degonfle-le-bilan-du-ministre",
+    both(
+      "the minister's running total of injured security personnel, which the ministry's daily figures do not contain: 761 on 8 October, 937 on 14 October and 1,580 on 5 November — the last being the movement's total, and the key that identifies the 17 October figure (997, then 1,144 on consolidation) as a cumulative level rather than a daily count. Also the internal CRS file: 1,233 agents declared injured in October, 1,167 of them classified as light injuries (94.6%).",
+      "le cumul des blessés parmi les forces selon le ministre, que les chiffres quotidiens du ministère ne contiennent pas : 761 le 8 octobre, 937 le 14 octobre et 1 580 le 5 novembre — le dernier étant le total du mouvement, et la clef qui montre que le chiffre du 17 octobre (997, puis 1 144 après consolidation) est un cumul et non un compte du jour. Aussi le fichier interne des CRS : 1 233 agents déclarés blessés en octobre, dont 1 167 classés « légers » (94,6 %).",
+    ),
+    "2026-11-13",
+  ),
+  src(
+    "contre-attaque-blessures",
+    "press",
+    "Contre-Attaque — « Leurs blessures et les nôtres : l’intox qui sert à justifier des crimes d’État »",
+    "https://contre-attaque.net/2026/11/13/leurs-blessures-et-les-notres-lintox-qui-sert-a-justifier-des-crimes-detat/",
+    both(
+      "the polemical reading of the same two figures — the ministry's 1,580 and the CRS file's 94.6% of light injuries — with the case files it sets against the total: injuries described as accidental (two officers burnt in a patrol car at Givors by their own grenade, 10 October) or minor (a CRS with a bruised wrist from closing his vehicle door). Read as a claim about the composition of the total, not as a source for the total itself.",
+      "la lecture polémique des deux mêmes chiffres — les 1 580 du ministère et les 94,6 % de « petits bobos » du fichier des CRS — avec les cas qu’elle oppose au total : blessures accidentelles (deux policiers brûlés dans leur voiture de patrouille à Givors par leur propre grenade, le 10 octobre) ou bénignes (un CRS avec le poignet contusionné en fermant la portière de son véhicule). À lire comme une thèse sur la composition du total, non comme une source du total.",
+    ),
+    "2026-11-13",
+  ),
 
   /* ------------------------------------------ 2026 — damage and cost */
   src(
