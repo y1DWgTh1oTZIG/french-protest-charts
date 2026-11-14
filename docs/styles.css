@@ -1412,3 +1412,104 @@ details.data-table th[scope="row"] {
   font-weight: 600;
   color: var(--ink-1);
 }
+
+/* ---- context strip ---- */
+.ctx-block {
+  margin-bottom: clamp(14px, 2vw, 22px);
+}
+
+.ctx-figure {
+  margin: 0;
+}
+
+.ctx-caption {
+  font-size: var(--fs-2xs);
+  color: var(--ink-4);
+  margin-bottom: 8px;
+}
+
+.ctx-strip {
+  display: grid;
+  gap: 5px;
+}
+
+.ctx-row {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.ctx-name {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--ink-3);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ctx-track {
+  position: relative;
+  height: 18px;
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+
+.ctx-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  min-width: 2px;
+}
+
+/* a several-week measure must read as one bar, not as a stack of slivers */
+.ctx-bar + .ctx-bar {
+  margin-left: 1px;
+}
+
+.ctx-empty {
+  position: absolute;
+  inset-inline-start: 6px;
+  top: 2px;
+  font-size: var(--fs-2xs);
+  color: var(--ink-4);
+}
+
+.ctx-axis .ctx-track {
+  background: none;
+  height: 14px;
+}
+
+.ctx-tick {
+  position: absolute;
+  top: 0;
+  font-size: 10px;
+  color: var(--ink-4);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ctx-axis .ctx-tick:first-child {
+  transform: none;
+}
+
+.ctx-details {
+  margin-top: 8px;
+}
+
+.ctx-note {
+  max-width: 110ch;
+  margin: 0 0 6px;
+  font-size: var(--fs-2xs);
+  line-height: 1.5;
+  color: var(--ink-4);
+}
+
+@media (max-width: 40rem) {
+  .ctx-row {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+}

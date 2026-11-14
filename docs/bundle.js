@@ -1545,7 +1545,7 @@ for (const id of ["a", "b", "c", "d", "e"]) {
 STATIC["doc.title"] = { en: EN_META.meta.title, fr: FR_META.meta.title };
 var STATIC_KEYS = new Set(Object.keys(STATIC));
 function applyStaticCopy(root2 = document) {
-  const L2 = current;
+  const L3 = current;
   for (const node of root2.querySelectorAll("[data-i18n]")) {
     const key = node.dataset.i18n;
     if (!key) continue;
@@ -1557,7 +1557,7 @@ function applyStaticCopy(root2 = document) {
       }
       continue;
     }
-    const text = entry[L2] ?? entry.en;
+    const text = entry[L3] ?? entry.en;
     const attr = node.dataset.i18nAttr;
     if (!attr || attr === "text") node.textContent = text;
     else node.setAttribute(attr, text);
@@ -13523,9 +13523,8 @@ var WEEKS = (() => {
     return { key, end, dates, touchesEdge: key < START || end > END };
   });
 })();
-var HOLIDAY_START = "2026-10-17";
+var HOLIDAY_START = "2026-10-18";
 var HOLIDAY_END = "2026-11-01";
-var HOLIDAY_DASH = [1.5, 3];
 var weekTouchesHoliday = (weekStart) => weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
 var weekInHoliday = (weekStart) => weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
 function dailyHolidaySegment(a, b) {
@@ -14620,6 +14619,264 @@ function pctOfValue(v, pop) {
   return v / d * 100;
 }
 
+// src/client/context.ts
+var L = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
+var LAYERS = [
+  {
+    kind: "school",
+    label: { en: "School calendar", fr: "Calendrier scolaire" }
+  },
+  {
+    kind: "national",
+    label: { en: "National", fr: "National" },
+    note: {
+      en: "A ban applying to the whole territory.",
+      fr: "Une interdiction valant pour tout le territoire."
+    }
+  },
+  {
+    kind: "prefectoral",
+    label: { en: "Prefectoral", fr: "Pr\xE9fectoral" },
+    note: {
+      en: "An arr\xEAt\xE9 by a prefect or the pr\xE9fet de police: one department or one city.",
+      fr: "Un arr\xEAt\xE9 d\u2019un pr\xE9fet ou du pr\xE9fet de police : un d\xE9partement ou une ville."
+    }
+  },
+  {
+    kind: "municipal",
+    label: { en: "Municipal", fr: "Municipal" },
+    note: {
+      en: "An arr\xEAt\xE9 by a mayor. Kept separate from the prefectoral layer even when it covers the same streets.",
+      fr: "Un arr\xEAt\xE9 d\u2019un maire. S\xE9par\xE9 de la couche pr\xE9fectorale m\xEAme lorsqu\u2019il couvre les m\xEAmes rues."
+    }
+  }
+];
+var KIND_COLOR = {
+  school: "#b45309",
+  national: "#7f1d1d",
+  prefectoral: "#7c3aed",
+  municipal: "#0e7490"
+};
+var SPANS = [
+  {
+    id: "toussaint",
+    kind: "school",
+    from: HOLIDAY_START,
+    to: HOLIDAY_END,
+    label: { en: "Toussaint break", fr: "Vacances de la Toussaint" },
+    detail: {
+      en: "Classes end Saturday 17 October and resume Monday 2 November, the same dates in zones A, B and C. The band starts on 18 October, the first day with no school anywhere: 17 October was a school day and carries the peak of the movement. Nothing school-based exists on these days \u2014 a blocked lyc\xE9e is not a small number here, it is not a number.",
+      fr: "Les cours s\u2019arr\xEAtent le samedi 17 octobre et reprennent le lundi 2 novembre, m\xEAmes dates dans les zones A, B et C. La bande commence le 18 octobre, premier jour sans \xE9cole : le 17 octobre \xE9tait un jour de classe et porte la pointe du mouvement. Rien de scolaire n\u2019existe ces jours-l\xE0 \u2014 un lyc\xE9e bloqu\xE9 n\u2019est pas un petit nombre, ce n\u2019est pas un nombre."
+    },
+    source: "education.gouv.fr, calendrier scolaire 2026-2027 \xB7 data.ts HOLIDAY_START / HOLIDAY_END"
+  },
+  /* The one ban span. Replaces the 1968 national entry and the separate Paris
+     ban reading: a single span from 11 October to the end of the window, so
+     every 2026 chart shades the same interval and no chart can disagree with
+     another about when the bans began. `to: END` follows the window rather
+     than being frozen at a date, and both resolvers clamp it to the last
+     defined x index — that is what "to the end of the chart" means here. */
+  {
+    id: "protestBans",
+    kind: "national",
+    from: "2026-10-11",
+    to: END,
+    label: { en: "Protest bans", fr: "Interdictions de manifester" },
+    detail: {
+      en: "One span covers every prohibition from 11 October to the end of the window. The charts cannot separate one arr\xEAt\xE9 from another, and a per-decree breakdown would imply a count of bans nobody published; what they can show is that from 11 October the crowd was counted under prohibition, which is why a falling figure in that stretch is not evidence of a smaller movement.",
+      fr: "Une seule bande couvre les interdictions du 11 octobre \xE0 la fin de la fen\xEAtre. Les graphiques ne peuvent pas distinguer un arr\xEAt\xE9 d\u2019un autre, et un d\xE9coupage d\xE9cret par d\xE9cret supposerait un d\xE9compte que personne n\u2019a publi\xE9 ; ce qu\u2019ils peuvent montrer, c\u2019est qu\u2019\xE0 partir du 11 octobre la foule \xE9tait compt\xE9e sous interdiction, d\u2019o\xF9 il suit qu\u2019un chiffre en baisse sur ce segment n\u2019est pas la preuve d\u2019un mouvement plus petit."
+    },
+    /* Fill this before shipping — a span whose source is a placeholder is a
+       claim with no author. */
+    source: "\xC0 COMPL\xC9TER : arr\xEAt\xE9 / communiqu\xE9, 11 octobre 2026"
+  },
+  {
+    id: "curfewParis",
+    kind: "prefectoral",
+    from: "2026-10-18",
+    to: "2026-10-18",
+    label: { en: "Paris curfew", fr: "Couvre-feu \xE0 Paris" },
+    detail: {
+      en: "A night-time curfew in Paris alone, the day after the peak. It is one department's arr\xEAt\xE9: it bounds the Paris figure for that night and says nothing about the rest of the country, which is why the arrest cell that day is regional (Paris only, 108).",
+      fr: "Un couvre-feu nocturne \xE0 Paris seulement, au lendemain de la pointe. C\u2019est l\u2019arr\xEAt\xE9 d\u2019un seul d\xE9partement : il borne le chiffre parisien de cette nuit et ne dit rien du reste du pays, d\u2019o\xF9 le caract\xE8re r\xE9gional de la cellule d\u2019interpellations ce jour-l\xE0 (Paris seulement, 108)."
+    },
+    source: "data.ts \xB7 FACTS 2026-10-18 (Paris curfew; 108 interpellations, Paris only)"
+  }
+];
+function daySpans() {
+  const out = [];
+  for (const s of SPANS) {
+    const a = DATES.indexOf(s.from);
+    const b = DATES.indexOf(s.to);
+    if (a < 0 && b < 0) continue;
+    out.push({
+      x0: Math.max(0, a < 0 ? 0 : a),
+      x1: Math.min(DATES.length - 1, b < 0 ? DATES.length - 1 : b),
+      kind: s.kind,
+      label: L(s.label)
+    });
+  }
+  return out;
+}
+function weekSpans(weeks) {
+  const out = [];
+  for (const s of SPANS) {
+    let a = Number.POSITIVE_INFINITY;
+    let b = Number.NEGATIVE_INFINITY;
+    for (const wk of weeks) {
+      if (s.from <= wk.to && s.to >= wk.from) {
+        a = Math.min(a, wk.w);
+        b = Math.max(b, wk.w);
+      }
+    }
+    if (!Number.isFinite(a)) continue;
+    out.push({ x0: a, x1: b, kind: s.kind, label: L(s.label) });
+  }
+  return out;
+}
+var withAlpha = (hex2, a) => {
+  const n = Number.parseInt(hex2.slice(1), 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+};
+var contextBands = {
+  id: "contextBands",
+  beforeDatasetsDraw(chart) {
+    const cfg = chart.options.plugins?.contextBands;
+    const spans = cfg?.spans;
+    if (!spans?.length) return;
+    const xs = chart.scales.x;
+    const { ctx, chartArea } = chart;
+    const count = chart.data.labels?.length ?? 0;
+    if (!xs || count === 0) return;
+    const left = (i) => i <= 0 ? chartArea.left : (xs.getPixelForValue(i - 1) + xs.getPixelForValue(i)) / 2;
+    const right = (i) => i >= count - 1 ? chartArea.right : (xs.getPixelForValue(i) + xs.getPixelForValue(i + 1)) / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+    ctx.clip();
+    for (const s of spans) {
+      const a = Math.min(s.x0, s.x1);
+      const b = Math.max(s.x0, s.x1);
+      const x0 = left(a);
+      const x1 = right(b);
+      if (x1 - x0 < 1) continue;
+      const color2 = KIND_COLOR[s.kind];
+      ctx.fillStyle = withAlpha(color2, s.kind === "school" ? 0.09 : 0.07);
+      ctx.fillRect(x0, chartArea.top, x1 - x0, chartArea.height);
+      if (s.kind === "school") {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x0, chartArea.top, x1 - x0, chartArea.height);
+        ctx.clip();
+        ctx.strokeStyle = withAlpha(color2, 0.16);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = x0 - chartArea.height; x < x1; x += 6) {
+          ctx.moveTo(x, chartArea.bottom);
+          ctx.lineTo(x + chartArea.height, chartArea.top);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+      if (s.kind !== "school") {
+        ctx.strokeStyle = withAlpha(color2, 0.55);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x0, chartArea.top + 0.75);
+        ctx.lineTo(x1, chartArea.top + 0.75);
+        ctx.stroke();
+      }
+      if (x1 - x0 >= 34) {
+        ctx.font = "600 9px system-ui, sans-serif";
+        ctx.fillStyle = withAlpha(color2, 0.9);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(s.label, (x0 + x1) / 2, chartArea.top + 5);
+      }
+    }
+    ctx.restore();
+  }
+};
+var RANGE = {
+  from: START,
+  to: END,
+  title: { en: "The 2026 window", fr: "La fen\xEAtre 2026" }
+};
+function renderStrip(host) {
+  const figure = el("figure", "ctx-figure");
+  const cap = el("figcaption", "ctx-caption");
+  cap.textContent = fillL(
+    {
+      en: "Context, not causation: {title}. Each layer keeps its own legal author.",
+      fr: "Contexte, non causalit\xE9 : {title}. Chaque couche garde son auteur juridique."
+    },
+    { title: L(RANGE.title) }
+  );
+  figure.append(cap);
+  const strip = el("div", "ctx-strip");
+  const spans = SPANS.filter((s) => s.to >= RANGE.from && s.from <= RANGE.to);
+  for (const layer of LAYERS) {
+    const mine = spans.filter((s) => s.kind === layer.kind);
+    if (!mine.length && layer.kind !== "municipal") continue;
+    strip.append(stripRow(layer.kind, L(layer.label), mine));
+  }
+  strip.append(axisRow());
+  figure.append(strip);
+  figure.append(
+    dataTable({
+      caption: fillL(
+        { en: "Context spans: {title}", fr: "Rep\xE8res de contexte : {title}" },
+        { title: L(RANGE.title) }
+      ),
+      indexHeader: L({ en: "Dates", fr: "Dates" }),
+      index: spans.map(
+        (s) => s.from === s.to ? fmtDate(s.from) : `${fmtDate(s.from)} \u2013 ${fmtDate(s.to)}`
+      ),
+      columns: [
+        {
+          header: L({ en: "Layer", fr: "Couche" }),
+          values: spans.map(
+            (s) => L(LAYERS.find((l) => l.kind === s.kind)?.label ?? s.label)
+          )
+        },
+        {
+          header: L({ en: "Measure", fr: "Mesure" }),
+          values: spans.map((s) => L(s.label))
+        },
+        {
+          header: L({ en: "Source", fr: "Source" }),
+          values: spans.map((s) => s.source)
+        }
+      ]
+    })
+  );
+  const details = el("div", "ctx-details");
+  for (const s of spans)
+    details.append(el("p", "ctx-note", `${L(s.label)} \u2014 ${L(s.detail)}`));
+  details.append(
+    el(
+      "p",
+      "ctx-note",
+      L({
+        en: "No municipal measure is recorded in this window. The Paris curfew was a prefect\u2019s arr\xEAt\xE9, so it sits on the prefectoral layer: the scope of the author decides the row, not the size of the street.",
+        fr: "Aucune mesure municipale n\u2019est enregistr\xE9e dans cette fen\xEAtre. Le couvre-feu parisien \xE9tait un arr\xEAt\xE9 pr\xE9fectoral : la comp\xE9tence de l\u2019auteur d\xE9cide de la ligne, non la taille de la rue."
+      })
+    )
+  );
+  figure.append(details);
+  host.append(figure);
+}
+function mountContext() {
+  const a = byId("ctx-a");
+  if (!a) return;
+  a.replaceChildren();
+  try {
+    renderStrip(a);
+  } catch (e) {
+    console.error("[context A]", e);
+  }
+}
+
 // src/client/chart.ts
 Chart.register(
   LineController,
@@ -14653,8 +14910,7 @@ var DEF = {
     radius: 3,
     width: 1.75,
     axis: RIGHT,
-    log: true,
-    holiday: "daily"
+    log: true
   },
   arrestsDaily: {
     data: DAILY.arrests,
@@ -14725,8 +14981,7 @@ var DEF = {
     radius: 3,
     width: 1.75,
     axis: RIGHT,
-    log: true,
-    holiday: "weekly"
+    log: true
   },
   arrestsWeekly: {
     data: WEEKLY.arrests,
@@ -14876,8 +15131,7 @@ function datasetsFor(id, weekly) {
     spanGaps: false,
     connectors: {
       series: def.data,
-      slots: weekly ? WEEKLY_GAP : DAILY_GAP,
-      holiday
+      slots: weekly ? WEEKLY_GAP : DAILY_GAP
     }
   };
   if (!def.data.some((p) => p.detach)) return [line];
@@ -15035,9 +15289,7 @@ var connectors = {
         const va = spec.series[a]?.v;
         const vb = spec.series[b]?.v;
         if (va == null || vb == null) continue;
-        const dotted = spec.holiday?.(a, b) === true;
-        const dashed = dotted || b - a > spec.slots;
-        ctx.setLineDash(dotted ? [...HOLIDAY_DASH] : dashed ? [6, 4] : []);
+        ctx.setLineDash(b - a > spec.slots ? [6, 4] : []);
         ctx.beginPath();
         ctx.moveTo(xs.getPixelForValue(a), ys.getPixelForValue(va));
         ctx.lineTo(xs.getPixelForValue(b), ys.getPixelForValue(vb));
@@ -15059,7 +15311,7 @@ var MARKER = "ellipse";
 var ELLIPSE_RY = 7;
 var BRACE_CURL = 6;
 var BRACE_LIFT = 12;
-function withAlpha(hex2, a) {
+function withAlpha2(hex2, a) {
   const n = Number.parseInt(hex2.slice(1), 16);
   return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
 }
@@ -15087,7 +15339,7 @@ var spanMark = {
       const y = ys.getPixelForValue(s.value);
       const mid = (x0 + x1) / 2;
       ctx.strokeStyle = s.color;
-      ctx.fillStyle = withAlpha(s.color, 0.1);
+      ctx.fillStyle = withAlpha2(s.color, 0.1);
       ctx.beginPath();
       if (MARKER === "ellipse") {
         ctx.setLineDash([4, 3]);
@@ -15366,17 +15618,19 @@ var shell = (v, subtitle, title, extra) => ({
 function buildChart(spec) {
   const card2 = t().chart.charts[spec.copy];
   const v = view(spec.weekly);
+  const spans = spec.weekly ? weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end }))) : daySpans();
   return {
     data: {
       labels: v.labels,
       datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly))
     },
-    ...shell(
-      v,
-      card2.subtitle,
-      card2.title,
-      spec.id === "chart-costs" ? { spanMark: { spans: SPAN_MARKS } } : void 0
-    ),
+    ...shell(v, card2.subtitle, card2.title, {
+      ...spec.id === "chart-costs" ? { spanMark: { spans: SPAN_MARKS } } : {},
+      /* Always present — `shell()` already builds a `plugins` object, so the
+         `if (options.plugins)` guard from my earlier draft is dead weight. An
+         empty array no-ops inside the plugin. */
+      contextBands: { spans }
+    }),
     scales: scalesFor(v, card2, spec.series)
   };
 }
@@ -15405,7 +15659,7 @@ function mount(canvas, cfg) {
       type: "line",
       data,
       options,
-      plugins: [errorBars, connectors, spanMark]
+      plugins: [contextBands, errorBars, connectors, spanMark]
     })
   );
 }
@@ -19953,7 +20207,7 @@ Chart.register(
 var BLUE = "#1d4ed8";
 var PALE = "rgba(29,78,216,0.10)";
 var STACK_TOTAL = 100;
-var L = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
+var L2 = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
 var COPY = {
   turnout: { en: "In the street", fr: "Dans la rue" },
   rest: { en: "The rest of the population", fr: "Le reste de la population" },
@@ -20228,7 +20482,7 @@ function build(rows, o) {
     decades2.push(Number(Math.pow(10, e).toPrecision(12)));
   }
   const dataset = {
-    label: L(COPY.turnout),
+    label: L2(COPY.turnout),
     data: plotted,
     borderColor: BLUE,
     backgroundColor: "transparent",
@@ -20289,7 +20543,7 @@ function build(rows, o) {
         },
         title: {
           display: o.showY,
-          text: L(COPY.axisY),
+          text: L2(COPY.axisY),
           color: THEME.label,
           font: { size: 11 },
           padding: { bottom: 4 }
@@ -20316,8 +20570,12 @@ function build(rows, o) {
             if (!r) return "";
             const lines = [];
             if (r.lo !== null)
-              lines.push(fill(L(COPY.ttCount), { v: countBand(r) }));
-            lines.push(fill(L(COPY.ttShare), { v: pctBand(r.plo, r.phi) }));
+              lines.push(fill(L2(COPY.ttCount), { v: countBand(r) }));
+            lines.push(
+              fill(r.basis === "metro" ? L2(SHARE.ttMetro) : L2(SHARE.ttFrance), {
+                v: pctBand(r.plo, r.phi)
+              })
+            );
             return wrapTooltipLines(lines.join("\n"), item, "body");
           },
           footer: (items) => {
@@ -20328,6 +20586,9 @@ function build(rows, o) {
       }
     }
   };
+  Object.assign(options.plugins, {
+    contextBands: { spans: o.spans ?? [] }
+  });
   return {
     data: { labels: rows.map((r) => r.key), datasets: [dataset] },
     options
@@ -20348,17 +20609,17 @@ function legendRow() {
     return span;
   };
   row.append(
-    chip(BLUE, L(COPY.turnout), false),
-    chip(PALE, `${L(COPY.rest)} ${L(COPY.logNote)}`, false),
-    chip("#fff", L(COPY.measured), true)
+    chip(BLUE, L2(COPY.turnout), false),
+    chip(PALE, `${L2(COPY.rest)} ${L2(COPY.logNote)}`, false),
+    chip("#fff", L2(COPY.measured), true)
   );
   return row;
 }
 function render(host, rows, o, title, note2, firstCol) {
   const cfg = build(rows, o);
   if (!cfg) return;
-  const metro = rows.some((r) => r.basis === "metropole");
-  const shareHeader = metro ? L(SHARE.metropole) : L(SHARE.france);
+  const metro = rows.some((r) => r.basis === "metro");
+  const shareHeader = metro ? L2(SHARE.metropole) : L2(SHARE.france);
   const figure = el("figure", "pc-figure");
   const cap = el("figcaption", "pc-caption");
   cap.append(el("span", "pc-fig-title", title), legendRow());
@@ -20370,30 +20631,16 @@ function render(host, rows, o, title, note2, firstCol) {
   figure.append(cap, box);
   figure.append(
     dataTable({
-      caption: fill(L(COPY.tableCaption), { title }),
+      caption: fill(L2(COPY.tableCaption), { title }),
       indexHeader: firstCol,
       index: rows.map((r) => r.title),
       columns: [
-        { header: L(COPY.colCount), values: rows.map(countBand) },
+        { header: L2(COPY.colCount), values: rows.map(countBand) },
         { header: shareHeader, values: rows.map((r) => pctBand(r.plo, r.phi)) }
       ]
     })
   );
-  figure.append(
-    dataTable({
-      caption: fill(L(COPY.tableCaption), { title }),
-      indexHeader: firstCol,
-      index: rows.map((r) => r.title),
-      columns: [
-        { header: L(COPY.colCount), values: rows.map(countBand) },
-        {
-          header: L(COPY.colShare),
-          values: rows.map((r) => pctBand(r.plo, r.phi))
-        }
-      ]
-    })
-  );
-  figure.append(el("p", "pc-note", note2));
+  if (note2) figure.append(el("p", "pc-note", note2));
   host.append(figure);
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -20402,7 +20649,7 @@ function render(host, rows, o, title, note2, firstCol) {
       type: "line",
       data: cfg.data,
       options: cfg.options,
-      plugins: [pcStack, pcPeak]
+      plugins: [contextBands, pcStack, pcPeak]
     })
   );
   keyboardChart(chart, {
@@ -20424,13 +20671,19 @@ function sectionA(host) {
   render(
     host,
     rows,
-    { xTitle: L(COPY.axisDate), rotate: true, maxTicks: 25, showY: true },
-    L(COPY.titleA),
-    fill(L(COPY.noteA), {
+    {
+      xTitle: L2(COPY.axisDate),
+      rotate: true,
+      maxTicks: 25,
+      showY: true,
+      spans: daySpans()
+    },
+    L2(COPY.titleA),
+    fill(L2(COPY.noteA), {
       pop: nf().format(denominator(pop) ?? 0),
       min: floorLabel(rows)
     }),
-    L(COPY.colDate)
+    L2(COPY.colDate)
   );
 }
 function sectionB(host) {
@@ -20439,13 +20692,19 @@ function sectionB(host) {
   render(
     host,
     rows,
-    { xTitle: L(COPY.axisWeek), rotate: false, maxTicks: 12, showY: true },
-    L(COPY.titleB),
-    fill(L(COPY.noteB), {
+    {
+      xTitle: L2(COPY.axisWeek),
+      rotate: false,
+      maxTicks: 12,
+      showY: true,
+      spans: weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end })))
+    },
+    L2(COPY.titleB),
+    fill(L2(COPY.noteB), {
       pop: nf().format(denominator(pop) ?? 0),
       min: floorLabel(rows)
     }),
-    L(COPY.colWeek)
+    L2(COPY.colWeek)
   );
 }
 function sectionC(host) {
@@ -20459,28 +20718,29 @@ function sectionC(host) {
   panels.forEach(({ ep, rows }, idx) => {
     const pop = population(popKeyFor(ep.id));
     const base = denominator(pop);
-    const caption = base === null ? L(COPY.noBase) : fill(L(COPY.base), {
-      n: `${nf().format(base)}${basisOf(pop) === "metro" ? ` \xB7 ${L(COPY.metro)}` : ""}`
+    const caption = base === null ? L2(COPY.noBase) : fill(L2(COPY.base), {
+      n: `${nf().format(base)}${basisOf(pop) === "metro" ? ` \xB7 ${L2(COPY.metro)}` : ""}`
     });
     const panel = el("div", "pc-panel");
     render(
       panel,
       rows,
       {
-        xTitle: idx >= EPISODES.length - cols ? L(COPY.axisWeekNo) : "",
+        xTitle: idx >= EPISODES.length - cols ? L2(COPY.axisWeekNo) : "",
         rotate: false,
         maxTicks: 9,
         showY: idx % cols === 0,
-        floor
+        floor,
+        spans: weekSpans(ep.weeks)
       },
       `${m.episodes[ep.id].short} \xB7 ${caption}`,
       "",
-      L(COPY.colWeek)
+      L2(COPY.colWeek)
     );
     host.append(panel);
   });
   const head = el("div", "pc-trellis-head");
-  head.append(el("p", "pc-note", L(COPY.noteC)));
+  head.append(el("p", "pc-note", L2(COPY.noteC)));
   host.append(head);
 }
 function mountPerCapita() {
@@ -20535,6 +20795,7 @@ function render2() {
   mountKpis();
   mountCasualties();
   mountPerCapita();
+  mountContext();
   const hosts = trellisHosts();
   if (hosts) {
     try {

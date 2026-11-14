@@ -60,6 +60,12 @@ import {
   population,
 } from "./population.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
+import {
+  daySpans,
+  weekSpans,
+  contextBands,
+  type ChartSpan,
+} from "./context.ts";
 
 Chart.register(
   LineController,
@@ -427,6 +433,7 @@ interface Opts {
   readonly maxTicks: number;
   readonly showY: boolean;
   readonly floor?: number;
+  readonly spans?: readonly ChartSpan[];
 }
 
 /** Floor = one decade below the smallest plotted share, derived per panel so
@@ -542,7 +549,11 @@ function build(rows: readonly Row[], o: Opts): Cfg | null {
             const lines: string[] = [];
             if (r.lo !== null)
               lines.push(fill(L(COPY.ttCount), { v: countBand(r) }));
-            lines.push(fill(L(COPY.ttShare), { v: pctBand(r.plo, r.phi) }));
+            lines.push(
+              fill(r.basis === "metro" ? L(SHARE.ttMetro) : L(SHARE.ttFrance), {
+                v: pctBand(r.plo, r.phi),
+              }),
+            );
             return wrapTooltipLines(lines.join("\n"), item, "body");
           },
           footer: (items: TooltipItem<"line">[]) => {
@@ -553,6 +564,10 @@ function build(rows: readonly Row[], o: Opts): Cfg | null {
       },
     },
   };
+
+  Object.assign(options.plugins as object, {
+    contextBands: { spans: o.spans ?? [] },
+  });
 
   return {
     data: { labels: rows.map((r) => r.key), datasets: [dataset] },
@@ -597,7 +612,8 @@ function render(
   const cfg = build(rows, o);
   if (!cfg) return;
 
-  const metro = rows.some((r) => r.basis === "metropole");
+  const metro = rows.some((r) => r.basis === "metro");
+
   const shareHeader = metro ? L(SHARE.metropole) : L(SHARE.france);
 
   const figure = el("figure", "pc-figure");
@@ -622,23 +638,7 @@ function render(
       ],
     }),
   );
-
-  // the shared disclosure every other chart on the site uses
-  figure.append(
-    dataTable({
-      caption: fill(L(COPY.tableCaption), { title }),
-      indexHeader: firstCol,
-      index: rows.map((r) => r.title),
-      columns: [
-        { header: L(COPY.colCount), values: rows.map(countBand) },
-        {
-          header: L(COPY.colShare),
-          values: rows.map((r) => pctBand(r.plo, r.phi)),
-        },
-      ],
-    }),
-  );
-  figure.append(el("p", "pc-note", note));
+  if (note) figure.append(el("p", "pc-note", note));
   host.append(figure);
 
   const ctx = canvas.getContext("2d");
@@ -648,7 +648,7 @@ function render(
       type: "line",
       data: cfg.data,
       options: cfg.options,
-      plugins: [pcStack, pcPeak],
+      plugins: [contextBands, pcStack, pcPeak],
     }),
   );
   keyboardChart(chart, {
@@ -676,7 +676,13 @@ function sectionA(host: HTMLElement): void {
   render(
     host,
     rows,
-    { xTitle: L(COPY.axisDate), rotate: true, maxTicks: 25, showY: true },
+    {
+      xTitle: L(COPY.axisDate),
+      rotate: true,
+      maxTicks: 25,
+      showY: true,
+      spans: daySpans(),
+    },
     L(COPY.titleA),
     fill(L(COPY.noteA), {
       pop: nf().format(denominator(pop) ?? 0),
@@ -692,7 +698,13 @@ function sectionB(host: HTMLElement): void {
   render(
     host,
     rows,
-    { xTitle: L(COPY.axisWeek), rotate: false, maxTicks: 12, showY: true },
+    {
+      xTitle: L(COPY.axisWeek),
+      rotate: false,
+      maxTicks: 12,
+      showY: true,
+      spans: weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end }))),
+    },
     L(COPY.titleB),
     fill(L(COPY.noteB), {
       pop: nf().format(denominator(pop) ?? 0),
@@ -736,6 +748,7 @@ function sectionC(host: HTMLElement): void {
         maxTicks: 9,
         showY: idx % cols === 0,
         floor,
+        spans: weekSpans(ep.weeks),
       },
       `${m.episodes[ep.id].short} · ${caption}`,
       "",

@@ -155,10 +155,13 @@ export const WEEKS: readonly Week[] = (() => {
 })();
 
 /* ── School holidays (vacances scolaires) ──────────────────────────────────
-   Toussaint 2026: classes end Friday 16 October and resume Monday
+   Toussaint 2026: classes end Saturday 17 October and resume Monday
    2 November — the same dates in zones A, B and C, so no zone logic.
-   Source: service-public.gouv.fr / education.gouv.fr.                     */
-export const HOLIDAY_START = "2026-10-17";
+   The band opens on 18 October, not on the 17th: 17 October was a school
+   day and carries the peak of the movement, so shading it would read as a
+   holiday effect on the largest crowd of the episode.
+   Source: education.gouv.fr, calendrier scolaire 2026-2027. */
+export const HOLIDAY_START = "2026-10-18";
 export const HOLIDAY_END = "2026-11-01";
 
 /** Dotted pattern for the holiday connector — finer than the "no data" dash. */

@@ -53,6 +53,7 @@ import { noteText, suffixFor } from "./notes.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
 import { fromChart, keyboardChart } from "./a11y.ts";
 import { denominator, KEY_2026, population } from "./population.ts";
+import { contextBands, daySpans, weekSpans } from "./context.ts";
 
 Chart.register(
   LineController,
@@ -94,7 +95,6 @@ interface SeriesDef {
   readonly axis?: string;
   readonly bandFill?: string;
   readonly log?: boolean;
-  readonly holiday?: "daily" | "weekly";
   readonly shadeOnly?: boolean;
 }
 
@@ -119,7 +119,6 @@ const DEF = {
     width: 1.75,
     axis: RIGHT,
     log: true,
-    holiday: "daily",
   },
   arrestsDaily: {
     data: DAILY.arrests,
@@ -191,7 +190,6 @@ const DEF = {
     width: 1.75,
     axis: RIGHT,
     log: true,
-    holiday: "weekly",
   },
   arrestsWeekly: {
     data: WEEKLY.arrests,
@@ -439,7 +437,6 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
     connectors: {
       series: def.data,
       slots: weekly ? WEEKLY_GAP : DAILY_GAP,
-      holiday,
     },
   };
 
@@ -627,10 +624,7 @@ const connectors: Plugin<"line"> = {
         const vb = spec.series[b]?.v;
         if (va == null || vb == null) continue;
 
-        const dotted = spec.holiday?.(a, b) === true;
-        const dashed = dotted || b - a > spec.slots;
-
-        ctx.setLineDash(dotted ? [...HOLIDAY_DASH] : dashed ? [6, 4] : []);
+        ctx.setLineDash(b - a > spec.slots ? [6, 4] : []);
         ctx.beginPath();
         ctx.moveTo(xs.getPixelForValue(a), ys.getPixelForValue(va));
         ctx.lineTo(xs.getPixelForValue(b), ys.getPixelForValue(vb));
@@ -1073,23 +1067,31 @@ type Cfg = {
   data: { labels: string[]; datasets: ProtestDataset[] };
 } & ChartOptions<"line">;
 
-/** One builder for all five charts. */
+/** One builder for all charts. */
 export function buildChart(spec: ChartSpec): Cfg {
   const card = t().chart.charts[spec.copy];
   const v = view(spec.weekly);
+
+  /* Context spans are resolved here, not in mount(): `spec.weekly` only exists
+     in this function. weekSpans() takes each week's own `w`, `from` and `to`,
+     so a span resolves against the panel's real dates rather than its array
+     position — WEEKS is contiguous today, but the two must not be conflated. */
+  const spans = spec.weekly
+    ? weekSpans(WEEKS.map((w, i) => ({ w: i, from: w.key, to: w.end })))
+    : daySpans();
+
   return {
     data: {
       labels: v.labels,
       datasets: spec.series.flatMap((id) => datasetsFor(id, spec.weekly)),
     },
-    ...shell(
-      v,
-      card.subtitle,
-      card.title,
-      spec.id === "chart-costs"
-        ? { spanMark: { spans: SPAN_MARKS } }
-        : undefined,
-    ),
+    ...shell(v, card.subtitle, card.title, {
+      ...(spec.id === "chart-costs" ? { spanMark: { spans: SPAN_MARKS } } : {}),
+      /* Always present — `shell()` already builds a `plugins` object, so the
+         `if (options.plugins)` guard from my earlier draft is dead weight. An
+         empty array no-ops inside the plugin. */
+      contextBands: { spans },
+    }),
     scales: scalesFor(v, card, spec.series),
   };
 }
@@ -1120,12 +1122,13 @@ export function mount(canvas: HTMLCanvasElement, cfg: Cfg): Chart<"line"> {
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("2d context unavailable");
   const { data, ...options } = cfg;
+
   return track(
     new Chart<"line">(ctx, {
       type: "line",
       data,
       options,
-      plugins: [errorBars, connectors, spanMark],
+      plugins: [contextBands, errorBars, connectors, spanMark],
     }),
   );
 }

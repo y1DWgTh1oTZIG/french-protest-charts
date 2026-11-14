@@ -30,6 +30,7 @@ import { initTheme } from "./theme.ts";
 import { mountKpis } from "./kpis.ts";
 import { mountCasualties } from "./casualties.ts";
 import { mountPerCapita } from "./percapita.ts";
+import { mountContext } from "./context.ts";
 
 function trellisHosts(): TrellisHosts | null {
   const episodeHost = byId("trellis-episodes");
@@ -53,6 +54,7 @@ export function render(): void {
   mountKpis();
   mountCasualties();
   mountPerCapita();
+  mountContext();
   const hosts = trellisHosts();
   if (hosts) {
     try {
