@@ -1148,8 +1148,6 @@ section {
 }
 
 .cas-num-head {
-  text-align: right !important;
-  padding-right: 0 !important;
   font-weight: 600;
   color: var(--ink-3);
   white-space: nowrap;
