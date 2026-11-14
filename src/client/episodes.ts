@@ -60,7 +60,7 @@ import { wrapTooltipLines } from "./tooltip.ts";
 
 /* ------------------------------------------------------------------- types */
 
-interface Pt {
+export interface Pt {
   x: number;
   y: number; // midpoint of the published range — this is what gets plotted
   low: number;
@@ -493,7 +493,7 @@ const STUDENTS: Episode = {
   weeks: rows2026(),
 };
 
-const EPISODES: readonly Episode[] = [
+export const EPISODES: readonly Episode[] = [
   MAY68,
   CPE,
   GILETS,
@@ -507,7 +507,7 @@ const EPISODES: readonly Episode[] = [
  *  episode carries an arrest or injury figure — not the latest date.
  *  That is w11 (6 Apr 2023, pensions: 111 arrests, 154 police injured).
  *  The 2026 episode now runs its enforcement from w2 (28 Sep) to w8 (9 Nov). */
-const ENFORCEMENT_LAST = EPISODES.reduce(
+export const ENFORCEMENT_LAST = EPISODES.reduce(
   (last, ep) =>
     ep.weeks.reduce(
       (l, r) =>
@@ -551,7 +551,7 @@ function noteFor(id: EpisodeId, r: Row, m: Metric): string | undefined {
  *  re-running t(), fmtWeek() and noteText(). Cleared on every mount (locale-bound). */
 let seriesCache = new Map<string, Pt[] | null>();
 
-function seriesData(ep: Episode, key: Metric): Pt[] | null {
+export function seriesData(ep: Episode, key: Metric): Pt[] | null {
   const id = `${ep.id}:${key}`;
   if (seriesCache.has(id)) return seriesCache.get(id)!;
 

@@ -209,6 +209,42 @@ const DEF = {
   },
 } satisfies Record<string, SeriesDef>;
 
+/* ----- KPI support ---- */
+
+/** The points a series actually draws, as index/value pairs.
+ *
+ * A marker with radius 0 is an aggregate that is not a daily value — the
+ * €1,000M damages total of 24 Oct, kept as the span ring's right-hand anchor
+ * but drawn without a marker. The KPIs take the chart's own mask, so a figure
+ * the reader cannot see as a marker is neither a "largest day" nor an item in
+ * a mean. Delete the two mask lines below to count it like any other point.
+ */
+export function visiblePoints(
+  dataKey: string,
+  weekly = false,
+): { i: number; v: number }[] {
+  const series = weekly ? WEEKLY[dataKey] : DAILY[dataKey];
+  if (!series) return [];
+
+  let mask: readonly number[] | null = null;
+  for (const def of Object.values(DEF)) {
+    const d = def as unknown as {
+      data?: Series;
+      pointRadius?: number | number[];
+    };
+    if (d.data !== series) continue;
+    if (Array.isArray(d.pointRadius)) mask = d.pointRadius;
+  }
+
+  const out: { i: number; v: number }[] = [];
+  series.forEach((p, i) => {
+    if (p.v === null) return;
+    if (mask && mask[i] === 0) return;
+    out.push({ i, v: p.v });
+  });
+  return out;
+}
+
 /** Literal union of the keys actually defined — a typo is now a type error. */
 type SeriesId = keyof typeof DEF;
 

@@ -988,3 +988,82 @@ section {
 #summary .legend {
   margin-top: 0.5rem;
 }
+
+/* ---- KPI blocks (sections A, B, C, D) ----- */
+.kpi-block {
+  margin-bottom: clamp(18px, 2.4vw, 28px);
+}
+
+.kpi-heading {
+  margin-bottom: 10px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(10px, 1.4vw, 16px);
+}
+
+.kpi-card {
+  padding: 0.85rem 0.95rem 0.95rem;
+  border: 1px solid var(--line-1);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.kpi-title {
+  margin-bottom: 0.55rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.kpi-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.kpi-row {
+  display: grid;
+  gap: 1px;
+}
+
+.kpi-label {
+  font-size: var(--fs-2xs);
+  color: var(--ink-4);
+}
+
+.kpi-row dd {
+  margin: 0;
+}
+
+.kpi-num {
+  display: block;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-2xs);
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+
+.kpi-note {
+  max-width: 110ch;
+  margin: 10px 0 0;
+  font-size: var(--fs-2xs);
+  line-height: 1.4;
+  color: var(--ink-4);
+}

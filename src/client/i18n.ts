@@ -1496,6 +1496,25 @@ export interface PanelsCopy {
   readonly summaryMeta: string;
 }
 
+export interface KpiCopy {
+  readonly heading: string;
+  readonly largestDay: string;
+  readonly largestWeek: string;
+  readonly largestFigure: string;
+  readonly vsMean: string;
+  readonly vsMedian: string;
+  readonly vsFirst: string;
+  readonly againstMean: string;
+  readonly againstMedian: string;
+  readonly againstFirst: string;
+  readonly noteDaily: string;
+  readonly noteWeekly: string;
+  readonly noteEpisodes: string;
+  readonly noteEpisodesCapped: string;
+  readonly eurM: string;
+  readonly none: string;
+}
+
 export interface ItemCopy {
   readonly label: string;
   readonly short: string;
@@ -1525,6 +1544,7 @@ export interface Catalogue {
   readonly flags: Readonly<Record<string, string>>;
   readonly tooltip: TooltipCopy;
   readonly disclaimer: DisclaimerCopy;
+  readonly kpi: KpiCopy;
   /** Dictionary lookups; `t('key')` reads these. */
   readonly [key: string]: unknown;
 }
@@ -1550,6 +1570,28 @@ const CATALOGUE: Record<Lang, Catalogue> = {
       singleFigure:
         "one published figure — the median and the peak are the same number",
       summaryMeta: "median and peak · {n} movements",
+    },
+    kpi: {
+      heading: "Key figures",
+      largestDay: "Largest day",
+      largestWeek: "Largest week",
+      largestFigure: "Largest figure",
+      vsMean: "Highest vs mean",
+      vsMedian: "Highest vs median",
+      vsFirst: "Highest vs first figure",
+      againstMean: "{value} against a mean of {base}",
+      againstMedian: "{value} against a median of {base}",
+      againstFirst: "{value} against a first figure of {base}",
+      noteDaily:
+        "Ratios are computed on the daily series: each published figure is divided by the mean, the median and the first published figure of its own series. Days with no published figure are left out, not counted as zero. The €1,000M damages total of 24 October carries no marker on the chart and is left out here too.",
+      noteWeekly:
+        "Ratios are computed on the weekly series: each published figure is divided by the mean, the median and the first published figure of its own series. Weeks with no published figure are left out, not counted as zero.",
+      noteEpisodes:
+        "Each movement is compared with its own series — its mean, its median and its first published figure — and the largest ratio across all seven movements is shown. A ratio of the first figure can run into the thousands when a movement began with a handful of people.",
+      noteEpisodesCapped:
+        "As in section C, but over the weeks plotted in section D only, which stop at the last week with an enforcement figure.",
+      eurM: "€{v}M",
+      none: "no figure published",
     },
     items: {
       p: { label: "Protesters", short: "Protesters" },
@@ -1603,7 +1645,28 @@ const CATALOGUE: Record<Lang, Catalogue> = {
         "un seul chiffre publié — la médiane et la pointe sont le même nombre",
       summaryMeta: "médiane et pointe · {n} mouvements",
     },
-
+    kpi: {
+      heading: "Chiffres clés",
+      largestDay: "Plus grand jour",
+      largestWeek: "Plus grande semaine",
+      largestFigure: "Plus grand chiffre",
+      vsMean: "Max vs moyenne",
+      vsMedian: "Max vs médiane",
+      vsFirst: "Max vs premier chiffre",
+      againstMean: "{value} contre une moyenne de {base}",
+      againstMedian: "{value} contre une médiane de {base}",
+      againstFirst: "{value} contre un premier chiffre de {base}",
+      noteDaily:
+        "Les rapports sont calculés sur les séries quotidiennes : chaque chiffre publié est divisé par la moyenne, la médiane et le premier chiffre publié de sa propre série. Les jours sans chiffre publié sont écartés, non comptés comme zéro. Le total de dommages de 1 000 M€ du 24 octobre n’a pas de marqueur sur le graphique et en est donc écarté ici aussi.",
+      noteWeekly:
+        "Les rapports sont calculés sur les séries hebdomadaires : chaque chiffre publié est divisé par la moyenne, la médiane et le premier chiffre publié de sa propre série. Les semaines sans chiffre publié sont écartées, non comptées comme zéro.",
+      noteEpisodes:
+        "Chaque mouvement est comparé à sa propre série — sa moyenne, sa médiane et son premier chiffre publié — et le plus grand rapport sur les sept mouvements est affiché. Un rapport au premier chiffre peut atteindre des milliers de pour cent lorsqu’un mouvement a commencé avec une poignée de personnes.",
+      noteEpisodesCapped:
+        "Comme en section C, mais sur les seules semaines tracées en section D, qui s’arrêtent à la dernière semaine de chiffres de maintien de l’ordre.",
+      eurM: "{v} M€",
+      none: "aucun chiffre publié",
+    },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
       a: { label: "Interpellations", short: "Interpellations" },

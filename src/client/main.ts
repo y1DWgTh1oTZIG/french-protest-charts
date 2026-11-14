@@ -27,6 +27,7 @@ import { renderChrome } from "./page.ts";
 import { renderSources } from "./sources.ts";
 import { announce } from "./a11y.ts";
 import { initTheme } from "./theme.ts";
+import { mountKpis } from "./kpis.ts";
 
 function trellisHosts(): TrellisHosts | null {
   const episodeHost = byId("trellis-episodes");
@@ -47,6 +48,7 @@ export function render(): void {
   applyStaticCopy(); // kicker, lede, card titles, legend headings
   syncLangSwitch();
   mountCharts();
+  mountKpis();
   const hosts = trellisHosts();
   if (hosts) {
     try {
@@ -87,6 +89,10 @@ const REQUIRED = [
   "legend-summary",
   "disclaimer",
   "sources",
+  "kpi-a",
+  "kpi-b",
+  "kpi-c",
+  "kpi-d",
 ] as const;
 
 /** hdr-a…hdr-cp are no longer validated: page.ts already no-ops on a missing

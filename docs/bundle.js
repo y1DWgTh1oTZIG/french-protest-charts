@@ -1081,6 +1081,24 @@ var CATALOGUE = {
       singleFigure: "one published figure \u2014 the median and the peak are the same number",
       summaryMeta: "median and peak \xB7 {n} movements"
     },
+    kpi: {
+      heading: "Key figures",
+      largestDay: "Largest day",
+      largestWeek: "Largest week",
+      largestFigure: "Largest figure",
+      vsMean: "Highest vs mean",
+      vsMedian: "Highest vs median",
+      vsFirst: "Highest vs first figure",
+      againstMean: "{value} against a mean of {base}",
+      againstMedian: "{value} against a median of {base}",
+      againstFirst: "{value} against a first figure of {base}",
+      noteDaily: "Ratios are computed on the daily series: each published figure is divided by the mean, the median and the first published figure of its own series. Days with no published figure are left out, not counted as zero. The \u20AC1,000M damages total of 24 October carries no marker on the chart and is left out here too.",
+      noteWeekly: "Ratios are computed on the weekly series: each published figure is divided by the mean, the median and the first published figure of its own series. Weeks with no published figure are left out, not counted as zero.",
+      noteEpisodes: "Each movement is compared with its own series \u2014 its mean, its median and its first published figure \u2014 and the largest ratio across all seven movements is shown. A ratio of the first figure can run into the thousands when a movement began with a handful of people.",
+      noteEpisodesCapped: "As in section C, but over the weeks plotted in section D only, which stop at the last week with an enforcement figure.",
+      eurM: "\u20AC{v}M",
+      none: "no figure published"
+    },
     items: {
       p: { label: "Protesters", short: "Protesters" },
       a: { label: "Arrests", short: "Arrests" },
@@ -1132,6 +1150,24 @@ var CATALOGUE = {
       figureCount: "{n} chiffres publi\xE9s",
       singleFigure: "un seul chiffre publi\xE9 \u2014 la m\xE9diane et la pointe sont le m\xEAme nombre",
       summaryMeta: "m\xE9diane et pointe \xB7 {n} mouvements"
+    },
+    kpi: {
+      heading: "Chiffres cl\xE9s",
+      largestDay: "Plus grand jour",
+      largestWeek: "Plus grande semaine",
+      largestFigure: "Plus grand chiffre",
+      vsMean: "Max vs moyenne",
+      vsMedian: "Max vs m\xE9diane",
+      vsFirst: "Max vs premier chiffre",
+      againstMean: "{value} contre une moyenne de {base}",
+      againstMedian: "{value} contre une m\xE9diane de {base}",
+      againstFirst: "{value} contre un premier chiffre de {base}",
+      noteDaily: "Les rapports sont calcul\xE9s sur les s\xE9ries quotidiennes : chaque chiffre publi\xE9 est divis\xE9 par la moyenne, la m\xE9diane et le premier chiffre publi\xE9 de sa propre s\xE9rie. Les jours sans chiffre publi\xE9 sont \xE9cart\xE9s, non compt\xE9s comme z\xE9ro. Le total de dommages de 1 000 M\u20AC du 24 octobre n\u2019a pas de marqueur sur le graphique et en est donc \xE9cart\xE9 ici aussi.",
+      noteWeekly: "Les rapports sont calcul\xE9s sur les s\xE9ries hebdomadaires : chaque chiffre publi\xE9 est divis\xE9 par la moyenne, la m\xE9diane et le premier chiffre publi\xE9 de sa propre s\xE9rie. Les semaines sans chiffre publi\xE9 sont \xE9cart\xE9es, non compt\xE9es comme z\xE9ro.",
+      noteEpisodes: "Chaque mouvement est compar\xE9 \xE0 sa propre s\xE9rie \u2014 sa moyenne, sa m\xE9diane et son premier chiffre publi\xE9 \u2014 et le plus grand rapport sur les sept mouvements est affich\xE9. Un rapport au premier chiffre peut atteindre des milliers de pour cent lorsqu\u2019un mouvement a commenc\xE9 avec une poign\xE9e de personnes.",
+      noteEpisodesCapped: "Comme en section C, mais sur les seules semaines trac\xE9es en section D, qui s\u2019arr\xEAtent \xE0 la derni\xE8re semaine de chiffres de maintien de l\u2019ordre.",
+      eurM: "{v} M\u20AC",
+      none: "aucun chiffre publi\xE9"
     },
     items: {
       p: { label: "Manifestants", short: "Manifestants" },
@@ -14314,6 +14350,23 @@ var DEF = {
     style: "triangle"
   }
 };
+function visiblePoints(dataKey, weekly = false) {
+  const series = weekly ? WEEKLY[dataKey] : DAILY[dataKey];
+  if (!series) return [];
+  let mask = null;
+  for (const def of Object.values(DEF)) {
+    const d = def;
+    if (d.data !== series) continue;
+    if (Array.isArray(d.pointRadius)) mask = d.pointRadius;
+  }
+  const out = [];
+  series.forEach((p, i) => {
+    if (p.v === null) return;
+    if (mask && mask[i] === 0) return;
+    out.push({ i, v: p.v });
+  });
+  return out;
+}
 var CHARTS = [
   {
     id: "chart-protesters",
@@ -14808,7 +14861,7 @@ function baseScales(v) {
     }
   };
 }
-function scalesFor(v, card, ids) {
+function scalesFor(v, card2, ids) {
   const defs = ids.map((id) => DEF[id]);
   const left = defs.filter((d) => (d.axis ?? LEFT) === LEFT);
   const right = defs.filter((d) => d.axis === RIGHT);
@@ -14816,12 +14869,12 @@ function scalesFor(v, card, ids) {
   const leftUnit = left[0]?.unit ?? defs[0]?.unit ?? "count";
   const scales = {
     ...baseScales(v),
-    [LEFT]: yAxis(card.y ?? card.yLeft ?? "", leftList, leftUnit, "left")
+    [LEFT]: yAxis(card2.y ?? card2.yLeft ?? "", leftList, leftUnit, "left")
   };
   if (right.length) {
     scales[RIGHT] = {
       ...yAxis(
-        card.yRight ?? "",
+        card2.yRight ?? "",
         right.map((d) => d.data),
         right[0].unit,
         "right",
@@ -14884,7 +14937,7 @@ var shell = (v, subtitle, title, extra) => ({
   }
 });
 function buildChart(spec) {
-  const card = t().chart.charts[spec.copy];
+  const card2 = t().chart.charts[spec.copy];
   const v = view(spec.weekly);
   return {
     data: {
@@ -14893,11 +14946,11 @@ function buildChart(spec) {
     },
     ...shell(
       v,
-      card.subtitle,
-      card.title,
+      card2.subtitle,
+      card2.title,
       spec.id === "chart-costs" ? { spanMark: { spans: SPAN_MARKS } } : void 0
     ),
-    scales: scalesFor(v, card, spec.series)
+    scales: scalesFor(v, card2, spec.series)
   };
 }
 var MIN_CHART_H = 420;
@@ -19058,6 +19111,186 @@ function initTheme() {
   };
 }
 
+// src/client/kpis.ts
+var DAILY_SPECS = [
+  { copy: "protestersDaily", data: "turnout", unit: "count" },
+  { copy: "arrestsDaily", data: "arrests", unit: "count" },
+  { copy: "forcesDaily", data: "forcesInjured", unit: "count" },
+  { copy: "protestersInjuredDaily", data: "protesterInjured", unit: "count" },
+  { copy: "blockadesDaily", data: "blockades", unit: "count" },
+  { copy: "damagesDaily", data: "damagesCost", unit: "eurM" }
+];
+var WEEKLY_SPECS = [
+  { copy: "protestersWeekly", data: "turnout", unit: "count" },
+  { copy: "arrestsWeekly", data: "arrests", unit: "count" },
+  { copy: "forcesWeekly", data: "forcesInjured", unit: "count" },
+  { copy: "protestersInjuredWeekly", data: "protesterInjured", unit: "count" },
+  { copy: "blockadesWeekly", data: "blockades", unit: "count" }
+];
+var METRIC_KEYS = ["p", "a", "f", "i"];
+function meanMedian(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mid = n >> 1;
+  let sum = 0;
+  for (const v of values) sum += v;
+  return {
+    mean: sum / n,
+    median: n % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+  };
+}
+function bestRatio(obs, base) {
+  if (!(base > 0)) return null;
+  let best = null;
+  for (const o of obs) {
+    const pct = o.v / base;
+    if (!best || pct > best.pct) best = { obs: o, pct, base };
+  }
+  return best;
+}
+function bestValue(obs) {
+  let best = null;
+  for (const o of obs) if (!best || o.v > best.v) best = o;
+  return best;
+}
+function dailyRows(weekly) {
+  const specs = weekly ? WEEKLY_SPECS : DAILY_SPECS;
+  return specs.map((spec) => {
+    const pts = visiblePoints(spec.data, weekly);
+    const obs = pts.map((p) => ({
+      v: p.v,
+      where: weekly ? fmtWeek(WEEKS[p.i].key, WEEKS[p.i].end) : fmtDate(DATES[p.i])
+    }));
+    const st = meanMedian(obs.map((o) => o.v));
+    const first = obs.length ? obs[0].v : 0;
+    return {
+      label: t().chart.series[spec.copy].label,
+      unit: spec.unit,
+      largest: bestValue(obs),
+      vsMean: st ? bestRatio(obs, st.mean) : null,
+      vsMedian: st ? bestRatio(obs, st.median) : null,
+      vsFirst: bestRatio(obs, first)
+    };
+  });
+}
+function episodeRows(maxX) {
+  return METRIC_KEYS.map((key) => {
+    let largest = null;
+    let vsMean = null;
+    let vsMedian = null;
+    let vsFirst = null;
+    for (const ep of EPISODES) {
+      const pts = seriesData(ep, key) ?? [];
+      const kept = pts.filter((p) => p.x <= maxX);
+      if (!kept.length) continue;
+      const obs = kept.map((p) => ({
+        v: p.y,
+        where: `${t().episodes[ep.id].short} \xB7 ${p.t}`
+      }));
+      const st = meanMedian(obs.map((o) => o.v));
+      const first = kept[0].base;
+      const l = bestValue(obs);
+      if (l && (!largest || l.v > largest.v)) largest = l;
+      const m = st ? bestRatio(obs, st.mean) : null;
+      if (m && (!vsMean || m.pct > vsMean.pct)) vsMean = m;
+      const md = st ? bestRatio(obs, st.median) : null;
+      if (md && (!vsMedian || md.pct > vsMedian.pct)) vsMedian = md;
+      const f = bestRatio(obs, first);
+      if (f && (!vsFirst || f.pct > vsFirst.pct)) vsFirst = f;
+    }
+    return {
+      label: t().items[key].label,
+      unit: "count",
+      largest,
+      vsMean,
+      vsMedian,
+      vsFirst
+    };
+  });
+}
+function fmtValue(v, unit) {
+  return unit === "eurM" ? fill(t().kpi.eurM, { v: eurM().format(v) }) : compact().format(v);
+}
+function fmtPct(ratio) {
+  const x = ratio * 100;
+  if (x >= 1e3) return `${nf().format(Math.round(x))}%`;
+  if (x >= 10) return `${Math.round(x)}%`;
+  return `${Number(x.toFixed(1))}%`;
+}
+function kpiRow(label, num, sub) {
+  const row = el("div", "kpi-row");
+  row.append(el("dt", "kpi-label", label));
+  const dd = el("dd");
+  dd.append(el("span", "kpi-num", num), el("span", "kpi-sub", sub));
+  row.append(dd);
+  return row;
+}
+function ratioCell(r, label, template, unit) {
+  if (!r) return kpiRow(label, "\u2014", t().kpi.none);
+  const against = fill(template, {
+    value: fmtValue(r.obs.v, unit),
+    base: fmtValue(r.base, unit)
+  });
+  return kpiRow(label, fmtPct(r.pct), `${r.obs.where} \xB7 ${against}`);
+}
+function card(row, largestLabel) {
+  const k = t().kpi;
+  const box = el("div", "kpi-card");
+  box.append(el("h5", "kpi-title", row.label));
+  const list = el("dl", "kpi-list");
+  list.append(
+    row.largest ? kpiRow(
+      largestLabel,
+      fmtValue(row.largest.v, row.unit),
+      row.largest.where
+    ) : kpiRow(largestLabel, "\u2014", k.none),
+    ratioCell(row.vsMean, k.vsMean, k.againstMean, row.unit),
+    ratioCell(row.vsMedian, k.vsMedian, k.againstMedian, row.unit),
+    ratioCell(row.vsFirst, k.vsFirst, k.againstFirst, row.unit)
+  );
+  box.append(list);
+  return box;
+}
+function block2(rows, largestLabel, note2) {
+  const frag = document.createDocumentFragment();
+  frag.append(el("h4", "kpi-heading", t().kpi.heading));
+  const grid = el("div", "kpi-grid");
+  for (const row of rows) grid.append(card(row, largestLabel));
+  frag.append(grid);
+  frag.append(el("p", "kpi-note", note2));
+  return frag;
+}
+function mountKpis() {
+  const k = t().kpi;
+  const a = byId("kpi-a");
+  if (a) a.replaceChildren(block2(dailyRows(false), k.largestDay, k.noteDaily));
+  const b = byId("kpi-b");
+  if (b) {
+    b.replaceChildren(block2(dailyRows(true), k.largestWeek, k.noteWeekly));
+  }
+  const c = byId("kpi-c");
+  if (c) {
+    c.replaceChildren(
+      block2(
+        episodeRows(Number.POSITIVE_INFINITY),
+        k.largestFigure,
+        k.noteEpisodes
+      )
+    );
+  }
+  const d = byId("kpi-d");
+  if (d) {
+    d.replaceChildren(
+      block2(
+        episodeRows(ENFORCEMENT_LAST),
+        k.largestFigure,
+        k.noteEpisodesCapped
+      )
+    );
+  }
+}
+
 // src/client/main.ts
 function trellisHosts() {
   const episodeHost = byId("trellis-episodes");
@@ -19077,6 +19310,7 @@ function render() {
   applyStaticCopy();
   syncLangSwitch();
   mountCharts();
+  mountKpis();
   const hosts = trellisHosts();
   if (hosts) {
     try {
@@ -19112,7 +19346,11 @@ var REQUIRED = [
   "summary",
   "legend-summary",
   "disclaimer",
-  "sources"
+  "sources",
+  "kpi-a",
+  "kpi-b",
+  "kpi-c",
+  "kpi-d"
 ];
 function boot() {
   const missing = REQUIRED.filter((id) => !byId(id));
