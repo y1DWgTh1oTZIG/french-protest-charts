@@ -37,7 +37,21 @@ import {
 } from "chart.js";
 import { dataTable, keyboardChart } from "./a11y.ts";
 import { THEME, track } from "./canvas.ts";
-import { DAILY, DATES, WEEKLY, WEEKS, type Pt as DayPt } from "./data.ts";
+import {
+  contextBands,
+  daySpans,
+  weekSpans,
+  type ChartSpan,
+} from "./context.ts";
+import {
+  DAILY,
+  DATES,
+  END,
+  START,
+  WEEKLY,
+  WEEKS,
+  type Pt as DayPt,
+} from "./data.ts";
 import { byId, el } from "./dom.ts";
 import { EPISODES, seriesData } from "./episodes.ts";
 import {
@@ -60,12 +74,6 @@ import {
   population,
 } from "./population.ts";
 import { wrapTooltipLines } from "./tooltip.ts";
-import {
-  daySpans,
-  weekSpans,
-  contextBands,
-  type ChartSpan,
-} from "./context.ts";
 
 Chart.register(
   LineController,
@@ -714,6 +722,15 @@ function sectionB(host: HTMLElement): void {
   );
 }
 
+/** Every span in the registry is a 2026 span, so the one panel whose weeks
+ *  already fall inside the window is the one that carries them on sections A
+ *  and B. Keyed on the weeks, not on the episode id, so a rename cannot
+ *  quietly put the bands back. */
+const spansFor = (ep: Episode) =>
+  ep.weeks.some((w) => w.to >= START && w.from <= END)
+    ? []
+    : weekSpans(ep.weeks);
+
 /* sectionC(): one shared floor for the whole trellis. A per-panel floor made
    two points at the same height mean different shares, which is the one thing
    a trellis must not do — and it is what put 1968 at 40 % while Nahel sat at
@@ -748,7 +765,7 @@ function sectionC(host: HTMLElement): void {
         maxTicks: 9,
         showY: idx % cols === 0,
         floor,
-        spans: weekSpans(ep.weeks),
+        spans: spansFor(ep),
       },
       `${m.episodes[ep.id].short} · ${caption}`,
       "",

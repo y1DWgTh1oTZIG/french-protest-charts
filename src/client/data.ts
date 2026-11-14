@@ -75,7 +75,6 @@ import {
   METRICS,
   METRIC_OF,
   isDetached,
-  type Band,
   type Flag,
   type Metric,
   type MetricKey,
@@ -164,9 +163,6 @@ export const WEEKS: readonly Week[] = (() => {
 export const HOLIDAY_START = "2026-10-18";
 export const HOLIDAY_END = "2026-11-01";
 
-/** Dotted pattern for the holiday connector — finer than the "no data" dash. */
-export const HOLIDAY_DASH = [1.5, 3] as const;
-
 export const inHoliday = (date: string): boolean =>
   date >= HOLIDAY_START && date <= HOLIDAY_END;
 
@@ -177,38 +173,6 @@ export const weekTouchesHoliday = (weekStart: string): boolean =>
 /** The week sits wholly inside the holiday — the metric did not exist. */
 export const weekInHoliday = (weekStart: string): boolean =>
   weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
-
-/** Dotted when a DAILY segment crosses the holiday. */
-export function dailyHolidaySegment(
-  a?: number | string | null,
-  b?: number | string | null,
-): boolean {
-  const dateOf = (v?: number | string | null): string | undefined => {
-    if (typeof v === "string") return v;
-    if (typeof v === "number") return DATES[Math.round(v)];
-    return undefined;
-  };
-  const da = dateOf(a);
-  const db = dateOf(b);
-  if (!da || !db) return false;
-  return da <= HOLIDAY_END && db >= HOLIDAY_START;
-}
-
-/** Dotted when a WEEKLY connector bridges the empty holiday weeks. */
-export function weeklyHolidaySegment(
-  a?: number | null,
-  b?: number | null,
-): boolean {
-  if (a === undefined || a === null || b === undefined || b === null)
-    return false;
-  const lo = Math.min(a, b);
-  const hi = Math.max(a, b);
-  for (let i = lo + 1; i < hi; i++) {
-    const wk = WEEKS[i];
-    if (wk && weekInHoliday(wk.key)) return true;
-  }
-  return false;
-}
 
 /* --------------------------------------------------------------------- facts */
 

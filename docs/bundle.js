@@ -13301,6 +13301,173 @@ var TimeSeriesScale = class extends TimeScale {
   }
 };
 
+// src/client/a11y.ts
+var live = null;
+var timer = 0;
+function region() {
+  if (live?.isConnected) return live;
+  live = document.getElementById("a11y-live");
+  if (!live) {
+    live = document.createElement("p");
+    live.id = "a11y-live";
+    live.className = "sr-only";
+    live.setAttribute("role", "status");
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("aria-atomic", "true");
+    document.body.append(live);
+  }
+  return live;
+}
+function announce(text) {
+  const r = region();
+  r.textContent = "";
+  window.clearTimeout(timer);
+  timer = window.setTimeout(() => r.textContent = text, 120);
+}
+var txt = (v) => {
+  if (v == null) return "\u2014";
+  if (typeof v === "number") return nf().format(Math.round(v));
+  if (typeof v === "object") {
+    const p = v;
+    if (typeof p.low === "number" && typeof p.high === "number")
+      return p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
+    for (const n of [p.v, p.y])
+      if (typeof n === "number") return nf().format(Math.round(n));
+  }
+  return String(v);
+};
+function dataTable(spec) {
+  const details = document.createElement("details");
+  details.className = "data-table";
+  const summary = document.createElement("summary");
+  summary.textContent = spec.caption;
+  const table = document.createElement("table");
+  const cap = document.createElement("caption");
+  cap.className = "sr-only";
+  cap.textContent = spec.caption;
+  const head = table.createTHead().insertRow();
+  for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = h;
+    head.append(th);
+  }
+  const body = table.createTBody();
+  spec.index.forEach((label, i) => {
+    const tr = body.insertRow();
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = label;
+    tr.append(th);
+    for (const c of spec.columns)
+      tr.insertCell().textContent = c.values[i] ?? "\u2014";
+  });
+  table.append();
+  details.append(summary, table);
+  return details;
+}
+function fromChart(chart, opts) {
+  const data = chart.data;
+  const sets = data.datasets.filter(
+    (d) => opts.include?.(d) ?? true
+  );
+  const labels = (data.labels ?? []).map(String);
+  const n = labels.length || Math.max(
+    0,
+    ...sets.map((d) => (d.data ?? []).length)
+  );
+  return dataTable({
+    caption: opts.caption,
+    indexHeader: opts.indexHeader,
+    index: Array.from(
+      { length: n },
+      (_, i) => opts.indexOf?.(sets[0], i) ?? labels[i] ?? String(i + 1)
+    ),
+    columns: sets.map((d) => {
+      const ds = d;
+      return {
+        header: String(ds.label ?? ""),
+        values: Array.from({ length: n }, (_, i) => txt(ds.data?.[i]))
+      };
+    })
+  });
+}
+function readout(chart, i) {
+  const label = chart.data.labels?.[i] ?? "";
+  const parts = chart.data.datasets.filter((d) => !d.detachedOnly).map((d) => {
+    const ds = d;
+    return `${ds.label}: ${txt(ds.data?.[i])}`;
+  });
+  return [label, ...parts].join(". ");
+}
+var seq = 0;
+function keyboardChart(chart, opts) {
+  const canvas = chart.canvas;
+  const n = chart.data.labels?.length ?? 0;
+  if (!n) return;
+  const hintId = canvas.id ? `kbd-${canvas.id}` : `kbd-chart-${++seq}`;
+  if (!document.getElementById(hintId)) {
+    const hint = document.createElement("p");
+    hint.id = hintId;
+    hint.className = "sr-only";
+    hint.textContent = opts.hint;
+    canvas.after(hint);
+  }
+  canvas.tabIndex = 0;
+  canvas.setAttribute("aria-roledescription", opts.roledescription);
+  const ids = new Set(
+    (canvas.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
+  );
+  ids.add(hintId);
+  canvas.setAttribute("aria-describedby", [...ids].join(" "));
+  const speak = opts.readout ?? ((i) => readout(chart, i));
+  let at = -1;
+  const paint = (next) => {
+    if (next === null || next < 0 || next >= n) {
+      at = -1;
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      chart.update("none");
+      return;
+    }
+    at = next;
+    const els = chart.data.datasets.map((_, datasetIndex) => ({
+      datasetIndex,
+      index: at
+    }));
+    const pt = chart.getDatasetMeta(0).data[at];
+    chart.setActiveElements(els);
+    chart.tooltip.setActiveElements(els, { x: pt?.x ?? 0, y: pt?.y ?? 0 });
+    chart.update("none");
+    announce(speak(at));
+  };
+  canvas.addEventListener("keydown", (ev) => {
+    switch (ev.key) {
+      case "ArrowRight":
+      case "ArrowUp":
+        paint(at < 0 ? 0 : Math.min(n - 1, at + 1));
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        paint(at < 0 ? n - 1 : Math.max(0, at - 1));
+        break;
+      case "Home":
+        paint(0);
+        break;
+      case "End":
+        paint(n - 1);
+        break;
+      case "Escape":
+        paint(null);
+        break;
+      default:
+        return;
+    }
+    ev.preventDefault();
+  });
+  canvas.addEventListener("blur", () => paint(null));
+}
+
 // src/client/canvas.ts
 var VARS = {
   ink: "--chart-ink",
@@ -13457,17 +13624,17 @@ var gapSegment = (slots = 1, dash = [6, 4]) => ({
     return Math.abs(i1 - i0) > slots + 0.01 ? dash : void 0;
   }
 });
-var live = /* @__PURE__ */ new Set();
-var track = (chart) => (live.add(chart), chart);
+var live2 = /* @__PURE__ */ new Set();
+var track = (chart) => (live2.add(chart), chart);
 function destroyAll() {
-  for (const chart of live) {
+  for (const chart of live2) {
     try {
       chart.destroy();
     } catch (err) {
       console.error("[chart] destroy failed", err);
     }
   }
-  live.clear();
+  live2.clear();
 }
 
 // src/client/model.ts
@@ -13526,29 +13693,6 @@ var WEEKS = (() => {
 var HOLIDAY_START = "2026-10-18";
 var HOLIDAY_END = "2026-11-01";
 var weekTouchesHoliday = (weekStart) => weekStart <= HOLIDAY_END && addDays(weekStart, 6) >= HOLIDAY_START;
-var weekInHoliday = (weekStart) => weekStart >= HOLIDAY_START && addDays(weekStart, 6) <= HOLIDAY_END;
-function dailyHolidaySegment(a, b) {
-  const dateOf = (v) => {
-    if (typeof v === "string") return v;
-    if (typeof v === "number") return DATES[Math.round(v)];
-    return void 0;
-  };
-  const da = dateOf(a);
-  const db = dateOf(b);
-  if (!da || !db) return false;
-  return da <= HOLIDAY_END && db >= HOLIDAY_START;
-}
-function weeklyHolidaySegment(a, b) {
-  if (a === void 0 || a === null || b === void 0 || b === null)
-    return false;
-  const lo = Math.min(a, b);
-  const hi = Math.max(a, b);
-  for (let i = lo + 1; i < hi; i++) {
-    const wk = WEEKS[i];
-    if (wk && weekInHoliday(wk.key)) return true;
-  }
-  return false;
-}
 var FACTS = {
   /* ── School blockades ─────────────────────────────────────────────────
          Metric: establishments where pupils could not attend normally —
@@ -14277,348 +14421,6 @@ function el(name, cls, text) {
   return node;
 }
 
-// src/client/notes.ts
-function noteText(ref) {
-  if (!ref) return "";
-  const m = t().chart;
-  switch (ref.k) {
-    case "obs":
-      return m.obsNotes[ref.date]?.[ref.metric] ?? "";
-    case "policing": {
-      const head = ref.low === ref.high ? nf().format(ref.low) : `${nf().format(ref.low)}\u2013${nf().format(ref.high)}`;
-      const note2 = m.deployNotes[ref.date];
-      return fill(note2 ? m.policingDay : m.policingDayPlain, {
-        head,
-        low: nf().format(RATE.low),
-        high: nf().format(RATE.high),
-        note: note2 ?? ""
-      });
-    }
-    case "cumulative":
-      return fill(ref.added ? m.cumulativeAdded : m.cumulativeCarried, {
-        days: ref.days
-      });
-    case "week": {
-      const p = ref.p;
-      const parts = [
-        fill(p.kind === "national" ? m.weekNational : m.weekRegionalOnly, {
-          n: p.days
-        })
-      ];
-      if (p.peak) parts.push(fill(m.weekPeak, { date: fmtDayMonth(p.peak) }));
-      if (p.noNational) parts.push(m.weekNoNational);
-      if (p.excluded) parts.push(fill(m.weekExcluded, { n: p.excluded }));
-      if (p.floored) parts.push(m.weekFloored);
-      if (p.clipped) parts.push(m.weekClipped);
-      if (p.vacation) parts.push(m.weekVacation);
-      return parts.join(m.weekJoin);
-    }
-    default:
-      return "";
-  }
-}
-function suffixFor(q, detached) {
-  const s = t().chart.suffix;
-  const text = q === "c" ? s.c : q === "w" ? s.w : q === "e" ? s.e : q === "f" ? s.f : q === "x" ? s.x : detached ? s.regional : "";
-  return text ? fill(t().chart.suffixWrap, { text }) : "";
-}
-
-// src/client/tooltip.ts
-var DEFAULT_SIZE = 12;
-var MAX_WIDTH = 360;
-var MIN_WIDTH = 80;
-var probe;
-function measurer() {
-  if (probe === void 0) {
-    probe = document.createElement("canvas").getContext("2d");
-  }
-  return probe;
-}
-function fontCss(font, bold) {
-  const size = font?.size ?? Chart.defaults.font.size ?? DEFAULT_SIZE;
-  const family = Array.isArray(font?.family) ? font.family.join(", ") : font?.family ?? Chart.defaults.font.family;
-  const style = font?.style ?? "normal";
-  const weight = font?.weight ?? (bold ? "bold" : "normal");
-  return `${style} ${weight} ${size}px ${family}`;
-}
-function chromeWidth(tt) {
-  const pad = tt.padding ?? 6;
-  const side = typeof pad === "number" ? pad * 2 : (pad.left ?? 0) + (pad.right ?? 0);
-  const swatch = tt.displayColors === false ? 0 : (tt.boxWidth ?? DEFAULT_SIZE) + (tt.boxPadding ?? 6);
-  return side + swatch + 2 * (tt.caretPadding ?? 2);
-}
-function textWidth(chart, tt) {
-  const frame2 = chart.chartArea?.width ?? chart.width;
-  return Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, frame2 - chromeWidth(tt)));
-}
-function wrapText(text, max, font) {
-  const ctx = measurer();
-  if (!ctx) return text.split("\n");
-  ctx.font = font;
-  const fits = (s) => ctx.measureText(s).width <= max;
-  const lines = [];
-  for (const para of text.split("\n")) {
-    const words = para.split(/\s+/).filter(Boolean);
-    if (!words.length) {
-      lines.push("");
-      continue;
-    }
-    let line = "";
-    for (const word of words) {
-      if (line && !fits(`${line} ${word}`)) {
-        lines.push(line);
-        line = "";
-      }
-      if (!line && !fits(word)) {
-        let rest = word;
-        while (rest.length > 1 && !fits(rest)) {
-          let lo = 1;
-          let hi = rest.length;
-          while (lo < hi) {
-            const mid = lo + hi + 1 >> 1;
-            if (fits(rest.slice(0, mid))) lo = mid;
-            else hi = mid - 1;
-          }
-          lines.push(rest.slice(0, lo));
-          rest = rest.slice(lo);
-        }
-        line = rest;
-        continue;
-      }
-      line = line ? `${line} ${word}` : word;
-    }
-    if (line) lines.push(line);
-  }
-  return lines;
-}
-function wrapTooltipLines(text, item, part = "body") {
-  const chart = item?.chart;
-  if (!chart) return text.split("\n");
-  const tt = chart.options.plugins?.tooltip ?? {};
-  const font = fontCss(
-    part === "title" ? tt.titleFont : part === "footer" ? tt.footerFont : tt.bodyFont,
-    part !== "body"
-  );
-  return wrapText(text, textWidth(chart, tt), font);
-}
-
-// src/client/a11y.ts
-var live2 = null;
-var timer = 0;
-function region() {
-  if (live2?.isConnected) return live2;
-  live2 = document.getElementById("a11y-live");
-  if (!live2) {
-    live2 = document.createElement("p");
-    live2.id = "a11y-live";
-    live2.className = "sr-only";
-    live2.setAttribute("role", "status");
-    live2.setAttribute("aria-live", "polite");
-    live2.setAttribute("aria-atomic", "true");
-    document.body.append(live2);
-  }
-  return live2;
-}
-function announce(text) {
-  const r = region();
-  r.textContent = "";
-  window.clearTimeout(timer);
-  timer = window.setTimeout(() => r.textContent = text, 120);
-}
-var txt = (v) => {
-  if (v == null) return "\u2014";
-  if (typeof v === "number") return nf().format(Math.round(v));
-  if (typeof v === "object") {
-    const p = v;
-    if (typeof p.low === "number" && typeof p.high === "number")
-      return p.low === p.high ? nf().format(Math.round(p.low)) : `${nf().format(Math.round(p.low))} \u2013 ${nf().format(Math.round(p.high))}`;
-    for (const n of [p.v, p.y])
-      if (typeof n === "number") return nf().format(Math.round(n));
-  }
-  return String(v);
-};
-function dataTable(spec) {
-  const details = document.createElement("details");
-  details.className = "data-table";
-  const summary = document.createElement("summary");
-  summary.textContent = spec.caption;
-  const table = document.createElement("table");
-  const cap = document.createElement("caption");
-  cap.className = "sr-only";
-  cap.textContent = spec.caption;
-  const head = table.createTHead().insertRow();
-  for (const h of [spec.indexHeader, ...spec.columns.map((c) => c.header)]) {
-    const th = document.createElement("th");
-    th.scope = "col";
-    th.textContent = h;
-    head.append(th);
-  }
-  const body = table.createTBody();
-  spec.index.forEach((label, i) => {
-    const tr = body.insertRow();
-    const th = document.createElement("th");
-    th.scope = "row";
-    th.textContent = label;
-    tr.append(th);
-    for (const c of spec.columns)
-      tr.insertCell().textContent = c.values[i] ?? "\u2014";
-  });
-  table.append();
-  details.append(summary, table);
-  return details;
-}
-function fromChart(chart, opts) {
-  const data = chart.data;
-  const sets = data.datasets.filter(
-    (d) => opts.include?.(d) ?? true
-  );
-  const labels = (data.labels ?? []).map(String);
-  const n = labels.length || Math.max(
-    0,
-    ...sets.map((d) => (d.data ?? []).length)
-  );
-  return dataTable({
-    caption: opts.caption,
-    indexHeader: opts.indexHeader,
-    index: Array.from(
-      { length: n },
-      (_, i) => opts.indexOf?.(sets[0], i) ?? labels[i] ?? String(i + 1)
-    ),
-    columns: sets.map((d) => {
-      const ds = d;
-      return {
-        header: String(ds.label ?? ""),
-        values: Array.from({ length: n }, (_, i) => txt(ds.data?.[i]))
-      };
-    })
-  });
-}
-function readout(chart, i) {
-  const label = chart.data.labels?.[i] ?? "";
-  const parts = chart.data.datasets.filter((d) => !d.detachedOnly).map((d) => {
-    const ds = d;
-    return `${ds.label}: ${txt(ds.data?.[i])}`;
-  });
-  return [label, ...parts].join(". ");
-}
-var seq = 0;
-function keyboardChart(chart, opts) {
-  const canvas = chart.canvas;
-  const n = chart.data.labels?.length ?? 0;
-  if (!n) return;
-  const hintId = canvas.id ? `kbd-${canvas.id}` : `kbd-chart-${++seq}`;
-  if (!document.getElementById(hintId)) {
-    const hint = document.createElement("p");
-    hint.id = hintId;
-    hint.className = "sr-only";
-    hint.textContent = opts.hint;
-    canvas.after(hint);
-  }
-  canvas.tabIndex = 0;
-  canvas.setAttribute("aria-roledescription", opts.roledescription);
-  const ids = new Set(
-    (canvas.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean)
-  );
-  ids.add(hintId);
-  canvas.setAttribute("aria-describedby", [...ids].join(" "));
-  const speak = opts.readout ?? ((i) => readout(chart, i));
-  let at = -1;
-  const paint = (next) => {
-    if (next === null || next < 0 || next >= n) {
-      at = -1;
-      chart.setActiveElements([]);
-      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
-      chart.update("none");
-      return;
-    }
-    at = next;
-    const els = chart.data.datasets.map((_, datasetIndex) => ({
-      datasetIndex,
-      index: at
-    }));
-    const pt = chart.getDatasetMeta(0).data[at];
-    chart.setActiveElements(els);
-    chart.tooltip.setActiveElements(els, { x: pt?.x ?? 0, y: pt?.y ?? 0 });
-    chart.update("none");
-    announce(speak(at));
-  };
-  canvas.addEventListener("keydown", (ev) => {
-    switch (ev.key) {
-      case "ArrowRight":
-      case "ArrowUp":
-        paint(at < 0 ? 0 : Math.min(n - 1, at + 1));
-        break;
-      case "ArrowLeft":
-      case "ArrowDown":
-        paint(at < 0 ? n - 1 : Math.max(0, at - 1));
-        break;
-      case "Home":
-        paint(0);
-        break;
-      case "End":
-        paint(n - 1);
-        break;
-      case "Escape":
-        paint(null);
-        break;
-      default:
-        return;
-    }
-    ev.preventDefault();
-  });
-  canvas.addEventListener("blur", () => paint(null));
-}
-
-// src/client/population.ts
-var POPULATION = {
-  /* 1968 has one base only. INSEE, RP1968 in the 1 January 2026 geography:
-     49 711 853. Not 49 723 072 — that is the older "sans doubles comptes"
-     figure, 11 000 people adrift. Dated to the census, not to 1 January. */
-  "1968": { at: "1968-03-07", france: null, metro: 49711853 },
-  "2006": { at: "2006-01-01", france: 63186117, metro: 61399733 },
-  "2018": { at: "2018-01-01", france: 66992e3, metro: 64844e3 },
-  "2019": { at: "2019-01-01", france: 67258e3, metro: 65097e3 },
-  "2023": { at: "2023-01-01", france: 68405e3, metro: 66165815 },
-  "2025": { at: "2025-01-01", france: 68852e3, metro: 66579e3 },
-  "2026": {
-    at: "2026-01-01",
-    france: 69082e3,
-    metro: 66793e3,
-    aged15_64: 42514e3,
-    // summed from the age-by-age table — an estimate
-    active: 318e5
-    // 2025 annual average; the 2026 release is not out
-  }
-};
-var KEY_2026 = "2026";
-var EPISODE_POP = {
-  may68: "1968",
-  cpe: "2006",
-  gj: "2018",
-  nahel: "2023",
-  pensions: "2023",
-  bt: "2025",
-  students26: "2026"
-};
-var popKeyFor = (id) => EPISODE_POP[id] ?? "";
-var population = (key) => POPULATION[key] ?? null;
-function basisOf(pop) {
-  if (!pop) return null;
-  if (pop.france !== null) return "france";
-  return pop.metro > 0 ? "metro" : null;
-}
-function denominator(pop) {
-  if (!pop) return null;
-  if (pop.france !== null) return pop.france;
-  return pop.metro > 0 ? pop.metro : null;
-}
-function pctOfValue(v, pop) {
-  if (v === null || !Number.isFinite(v) || !(v > 0)) return null;
-  const d = denominator(pop);
-  if (d === null || !(d > 0)) return null;
-  return v / d * 100;
-}
-
 // src/client/context.ts
 var L = (o) => String(getLocale()).slice(0, 2) === "fr" ? o.fr : o.en;
 var LAYERS = [
@@ -14670,37 +14472,19 @@ var SPANS = [
     },
     source: "education.gouv.fr, calendrier scolaire 2026-2027 \xB7 data.ts HOLIDAY_START / HOLIDAY_END"
   },
-  /* The one ban span. Replaces the 1968 national entry and the separate Paris
-     ban reading: a single span from 11 October to the end of the window, so
-     every 2026 chart shades the same interval and no chart can disagree with
-     another about when the bans began. `to: END` follows the window rather
-     than being frozen at a date, and both resolvers clamp it to the last
-     defined x index — that is what "to the end of the chart" means here. */
   {
     id: "protestBans",
     kind: "national",
-    from: "2026-10-11",
+    from: "2026-10-22",
     to: END,
     label: { en: "Protest bans", fr: "Interdictions de manifester" },
     detail: {
-      en: "One span covers every prohibition from 11 October to the end of the window. The charts cannot separate one arr\xEAt\xE9 from another, and a per-decree breakdown would imply a count of bans nobody published; what they can show is that from 11 October the crowd was counted under prohibition, which is why a falling figure in that stretch is not evidence of a smaller movement.",
-      fr: "Une seule bande couvre les interdictions du 11 octobre \xE0 la fin de la fen\xEAtre. Les graphiques ne peuvent pas distinguer un arr\xEAt\xE9 d\u2019un autre, et un d\xE9coupage d\xE9cret par d\xE9cret supposerait un d\xE9compte que personne n\u2019a publi\xE9 ; ce qu\u2019ils peuvent montrer, c\u2019est qu\u2019\xE0 partir du 11 octobre la foule \xE9tait compt\xE9e sous interdiction, d\u2019o\xF9 il suit qu\u2019un chiffre en baisse sur ce segment n\u2019est pas la preuve d\u2019un mouvement plus petit."
+      en: "Macron announced that 'illegitimate' protests would be banned, which has been followed by a wave of prefectural bans",
+      fr: "Macron a annonc\xE9 que les manifestations \xAB ill\xE9gitimes \xBB seraient interdites, ce qui a \xE9t\xE9 suivi d\u2019une vague d\u2019interdictions pr\xE9fectorales."
     },
     /* Fill this before shipping — a span whose source is a placeholder is a
        claim with no author. */
-    source: "\xC0 COMPL\xC9TER : arr\xEAt\xE9 / communiqu\xE9, 11 octobre 2026"
-  },
-  {
-    id: "curfewParis",
-    kind: "prefectoral",
-    from: "2026-10-18",
-    to: "2026-10-18",
-    label: { en: "Paris curfew", fr: "Couvre-feu \xE0 Paris" },
-    detail: {
-      en: "A night-time curfew in Paris alone, the day after the peak. It is one department's arr\xEAt\xE9: it bounds the Paris figure for that night and says nothing about the rest of the country, which is why the arrest cell that day is regional (Paris only, 108).",
-      fr: "Un couvre-feu nocturne \xE0 Paris seulement, au lendemain de la pointe. C\u2019est l\u2019arr\xEAt\xE9 d\u2019un seul d\xE9partement : il borne le chiffre parisien de cette nuit et ne dit rien du reste du pays, d\u2019o\xF9 le caract\xE8re r\xE9gional de la cellule d\u2019interpellations ce jour-l\xE0 (Paris seulement, 108)."
-    },
-    source: "data.ts \xB7 FACTS 2026-10-18 (Paris curfew; 108 interpellations, Paris only)"
+    source: "https://www.lemonde.fr/en/france/article/2026/10/22/french-city-of-lyon-bans-all-protests-on-saturday_6761449_7.html"
   }
 ];
 function daySpans() {
@@ -14786,13 +14570,29 @@ var contextBands = {
         ctx.lineTo(x1, chartArea.top + 0.75);
         ctx.stroke();
       }
-      if (x1 - x0 >= 34) {
-        ctx.font = "600 9px system-ui, sans-serif";
-        ctx.fillStyle = withAlpha(color2, 0.9);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(s.label, (x0 + x1) / 2, chartArea.top + 5);
+    }
+    ctx.font = "600 9px system-ui, sans-serif";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    const rowRight = [];
+    const ordered = spans.map((s) => {
+      const a = Math.min(s.x0, s.x1);
+      const b = Math.max(s.x0, s.x1);
+      return { s, x0: left(a), x1: right(b) };
+    }).filter((o) => o.x1 - o.x0 >= 1).sort((p, q) => p.x0 - q.x0);
+    for (const { s, x0 } of ordered) {
+      const w = ctx.measureText(s.label).width;
+      const x = Math.min(x0 + 4, chartArea.right - w - 4);
+      if (x < chartArea.left + 2) continue;
+      let row = rowRight.findIndex((edge) => x >= edge + 8);
+      if (row < 0) {
+        if (rowRight.length >= 2) continue;
+        row = rowRight.length;
+        rowRight.push(Number.NEGATIVE_INFINITY);
       }
+      rowRight[row] = x + w;
+      ctx.fillStyle = withAlpha(KIND_COLOR[s.kind], 0.9);
+      ctx.fillText(s.label, x, chartArea.top + 5 + row * 11);
     }
     ctx.restore();
   }
@@ -14858,8 +14658,8 @@ function renderStrip(host) {
       "p",
       "ctx-note",
       L({
-        en: "No municipal measure is recorded in this window. The Paris curfew was a prefect\u2019s arr\xEAt\xE9, so it sits on the prefectoral layer: the scope of the author decides the row, not the size of the street.",
-        fr: "Aucune mesure municipale n\u2019est enregistr\xE9e dans cette fen\xEAtre. Le couvre-feu parisien \xE9tait un arr\xEAt\xE9 pr\xE9fectoral : la comp\xE9tence de l\u2019auteur d\xE9cide de la ligne, non la taille de la rue."
+        en: "No prefectoral or municipal measure is recorded in this window: the only spans are the school calendar and the national ban. The municipal row is kept empty rather than omitted \u2014 a missing row reads as a clean sheet, an empty row reads as a check that came back empty.",
+        fr: "Aucune mesure pr\xE9fectorale ou municipale n\u2019est enregistr\xE9e dans cette fen\xEAtre : les seuls rep\xE8res sont le calendrier scolaire et l\u2019interdiction nationale. La ligne municipale est conserv\xE9e vide plut\xF4t que supprim\xE9e \u2014 une ligne absente se lit comme un casier vierge, une ligne vide comme une v\xE9rification revenue sans r\xE9ponse."
       })
     )
   );
@@ -14875,6 +14675,181 @@ function mountContext() {
   } catch (e) {
     console.error("[context A]", e);
   }
+}
+
+// src/client/notes.ts
+function noteText(ref) {
+  if (!ref) return "";
+  const m = t().chart;
+  switch (ref.k) {
+    case "obs":
+      return m.obsNotes[ref.date]?.[ref.metric] ?? "";
+    case "policing": {
+      const head = ref.low === ref.high ? nf().format(ref.low) : `${nf().format(ref.low)}\u2013${nf().format(ref.high)}`;
+      const note2 = m.deployNotes[ref.date];
+      return fill(note2 ? m.policingDay : m.policingDayPlain, {
+        head,
+        low: nf().format(RATE.low),
+        high: nf().format(RATE.high),
+        note: note2 ?? ""
+      });
+    }
+    case "cumulative":
+      return fill(ref.added ? m.cumulativeAdded : m.cumulativeCarried, {
+        days: ref.days
+      });
+    case "week": {
+      const p = ref.p;
+      const parts = [
+        fill(p.kind === "national" ? m.weekNational : m.weekRegionalOnly, {
+          n: p.days
+        })
+      ];
+      if (p.peak) parts.push(fill(m.weekPeak, { date: fmtDayMonth(p.peak) }));
+      if (p.noNational) parts.push(m.weekNoNational);
+      if (p.excluded) parts.push(fill(m.weekExcluded, { n: p.excluded }));
+      if (p.floored) parts.push(m.weekFloored);
+      if (p.clipped) parts.push(m.weekClipped);
+      if (p.vacation) parts.push(m.weekVacation);
+      return parts.join(m.weekJoin);
+    }
+    default:
+      return "";
+  }
+}
+function suffixFor(q, detached) {
+  const s = t().chart.suffix;
+  const text = q === "c" ? s.c : q === "w" ? s.w : q === "e" ? s.e : q === "f" ? s.f : q === "x" ? s.x : detached ? s.regional : "";
+  return text ? fill(t().chart.suffixWrap, { text }) : "";
+}
+
+// src/client/population.ts
+var POPULATION = {
+  /* 1968 has one base only. INSEE, RP1968 in the 1 January 2026 geography:
+     49 711 853. Not 49 723 072 — that is the older "sans doubles comptes"
+     figure, 11 000 people adrift. Dated to the census, not to 1 January. */
+  "1968": { at: "1968-03-07", france: null, metro: 49711853 },
+  "2006": { at: "2006-01-01", france: 63186117, metro: 61399733 },
+  "2018": { at: "2018-01-01", france: 66992e3, metro: 64844e3 },
+  "2019": { at: "2019-01-01", france: 67258e3, metro: 65097e3 },
+  "2023": { at: "2023-01-01", france: 68405e3, metro: 66165815 },
+  "2025": { at: "2025-01-01", france: 68852e3, metro: 66579e3 },
+  "2026": {
+    at: "2026-01-01",
+    france: 69082e3,
+    metro: 66793e3,
+    aged15_64: 42514e3,
+    // summed from the age-by-age table — an estimate
+    active: 318e5
+    // 2025 annual average; the 2026 release is not out
+  }
+};
+var KEY_2026 = "2026";
+var EPISODE_POP = {
+  may68: "1968",
+  cpe: "2006",
+  gj: "2018",
+  nahel: "2023",
+  pensions: "2023",
+  bt: "2025",
+  students26: "2026"
+};
+var popKeyFor = (id) => EPISODE_POP[id] ?? "";
+var population = (key) => POPULATION[key] ?? null;
+function basisOf(pop) {
+  if (!pop) return null;
+  if (pop.france !== null) return "france";
+  return pop.metro > 0 ? "metro" : null;
+}
+function denominator(pop) {
+  if (!pop) return null;
+  if (pop.france !== null) return pop.france;
+  return pop.metro > 0 ? pop.metro : null;
+}
+function pctOfValue(v, pop) {
+  if (v === null || !Number.isFinite(v) || !(v > 0)) return null;
+  const d = denominator(pop);
+  if (d === null || !(d > 0)) return null;
+  return v / d * 100;
+}
+
+// src/client/tooltip.ts
+var DEFAULT_SIZE = 12;
+var MAX_WIDTH = 360;
+var MIN_WIDTH = 80;
+var probe;
+function measurer() {
+  if (probe === void 0) {
+    probe = document.createElement("canvas").getContext("2d");
+  }
+  return probe;
+}
+function fontCss(font, bold) {
+  const size = font?.size ?? Chart.defaults.font.size ?? DEFAULT_SIZE;
+  const family = Array.isArray(font?.family) ? font.family.join(", ") : font?.family ?? Chart.defaults.font.family;
+  const style = font?.style ?? "normal";
+  const weight = font?.weight ?? (bold ? "bold" : "normal");
+  return `${style} ${weight} ${size}px ${family}`;
+}
+function chromeWidth(tt) {
+  const pad = tt.padding ?? 6;
+  const side = typeof pad === "number" ? pad * 2 : (pad.left ?? 0) + (pad.right ?? 0);
+  const swatch = tt.displayColors === false ? 0 : (tt.boxWidth ?? DEFAULT_SIZE) + (tt.boxPadding ?? 6);
+  return side + swatch + 2 * (tt.caretPadding ?? 2);
+}
+function textWidth(chart, tt) {
+  const frame2 = chart.chartArea?.width ?? chart.width;
+  return Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, frame2 - chromeWidth(tt)));
+}
+function wrapText(text, max, font) {
+  const ctx = measurer();
+  if (!ctx) return text.split("\n");
+  ctx.font = font;
+  const fits = (s) => ctx.measureText(s).width <= max;
+  const lines = [];
+  for (const para of text.split("\n")) {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      lines.push("");
+      continue;
+    }
+    let line = "";
+    for (const word of words) {
+      if (line && !fits(`${line} ${word}`)) {
+        lines.push(line);
+        line = "";
+      }
+      if (!line && !fits(word)) {
+        let rest = word;
+        while (rest.length > 1 && !fits(rest)) {
+          let lo = 1;
+          let hi = rest.length;
+          while (lo < hi) {
+            const mid = lo + hi + 1 >> 1;
+            if (fits(rest.slice(0, mid))) lo = mid;
+            else hi = mid - 1;
+          }
+          lines.push(rest.slice(0, lo));
+          rest = rest.slice(lo);
+        }
+        line = rest;
+        continue;
+      }
+      line = line ? `${line} ${word}` : word;
+    }
+    if (line) lines.push(line);
+  }
+  return lines;
+}
+function wrapTooltipLines(text, item, part = "body") {
+  const chart = item?.chart;
+  if (!chart) return text.split("\n");
+  const tt = chart.options.plugins?.tooltip ?? {};
+  const font = fontCss(
+    part === "title" ? tt.titleFont : part === "footer" ? tt.footerFont : tt.bodyFont,
+    part !== "body"
+  );
+  return wrapText(text, textWidth(chart, tt), font);
 }
 
 // src/client/chart.ts
@@ -14932,7 +14907,13 @@ var DEF = {
     color: "#065f46",
     unit: "count",
     radius: 3,
-    width: 2
+    width: 2,
+    /* A running total's band is a corridor, not an error bar on an
+       observation, so it is drawn as policingCumulative's is: one filled
+       polygon between the low and high levels, no per-point whisker caps.
+       `shadeOnly` sets noWhiskers and leaves the band to the tooltip. */
+    bandFill: "rgba(6,95,70,0.14)",
+    shadeOnly: true
   },
   protestersInjuredDaily: {
     data: DAILY.protesterInjured,
@@ -15104,13 +15085,12 @@ function datasetsFor(id, weekly) {
   const axis = def.axis ?? LEFT;
   const plot = (keep) => def.data.map((p) => keep(p) ? p.v : null);
   const bands = (keep) => def.data.map((p) => keep(p) ? p.band : null);
-  const holiday = def.holiday === "weekly" ? weeklyHolidaySegment : def.holiday === "daily" ? dailyHolidaySegment : void 0;
   const line = {
     label: copy.label,
     data: plot((p) => !p.detach),
     yAxisID: axis,
     unit: def.unit,
-    perCapita: id === "protestersDaily" || id === "protesterWeekly",
+    perCapita: id === "protestersDaily" || id === "protestersWeekly",
     errorBars: bands((p) => !p.detach),
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
@@ -20707,6 +20687,7 @@ function sectionB(host) {
     L2(COPY.colWeek)
   );
 }
+var spansFor = (ep) => ep.weeks.some((w) => w.to >= START && w.from <= END) ? [] : weekSpans(ep.weeks);
 function sectionC(host) {
   const m = t();
   const cols = host.clientWidth >= 1180 ? 4 : host.clientWidth >= 620 ? 2 : 1;
@@ -20731,7 +20712,7 @@ function sectionC(host) {
         maxTicks: 9,
         showY: idx % cols === 0,
         floor,
-        spans: weekSpans(ep.weeks)
+        spans: spansFor(ep)
       },
       `${m.episodes[ep.id].short} \xB7 ${caption}`,
       "",

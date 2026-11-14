@@ -24,18 +24,11 @@
  * per-section filtering is needed at the call sites.
  */
 
-import type { Chart, Plugin } from "chart.js";
+import type { Plugin } from "chart.js";
 import { dataTable } from "./a11y.ts";
-import {
-  addDays,
-  DATES,
-  END,
-  HOLIDAY_END,
-  HOLIDAY_START,
-  START,
-} from "./data.ts";
+import { DATES, END, HOLIDAY_END, HOLIDAY_START, START } from "./data.ts";
 import { byId, el } from "./dom.ts";
-import { fill, fmtDayMonth, fmtDate, getLocale } from "./i18n.ts";
+import { fmtDate, getLocale } from "./i18n.ts";
 
 /* ----- copy */
 
@@ -118,40 +111,20 @@ export const SPANS: readonly Span[] = [
     source:
       "education.gouv.fr, calendrier scolaire 2026-2027 · data.ts HOLIDAY_START / HOLIDAY_END",
   },
-
-  /* The one ban span. Replaces the 1968 national entry and the separate Paris
-     ban reading: a single span from 11 October to the end of the window, so
-     every 2026 chart shades the same interval and no chart can disagree with
-     another about when the bans began. `to: END` follows the window rather
-     than being frozen at a date, and both resolvers clamp it to the last
-     defined x index — that is what "to the end of the chart" means here. */
   {
     id: "protestBans",
     kind: "national",
-    from: "2026-10-11",
+    from: "2026-10-22",
     to: END,
     label: { en: "Protest bans", fr: "Interdictions de manifester" },
     detail: {
-      en: "One span covers every prohibition from 11 October to the end of the window. The charts cannot separate one arrêté from another, and a per-decree breakdown would imply a count of bans nobody published; what they can show is that from 11 October the crowd was counted under prohibition, which is why a falling figure in that stretch is not evidence of a smaller movement.",
-      fr: "Une seule bande couvre les interdictions du 11 octobre à la fin de la fenêtre. Les graphiques ne peuvent pas distinguer un arrêté d’un autre, et un découpage décret par décret supposerait un décompte que personne n’a publié ; ce qu’ils peuvent montrer, c’est qu’à partir du 11 octobre la foule était comptée sous interdiction, d’où il suit qu’un chiffre en baisse sur ce segment n’est pas la preuve d’un mouvement plus petit.",
+      en: "Macron announced that 'illegitimate' protests would be banned, which has been followed by a wave of prefectural bans",
+      fr: "Macron a annoncé que les manifestations « illégitimes » seraient interdites, ce qui a été suivi d’une vague d’interdictions préfectorales.",
     },
     /* Fill this before shipping — a span whose source is a placeholder is a
        claim with no author. */
-    source: "À COMPLÉTER : arrêté / communiqué, 11 octobre 2026",
-  },
-
-  {
-    id: "curfewParis",
-    kind: "prefectoral",
-    from: "2026-10-18",
-    to: "2026-10-18",
-    label: { en: "Paris curfew", fr: "Couvre-feu à Paris" },
-    detail: {
-      en: "A night-time curfew in Paris alone, the day after the peak. It is one department's arrêté: it bounds the Paris figure for that night and says nothing about the rest of the country, which is why the arrest cell that day is regional (Paris only, 108).",
-      fr: "Un couvre-feu nocturne à Paris seulement, au lendemain de la pointe. C’est l’arrêté d’un seul département : il borne le chiffre parisien de cette nuit et ne dit rien du reste du pays, d’où le caractère régional de la cellule d’interpellations ce jour-là (Paris seulement, 108).",
-    },
     source:
-      "data.ts · FACTS 2026-10-18 (Paris curfew; 108 interpellations, Paris only)",
+      "https://www.lemonde.fr/en/france/article/2026/10/22/french-city-of-lyon-bans-all-protests-on-saturday_6761449_7.html",
   },
 ];
 
@@ -258,11 +231,9 @@ export const contextBands: Plugin<"line"> = {
 
       const color = KIND_COLOR[s.kind];
 
-      // flat wash: readable under a dark blue fill as well as on white
       ctx.fillStyle = withAlpha(color, s.kind === "school" ? 0.09 : 0.07);
       ctx.fillRect(x0, chartArea.top, x1 - x0, chartArea.height);
 
-      // the school band is hatched, so it never reads as a restriction
       if (s.kind === "school") {
         ctx.save();
         ctx.beginPath();
@@ -279,7 +250,6 @@ export const contextBands: Plugin<"line"> = {
         ctx.restore();
       }
 
-      // a restriction keeps a solid top rule: it starts somewhere
       if (s.kind !== "school") {
         ctx.strokeStyle = withAlpha(color, 0.55);
         ctx.lineWidth = 1.5;
@@ -288,14 +258,48 @@ export const contextBands: Plugin<"line"> = {
         ctx.lineTo(x1, chartArea.top + 0.75);
         ctx.stroke();
       }
+    }
 
-      if (x1 - x0 >= 34) {
-        ctx.font = "600 9px system-ui, sans-serif";
-        ctx.fillStyle = withAlpha(color, 0.9);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(s.label, (x0 + x1) / 2, chartArea.top + 5);
+    /* ----- labels: left-anchored, two rows -----
+       Centring put each label at its band's midpoint, which is how "Toussaint
+       break" landed on top of "Protest bans": a thirteen-day band and a
+       sixteen-week band had midpoints a few pixels apart. Two rules replace it.
+         · anchor at the band's LEFT edge, so the label marks where the span
+           starts rather than where its middle happens to fall;
+         · pack into rows, left to right, moving to the second row when the
+           previous label on this row is still on screen.
+       Spans arrive in registry order, not x order, so the list is sorted first.
+       A label that finds no room in two rows is dropped, not nudged: a moved
+       label points at the wrong date. */
+    ctx.font = "600 9px system-ui, sans-serif";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+
+    const rowRight: number[] = [];
+    const ordered = spans
+      .map((s) => {
+        const a = Math.min(s.x0, s.x1);
+        const b = Math.max(s.x0, s.x1);
+        return { s, x0: left(a), x1: right(b) };
+      })
+      .filter((o) => o.x1 - o.x0 >= 1)
+      .sort((p, q) => p.x0 - q.x0);
+
+    for (const { s, x0 } of ordered) {
+      const w = ctx.measureText(s.label).width;
+      const x = Math.min(x0 + 4, chartArea.right - w - 4);
+      if (x < chartArea.left + 2) continue;
+
+      let row = rowRight.findIndex((edge) => x >= edge + 8);
+      if (row < 0) {
+        if (rowRight.length >= 2) continue;
+        row = rowRight.length;
+        rowRight.push(Number.NEGATIVE_INFINITY);
       }
+      rowRight[row] = x + w;
+
+      ctx.fillStyle = withAlpha(KIND_COLOR[s.kind], 0.9);
+      ctx.fillText(s.label, x, chartArea.top + 5 + row * 11);
     }
 
     ctx.restore();
@@ -304,10 +308,6 @@ export const contextBands: Plugin<"line"> = {
 
 /* ----- the strip */
 
-/* The 1968 range is gone with its ban: with no span left inside 1968-04-29 –
-   1968-06-30 the strip would render five empty rows and an axis. The June
-   1968 prohibition now lives in prose in the May 68 note; a context strip
-   with nothing in it asserts that nothing happened. */
 const RANGE: Range = {
   from: START,
   to: END,
@@ -380,8 +380,8 @@ function renderStrip(host: HTMLElement): void {
       "p",
       "ctx-note",
       L({
-        en: "No municipal measure is recorded in this window. The Paris curfew was a prefect’s arrêté, so it sits on the prefectoral layer: the scope of the author decides the row, not the size of the street.",
-        fr: "Aucune mesure municipale n’est enregistrée dans cette fenêtre. Le couvre-feu parisien était un arrêté préfectoral : la compétence de l’auteur décide de la ligne, non la taille de la rue.",
+        en: "No prefectoral or municipal measure is recorded in this window: the only spans are the school calendar and the national ban. The municipal row is kept empty rather than omitted — a missing row reads as a clean sheet, an empty row reads as a check that came back empty.",
+        fr: "Aucune mesure préfectorale ou municipale n’est enregistrée dans cette fenêtre : les seuls repères sont le calendrier scolaire et l’interdiction nationale. La ligne municipale est conservée vide plutôt que supprimée — une ligne absente se lit comme un casier vierge, une ligne vide comme une vérification revenue sans réponse.",
       }),
     ),
   );

@@ -21,18 +21,10 @@ import {
   type PointStyle,
   type TooltipItem,
 } from "chart.js";
+import { fromChart, keyboardChart } from "./a11y.ts";
 import { THEME, track } from "./canvas.ts";
-import {
-  DAILY,
-  dailyHolidaySegment,
-  DATES,
-  HOLIDAY_DASH,
-  WEEKLY,
-  weeklyHolidaySegment,
-  WEEKS,
-  type Pt,
-  type Series,
-} from "./data.ts";
+import { contextBands, daySpans, weekSpans } from "./context.ts";
+import { DAILY, DATES, WEEKLY, WEEKS, type Pt, type Series } from "./data.ts";
 import { byId } from "./dom.ts";
 import {
   a11y,
@@ -50,10 +42,8 @@ import {
 } from "./i18n.ts";
 import { type Band, type Flag, type NoteRef } from "./model.ts";
 import { noteText, suffixFor } from "./notes.ts";
-import { wrapTooltipLines } from "./tooltip.ts";
-import { fromChart, keyboardChart } from "./a11y.ts";
 import { denominator, KEY_2026, population } from "./population.ts";
-import { contextBands, daySpans, weekSpans } from "./context.ts";
+import { wrapTooltipLines } from "./tooltip.ts";
 
 Chart.register(
   LineController,
@@ -141,6 +131,12 @@ const DEF = {
     unit: "count",
     radius: 3,
     width: 2,
+    /* A running total's band is a corridor, not an error bar on an
+       observation, so it is drawn as policingCumulative's is: one filled
+       polygon between the low and high levels, no per-point whisker caps.
+       `shadeOnly` sets noWhiskers and leaves the band to the tooltip. */
+    bandFill: "rgba(6,95,70,0.14)",
+    shadeOnly: true,
   },
   protestersInjuredDaily: {
     data: DAILY.protesterInjured,
@@ -403,19 +399,12 @@ function datasetsFor(id: SeriesId, weekly: boolean): ProtestDataset[] {
   const bands = (keep: (p: Pt) => boolean) =>
     def.data.map((p) => (keep(p) ? p.band : null));
 
-  const holiday =
-    def.holiday === "weekly"
-      ? weeklyHolidaySegment
-      : def.holiday === "daily"
-        ? dailyHolidaySegment
-        : undefined;
-
   const line: ProtestDataset = {
     label: copy.label,
     data: plot((p) => !p.detach),
     yAxisID: axis,
     unit: def.unit,
-    perCapita: id === "protestersDaily" || id === "protesterWeekly",
+    perCapita: id === "protestersDaily" || id === "protestersWeekly",
     errorBars: bands((p) => !p.detach),
     errorBarColor: def.color,
     bandFill: Boolean(def.bandFill),
